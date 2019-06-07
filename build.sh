@@ -1,0 +1,1 @@
+haxe -js Main.js -main Main
