@@ -2,7 +2,22 @@
 (function () { "use strict";
 var Main = function() { };
 Main.main = function() {
-	console.log("Main.hx:5:","Hello haxe");
+	console.log("Main.hx:7:","Hello haxe");
+	var ui1 = new ui_UI();
 };
+var ui_UI = function() {
+	console.log("ui/UI.hx:7:","UI::New");
+	window.onload = $bind(this,this.onLoad);
+};
+ui_UI.prototype = {
+	onLoad: function() {
+		console.log("ui/UI.hx:12:","haxe onload");
+		var el = window.document.getElementById("output");
+		console.log("ui/UI.hx:14:",el);
+		el.innerHTML = "JJJJ";
+	}
+};
+var $_, $fid = 0;
+function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = m.bind(o); o.hx__closures__[m.__id__] = f; } return f; }
 Main.main();
 })();

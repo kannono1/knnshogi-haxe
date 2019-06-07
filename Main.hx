@@ -1,8 +1,10 @@
 package;
 
-class Main {
-    static function main() {
-        trace('Hello haxe');
-    }
-}
+import ui.UI;
 
+class Main {
+	static function main() {
+		trace('Hello haxe');
+		var ui = new UI();
+	}
+}
