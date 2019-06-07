@@ -32,7 +32,6 @@ class Game {
 		trace(tokens);
 		for (i in 0...tokens[0].length) {
 			var token = tokens[0].charAt(i);
-			trace(i, token);
 			if (StringUtil.isNumberString(token)) {
 				for (n in 0...Std.parseInt(token)) {
 					sq = f * 9 + r;

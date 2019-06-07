@@ -2,6 +2,7 @@ package ui;
 
 import js.Browser;
 
+// @:expose
 class UI {
 	private var game:Game;
 	private var operationMode:Int = 0;
@@ -11,6 +12,9 @@ class UI {
 		trace('UI::New');
 		Browser.window.onload = onLoad;
 		game = new Game(this);
+		// Browser.window['aaa'] = "NNN";
+		// js.Lib.eval('window.ccc=999;');
+		// js.Lib.eval('window.ccc=UI;');
 	}
 
 	function onLoad():Void {
@@ -38,17 +42,31 @@ class UI {
             default: return '　';
         }
     }
+	public function onClickCell(sq:Int){
+        trace('on click:', sq );
+        // if(this.operationMode==this.OPE_MODE_SELECT_PIECE){
+        //     this.selectedSq = sq;
+        // }
+        // else if(this.operationMode==this.OPE_MODE_PUT_PIECE){
+        //     move = new Move(this.selectedSq+','+sq);//this.toMove(this.selectedSq, sq);
+        //     this.doMove(move);
+        //     this.moves.push( move.toString() );
+        //     setTimeout( this.sendSfen, 1000, this);
+        // }
+        // this.operationMode++;
+        // this.updateUi();
+    }
 	public function setCell(sq:Int, pt:Int) {
         var c = game.getPieceColor(pt);
         var s = '' + this.getPieceLabel(pt);
         if(this.operationMode == 0){
             if(game.sideToMove == c && pt > 0){
-                s = '<a href="javascript:pos.onClickCell('+sq+')">'+s+'</a>';
+                s = '<a href="javascript:Main.onClickCell('+sq+')">'+s+'</a>';
             }
         }
         else if(this.operationMode == 1){
             if(sq == this.selectedSq -1){
-                s = '<a href="javascript:pos.onClickCell('+sq+')">'+s+'</a>';
+                s = '<a href="javascript:Main.onClickCell('+sq+')">'+s+'</a>';
             }
         }
         var cell = Browser.document.getElementById('cell_' + sq);
