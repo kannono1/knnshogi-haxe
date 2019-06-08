@@ -43,6 +43,22 @@ Std.parseInt = function(x) {
 	}
 	return v;
 };
+var data_Move = function() {
+	this.to = 0;
+	this.from = 0;
+};
+data_Move.__name__ = true;
+data_Move.generateMove = function(from,to) {
+	var m = new data_Move();
+	m.from = from;
+	m.to = to;
+	return m;
+};
+data_Move.prototype = {
+	toString: function() {
+		return "from: " + this.from + " to: " + this.to;
+	}
+};
 var haxe_Log = function() { };
 haxe_Log.__name__ = true;
 haxe_Log.formatOutput = function(v,infos) {
@@ -173,17 +189,22 @@ var ui_Game = function(ui_) {
 	this.sideToMove = 0;
 	this.board = [];
 	this.sfen = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL w - 1 moves";
-	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 13, className : "ui.Game", methodName : "new"});
+	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 14, className : "ui.Game", methodName : "new"});
 	this.ui = ui_;
 };
 ui_Game.__name__ = true;
 ui_Game.prototype = {
-	start: function() {
-		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 18, className : "ui.Game", methodName : "start"});
+	doMove: function(move) {
+		haxe_Log.trace("Game::doMove",{ fileName : "ui/Game.hx", lineNumber : 19, className : "ui.Game", methodName : "doMove", customParams : [move.toString()]});
+		this.board[move.to] = this.board[move.from];
+		this.board[move.from] = 0;
+	}
+	,start: function() {
+		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 25, className : "ui.Game", methodName : "start"});
 		this.setPosition(this.sfen);
 	}
 	,setPosition: function(sfen) {
-		haxe_Log.trace("Game::setPosition",{ fileName : "ui/Game.hx", lineNumber : 23, className : "ui.Game", methodName : "setPosition", customParams : [sfen]});
+		haxe_Log.trace("Game::setPosition",{ fileName : "ui/Game.hx", lineNumber : 30, className : "ui.Game", methodName : "setPosition", customParams : [sfen]});
 		var tokens = sfen.split(" ");
 		var f = 8;
 		var r = 0;
@@ -192,7 +213,7 @@ ui_Game.prototype = {
 		var token = "";
 		var sq = 0;
 		this.board = [];
-		haxe_Log.trace(tokens,{ fileName : "ui/Game.hx", lineNumber : 32, className : "ui.Game", methodName : "setPosition"});
+		haxe_Log.trace(tokens,{ fileName : "ui/Game.hx", lineNumber : 39, className : "ui.Game", methodName : "setPosition"});
 		var _g = 0;
 		var _g1 = tokens[0].length;
 		while(_g < _g1) {
@@ -282,16 +303,19 @@ ui_Game.prototype = {
 	}
 };
 var ui_UI = function() {
+	this.OPE_MODE_WAITING = 2;
+	this.OPE_MODE_PUT_PIECE = 1;
+	this.OPE_MODE_SELECT_PIECE = 0;
 	this.selectedSq = 0;
 	this.operationMode = 0;
-	haxe_Log.trace("UI::New",{ fileName : "ui/UI.hx", lineNumber : 12, className : "ui.UI", methodName : "new"});
+	haxe_Log.trace("UI::New",{ fileName : "ui/UI.hx", lineNumber : 16, className : "ui.UI", methodName : "new"});
 	window.onload = $bind(this,this.onLoad);
 	this.game = new ui_Game(this);
 };
 ui_UI.__name__ = true;
 ui_UI.prototype = {
 	onLoad: function() {
-		haxe_Log.trace("haxe onload",{ fileName : "ui/UI.hx", lineNumber : 21, className : "ui.UI", methodName : "onLoad"});
+		haxe_Log.trace("haxe onload",{ fileName : "ui/UI.hx", lineNumber : 25, className : "ui.UI", methodName : "onLoad"});
 		this.game.start();
 	}
 	,getPieceLabel: function(pt) {
@@ -333,7 +357,15 @@ ui_UI.prototype = {
 		}
 	}
 	,onClickCell: function(sq) {
-		haxe_Log.trace("on click:",{ fileName : "ui/UI.hx", lineNumber : 46, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
+		haxe_Log.trace("on click:",{ fileName : "ui/UI.hx", lineNumber : 50, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
+		if(this.operationMode == this.OPE_MODE_SELECT_PIECE) {
+			this.selectedSq = sq;
+		} else if(this.operationMode == this.OPE_MODE_PUT_PIECE) {
+			var move = data_Move.generateMove(this.selectedSq,sq);
+			this.game.doMove(move);
+		}
+		this.operationMode++;
+		this.updateUi();
 	}
 	,setCell: function(sq,pt) {
 		var c = this.game.getPieceColor(pt);
@@ -354,6 +386,13 @@ ui_UI.prototype = {
 			cell.style.transform = "rotate(180deg)";
 		}
 		cell.innerHTML = s;
+	}
+	,updateUi: function() {
+		var _g = 0;
+		while(_g < 81) {
+			var sq = _g++;
+			this.setCell(sq,this.game.board[sq]);
+		}
 	}
 };
 var util_StringUtil = function() { };

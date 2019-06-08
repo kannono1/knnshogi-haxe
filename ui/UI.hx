@@ -1,12 +1,16 @@
 package ui;
 
 import js.Browser;
+import data.Move;
 
 // @:expose
 class UI {
 	private var game:Game;
 	private var operationMode:Int = 0;
 	private var selectedSq:Int = 0;
+    private var OPE_MODE_SELECT_PIECE = 0;
+    private var OPE_MODE_PUT_PIECE = 1;
+    private var OPE_MODE_WAITING = 2;
 
 	public function new() {
 		trace('UI::New');
@@ -44,17 +48,15 @@ class UI {
     }
 	public function onClickCell(sq:Int){
         trace('on click:', sq );
-        // if(this.operationMode==this.OPE_MODE_SELECT_PIECE){
-        //     this.selectedSq = sq;
-        // }
-        // else if(this.operationMode==this.OPE_MODE_PUT_PIECE){
-        //     move = new Move(this.selectedSq+','+sq);//this.toMove(this.selectedSq, sq);
-        //     this.doMove(move);
-        //     this.moves.push( move.toString() );
-        //     setTimeout( this.sendSfen, 1000, this);
-        // }
-        // this.operationMode++;
-        // this.updateUi();
+        if(this.operationMode==this.OPE_MODE_SELECT_PIECE){
+            this.selectedSq = sq;
+        }
+        else if(this.operationMode==this.OPE_MODE_PUT_PIECE){
+            var move = Move.generateMove(this.selectedSq, sq);
+            game.doMove(move);
+        }
+        this.operationMode++;
+        this.updateUi();
     }
 	public function setCell(sq:Int, pt:Int) {
         var c = game.getPieceColor(pt);
@@ -77,5 +79,10 @@ class UI {
             cell.style.transform = 'rotate(180deg)';
         }
         cell.innerHTML = s;
+    }
+    private function updateUi(){
+        for(sq in 0...81){
+            this.setCell(sq, game.board[sq]);
+        }
     }
 }

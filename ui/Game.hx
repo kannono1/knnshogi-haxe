@@ -1,17 +1,24 @@
 package ui;
 
+import data.Move;
 import util.StringUtil;
 
 class Game {
 	private var ui:UI;
 	private var sfen = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL w - 1 moves';
-	private var board:Array<Int> = [];
+	public var board:Array<Int> = [];
     public var sideToMove:Int = 0;
     public var playerColor:Int = 0;
 
 	public function new(ui_:UI) {
 		trace('Game::new');
 		ui = ui_;
+	}
+
+	public function doMove(move:Move){
+		trace('Game::doMove', move.toString() );
+		board[move.to] = board[move.from];
+		board[move.from] = 0;
 	}
 
     public function start() {
