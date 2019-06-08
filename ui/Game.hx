@@ -1,7 +1,10 @@
 package ui;
 
+import js.html.MessageEvent;
+import js.html.Worker;
 import data.Move;
 import util.StringUtil;
+// import engine.Engine;
 
 class Game {
 	private var ui:UI;
@@ -9,16 +12,35 @@ class Game {
 	public var board:Array<Int> = [];
     public var sideToMove:Int = 0;
     public var playerColor:Int = 0;
+	private var worker:Worker;
+	// private var engine:Engine;
 
 	public function new(ui_:UI) {
 		trace('Game::new');
 		ui = ui_;
+		// engine = new Engine();
+		// engine.onThink = onThink;
+		createWorker();
+	}
+
+	private function createWorker(){
+		trace('Game::createWorker');
+		worker = new Worker('Engine.js');
+		worker.onmessage = onThink;
 	}
 
 	public function doMove(move:Move){
 		trace('Game::doMove', move.toString() );
 		board[move.to] = board[move.from];
 		board[move.from] = 0;
+		worker.postMessage('Hello worker ---');
+		// var worker = js.html.Worker('');
+		// var sfen = 's f e n';
+		// engine.think(sfen);
+	}
+
+	private function onThink(s:MessageEvent){
+		trace('Game::onThink ${s.data}');
 	}
 
     public function start() {

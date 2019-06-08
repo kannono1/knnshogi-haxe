@@ -189,22 +189,32 @@ var ui_Game = function(ui_) {
 	this.sideToMove = 0;
 	this.board = [];
 	this.sfen = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL w - 1 moves";
-	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 14, className : "ui.Game", methodName : "new"});
+	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 19, className : "ui.Game", methodName : "new"});
 	this.ui = ui_;
+	this.createWorker();
 };
 ui_Game.__name__ = true;
 ui_Game.prototype = {
-	doMove: function(move) {
-		haxe_Log.trace("Game::doMove",{ fileName : "ui/Game.hx", lineNumber : 19, className : "ui.Game", methodName : "doMove", customParams : [move.toString()]});
+	createWorker: function() {
+		haxe_Log.trace("Game::createWorker",{ fileName : "ui/Game.hx", lineNumber : 27, className : "ui.Game", methodName : "createWorker"});
+		this.worker = new Worker("Engine.js");
+		this.worker.onmessage = $bind(this,this.onThink);
+	}
+	,doMove: function(move) {
+		haxe_Log.trace("Game::doMove",{ fileName : "ui/Game.hx", lineNumber : 33, className : "ui.Game", methodName : "doMove", customParams : [move.toString()]});
 		this.board[move.to] = this.board[move.from];
 		this.board[move.from] = 0;
+		this.worker.postMessage("Hello worker ---");
+	}
+	,onThink: function(s) {
+		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 43, className : "ui.Game", methodName : "onThink"});
 	}
 	,start: function() {
-		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 25, className : "ui.Game", methodName : "start"});
+		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 47, className : "ui.Game", methodName : "start"});
 		this.setPosition(this.sfen);
 	}
 	,setPosition: function(sfen) {
-		haxe_Log.trace("Game::setPosition",{ fileName : "ui/Game.hx", lineNumber : 30, className : "ui.Game", methodName : "setPosition", customParams : [sfen]});
+		haxe_Log.trace("Game::setPosition",{ fileName : "ui/Game.hx", lineNumber : 52, className : "ui.Game", methodName : "setPosition", customParams : [sfen]});
 		var tokens = sfen.split(" ");
 		var f = 8;
 		var r = 0;
@@ -213,7 +223,7 @@ ui_Game.prototype = {
 		var token = "";
 		var sq = 0;
 		this.board = [];
-		haxe_Log.trace(tokens,{ fileName : "ui/Game.hx", lineNumber : 39, className : "ui.Game", methodName : "setPosition"});
+		haxe_Log.trace(tokens,{ fileName : "ui/Game.hx", lineNumber : 61, className : "ui.Game", methodName : "setPosition"});
 		var _g = 0;
 		var _g1 = tokens[0].length;
 		while(_g < _g1) {

@@ -4,9 +4,18 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "bbb",
+            "label": "main",
             "type": "shell",
             "command": "haxe -js Main.js -main Main",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "engine",
+            "type": "shell",
+            "command": "haxe -js Engine.js -main Engine",
             "group": {
                 "kind": "build",
                 "isDefault": true
