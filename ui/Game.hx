@@ -4,49 +4,64 @@ import js.html.MessageEvent;
 import js.html.Worker;
 import data.Move;
 import util.StringUtil;
-// import engine.Engine;
 
+// import engine.Engine;
 class Game {
 	private var ui:UI;
 	private var sfen = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL w - 1 moves';
+
 	public var board:Array<Int> = [];
-    public var sideToMove:Int = 0;
-    public var playerColor:Int = 0;
+	public var sideToMove:Int = 0;
+	public var playerColor:Int = 0;
 	private var worker:Worker;
-	// private var engine:Engine;
 
 	public function new(ui_:UI) {
 		trace('Game::new');
 		ui = ui_;
-		// engine = new Engine();
-		// engine.onThink = onThink;
 		createWorker();
 	}
 
-	private function createWorker(){
+	private function createWorker() {
 		trace('Game::createWorker');
 		worker = new Worker('Engine.js');
-		worker.onmessage = onThink;
+		worker.onmessage = onMessage;
 	}
 
-	public function doMove(move:Move){
-		trace('Game::doMove', move.toString() );
+	public function doPlayerMove(from:Int, to:Int) {
+		trace('Game::doPlayerMove from: $from to: $to');
+		var move = Move.generateMove(from, to);
+		doMove(move);
+	}
+	public function doMove(move:Move) {
+		trace('Game::doMove ${move.toString()}');
 		board[move.to] = board[move.from];
 		board[move.from] = 0;
-		worker.postMessage('Hello worker ---');
-		// var worker = js.html.Worker('');
-		// var sfen = 's f e n';
-		// engine.think(sfen);
+		changeSideToMove();
+		if (isEnemyTurn()) {
+			worker.postMessage('Hello worker ---');
+		}
 	}
 
-	private function onThink(s:MessageEvent){
+	private function isEnemyTurn():Bool {
+		return (sideToMove == 1);
+	}
+
+	private function changeSideToMove() {
+		sideToMove = (sideToMove + 1) % 2;
+		trace('changeSideToMove: $sideToMove');
+	}
+
+	private function onMessage(s:MessageEvent) {
 		trace('Game::onThink ${s.data}');
+		var move = Move.generateMove(20, 21);
+		doMove(move);
+		ui.onEnemyMoved();
 	}
 
-    public function start() {
-        trace('Game::start');
+	public function start() {
+		trace('Game::start');
 		setPosition(sfen);
-    }
+	}
 
 	public function setPosition(sfen:String):Void {
 		trace('Game::setPosition', sfen);

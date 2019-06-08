@@ -1,7 +1,6 @@
 package ui;
 
 import js.Browser;
-import data.Move;
 
 // @:expose
 class UI {
@@ -52,10 +51,14 @@ class UI {
             this.selectedSq = sq;
         }
         else if(this.operationMode==this.OPE_MODE_PUT_PIECE){
-            var move = Move.generateMove(this.selectedSq, sq);
-            game.doMove(move);
+            game.doPlayerMove(this.selectedSq, sq);
         }
         this.operationMode++;
+        this.updateUi();
+    }
+    public function onEnemyMoved(){
+        trace('UI::onEnemyMoved');
+        this.operationMode = 0;
         this.updateUi();
     }
 	public function setCell(sq:Int, pt:Int) {
