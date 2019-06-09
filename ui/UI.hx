@@ -61,16 +61,20 @@ class UI {
         this.operationMode = 0;
         this.updateUi();
     }
+    private function isPlayerPiece(sq:Int, pt:Int):Bool{
+        var c = game.getPieceColor(pt);
+        return (game.sideToMove == c && pt > 0);
+    }
 	public function setCell(sq:Int, pt:Int) {
         var c = game.getPieceColor(pt);
         var s = '' + this.getPieceLabel(pt);
         if(this.operationMode == 0){
-            if(game.sideToMove == c && pt > 0){
+            if(isPlayerPiece(sq, pt) ){
                 s = '<a href="javascript:Main.onClickCell('+sq+')">'+s+'</a>';
             }
         }
         else if(this.operationMode == 1){
-            if(sq == this.selectedSq -1){
+            if(game.isMovableSq(this.selectedSq, sq)){
                 s = '<a href="javascript:Main.onClickCell('+sq+')">'+s+'</a>';
             }
         }

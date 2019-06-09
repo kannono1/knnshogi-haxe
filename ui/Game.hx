@@ -26,6 +26,16 @@ class Game {
 		worker = new Worker('Engine.js');
 		worker.onmessage = onMessage;
 	}
+    public function isMovableSq(from:Int, to:Int):Bool{
+		var pt = board[from];
+		// var sqArr:Array<Int> = Piece.getEffectedSq(pt, from);
+		// if(pt == 1){
+
+		// }
+        if (from - to == 1 ) return true;
+        else if (from - to == 2 ) return true;
+		else return false;
+    }
 
 	public function doPlayerMove(from:Int, to:Int) {
 		trace('Game::doPlayerMove from: $from to: $to');
