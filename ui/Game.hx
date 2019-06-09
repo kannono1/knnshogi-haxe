@@ -99,7 +99,7 @@ class Game {
 				r++;
 			} else {
 				sq = f * 9 + r;
-				var pt = this.getPieceType(token);
+				var pt = Types.getPieceType(token);
 				if (promote)
 					pt += 8;
 				this.board[sq] = pt;
@@ -130,53 +130,9 @@ class Game {
 	}
 
 	public function updateUi() {
-		for (sq in 0...81) {
-			ui.setCell(sq, this.board[sq]);
-		}
-	}
-
-	public function getPieceColor(pt:Int):Int {
-		if (pt == 0)
-			return -1;
-		return (pt < 16) ? 0 : 1;
-	}
-
-	private function getPieceType(token:String):Int {
-		switch (token) {
-			case 'P':
-				return 1;
-			case 'L':
-				return 2;
-			case 'N':
-				return 3;
-			case 'S':
-				return 4;
-			case 'B':
-				return 5;
-			case 'R':
-				return 6;
-			case 'G':
-				return 7;
-			case 'K':
-				return 8;
-			case 'p':
-				return 17;
-			case 'l':
-				return 18;
-			case 'n':
-				return 19;
-			case 's':
-				return 20;
-			case 'b':
-				return 21;
-			case 'r':
-				return 22;
-			case 'g':
-				return 23;
-			case 'k':
-				return 24;
-			default:
-				return 0;
-		}
+		// for (sq in 0...81) {
+		// 	ui.setCell(sq, this.board[sq]);
+		// }
+		ui.updateUi();
 	}
 }

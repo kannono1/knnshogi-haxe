@@ -1,8 +1,8 @@
 package;
 
 class Bitboard{
-    private var NA:Int = 27;
-    private var NB:Int = 54;
+    private static inline var NA:Int = 27;
+    private static inline var NB:Int = 54;
     public var lower = 0;
     public var middle = 0;
     public var upper = 0;

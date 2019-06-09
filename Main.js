@@ -16,8 +16,6 @@ var Bitboard = function(l,m,u) {
 	if(l == null) {
 		l = 0;
 	}
-	this.NB = 54;
-	this.NA = 27;
 	this.upper = 0;
 	this.middle = 0;
 	this.lower = 0;
@@ -28,12 +26,12 @@ var Bitboard = function(l,m,u) {
 Bitboard.__name__ = true;
 Bitboard.prototype = {
 	isSet: function(sq) {
-		if(sq < this.NA) {
+		if(sq < 27) {
 			return (this.lower & 1 << sq) != 0;
-		} else if(sq < this.NB) {
-			return (this.middle & 1 << sq - this.NA) != 0;
+		} else if(sq < 54) {
+			return (this.middle & 1 << sq - 27) != 0;
 		} else {
-			return (this.upper & 1 << sq - this.NB) != 0;
+			return (this.upper & 1 << sq - 54) != 0;
 		}
 	}
 	,toStringBB: function() {
@@ -94,6 +92,94 @@ Std.parseInt = function(x) {
 		return null;
 	}
 	return v;
+};
+var Types = function() { };
+Types.__name__ = true;
+Types.getPieceColor = function(pt) {
+	if(pt == 0) {
+		return -1;
+	}
+	if(pt < 16) {
+		return 0;
+	} else {
+		return 1;
+	}
+};
+Types.getPieceType = function(token) {
+	switch(token) {
+	case "B":
+		return 5;
+	case "G":
+		return 7;
+	case "K":
+		return 8;
+	case "L":
+		return 2;
+	case "N":
+		return 3;
+	case "P":
+		return 1;
+	case "R":
+		return 6;
+	case "S":
+		return 4;
+	case "b":
+		return 21;
+	case "g":
+		return 23;
+	case "k":
+		return 24;
+	case "l":
+		return 18;
+	case "n":
+		return 19;
+	case "p":
+		return 17;
+	case "r":
+		return 22;
+	case "s":
+		return 20;
+	default:
+		return 0;
+	}
+};
+Types.getPieceLabel = function(pt) {
+	switch(pt % 16) {
+	case 0:
+		return "　";
+	case 1:
+		return "歩";
+	case 2:
+		return "香";
+	case 3:
+		return "桂";
+	case 4:
+		return "銀";
+	case 5:
+		return "角";
+	case 6:
+		return "飛";
+	case 7:
+		return "金";
+	case 8:
+		return "玉";
+	case 9:
+		return "と";
+	case 10:
+		return "と";
+	case 11:
+		return "杏";
+	case 12:
+		return "圭";
+	case 13:
+		return "全";
+	case 14:
+		return "馬";
+	case 15:
+		return "龍";
+	default:
+		return "　";
+	}
 };
 var data_Move = function() {
 	this.to = 0;
@@ -325,7 +411,7 @@ ui_Game.prototype = {
 				++r;
 			} else {
 				sq = f * 9 + r;
-				var pt = this.getPieceType(token1);
+				var pt = Types.getPieceType(token1);
 				if(promote) {
 					pt += 8;
 				}
@@ -337,132 +423,42 @@ ui_Game.prototype = {
 		this.updateUi();
 	}
 	,updateUi: function() {
-		var _g = 0;
-		while(_g < 81) {
-			var sq = _g++;
-			this.ui.setCell(sq,this.board[sq]);
-		}
-	}
-	,getPieceColor: function(pt) {
-		if(pt == 0) {
-			return -1;
-		}
-		if(pt < 16) {
-			return 0;
-		} else {
-			return 1;
-		}
-	}
-	,getPieceType: function(token) {
-		switch(token) {
-		case "B":
-			return 5;
-		case "G":
-			return 7;
-		case "K":
-			return 8;
-		case "L":
-			return 2;
-		case "N":
-			return 3;
-		case "P":
-			return 1;
-		case "R":
-			return 6;
-		case "S":
-			return 4;
-		case "b":
-			return 21;
-		case "g":
-			return 23;
-		case "k":
-			return 24;
-		case "l":
-			return 18;
-		case "n":
-			return 19;
-		case "p":
-			return 17;
-		case "r":
-			return 22;
-		case "s":
-			return 20;
-		default:
-			return 0;
-		}
+		this.ui.updateUi();
 	}
 };
+var ui_Mode = function() { };
+ui_Mode.__name__ = true;
 var ui_UI = function() {
-	this.OPE_MODE_WAITING = 2;
-	this.OPE_MODE_PUT_PIECE = 1;
 	this.OPE_MODE_SELECT_PIECE = 0;
 	this.selectedSq = 0;
 	this.operationMode = 0;
-	haxe_Log.trace("UI::New",{ fileName : "ui/UI.hx", lineNumber : 15, className : "ui.UI", methodName : "new"});
+	haxe_Log.trace("UI::New",{ fileName : "ui/UI.hx", lineNumber : 12, className : "ui.UI", methodName : "new"});
 	window.onload = $bind(this,this.onLoad);
 	this.game = new ui_Game(this);
 };
 ui_UI.__name__ = true;
 ui_UI.prototype = {
 	onLoad: function() {
-		haxe_Log.trace("haxe onload",{ fileName : "ui/UI.hx", lineNumber : 24, className : "ui.UI", methodName : "onLoad"});
+		haxe_Log.trace("haxe onload",{ fileName : "ui/UI.hx", lineNumber : 18, className : "ui.UI", methodName : "onLoad"});
 		this.game.start();
 	}
-	,getPieceLabel: function(pt) {
-		switch(pt % 16) {
-		case 0:
-			return "　";
-		case 1:
-			return "歩";
-		case 2:
-			return "香";
-		case 3:
-			return "桂";
-		case 4:
-			return "銀";
-		case 5:
-			return "角";
-		case 6:
-			return "飛";
-		case 7:
-			return "金";
-		case 8:
-			return "玉";
-		case 9:
-			return "と";
-		case 10:
-			return "と";
-		case 11:
-			return "杏";
-		case 12:
-			return "圭";
-		case 13:
-			return "全";
-		case 14:
-			return "馬";
-		case 15:
-			return "龍";
-		default:
-			return "　";
-		}
-	}
 	,onClickCell: function(sq) {
-		haxe_Log.trace("on click:",{ fileName : "ui/UI.hx", lineNumber : 49, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
-		if(this.operationMode == this.OPE_MODE_SELECT_PIECE) {
+		haxe_Log.trace("on click:",{ fileName : "ui/UI.hx", lineNumber : 22, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
+		if(this.operationMode == 0) {
 			this.selectedSq = sq;
-		} else if(this.operationMode == this.OPE_MODE_PUT_PIECE) {
+		} else if(this.operationMode == 1) {
 			this.game.doPlayerMove(this.selectedSq,sq);
 		}
 		this.operationMode++;
 		this.updateUi();
 	}
 	,onEnemyMoved: function() {
-		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 60, className : "ui.UI", methodName : "onEnemyMoved"});
+		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 33, className : "ui.UI", methodName : "onEnemyMoved"});
 		this.operationMode = 0;
 		this.updateUi();
 	}
 	,isPlayerPiece: function(sq,pt) {
-		var c = this.game.getPieceColor(pt);
+		var c = Types.getPieceColor(pt);
 		if(this.game.sideToMove == c) {
 			return pt > 0;
 		} else {
@@ -470,8 +466,8 @@ ui_UI.prototype = {
 		}
 	}
 	,setCell: function(sq,pt) {
-		var c = this.game.getPieceColor(pt);
-		var s = "" + this.getPieceLabel(pt);
+		var c = Types.getPieceColor(pt);
+		var s = "" + Types.getPieceLabel(pt);
 		if(this.operationMode == 0) {
 			if(this.isPlayerPiece(sq,pt)) {
 				s = "<a href=\"javascript:Main.onClickCell(" + sq + ")\">" + s + "</a>";
@@ -511,5 +507,11 @@ Object.defineProperty(js__$Boot_HaxeError.prototype,"message",{ get : function()
 	return String(this.val);
 }});
 js_Boot.__toStr = ({ }).toString;
+Bitboard.NA = 27;
+Bitboard.NB = 54;
+Types.BLACK = 0;
+Types.WHITE = 1;
+ui_Mode.OPERATION_SELECT = 0;
+ui_Mode.OPERATION_PUT = 1;
 Main.main();
 })(typeof exports != "undefined" ? exports : typeof window != "undefined" ? window : typeof self != "undefined" ? self : this);
