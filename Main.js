@@ -267,11 +267,7 @@ Math.__name__ = true;
 var SFEN = function(sfen) {
 	this.board = [];
 	this.startpos = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1 moves";
-	if(sfen == "startpos") {
-		this.setPosition(this.startpos);
-	} else {
-		this.setPosition(sfen);
-	}
+	this.setPosition(sfen);
 };
 SFEN.__name__ = true;
 SFEN.prototype = {
@@ -285,7 +281,9 @@ SFEN.prototype = {
 		return arr;
 	}
 	,setPosition: function(sfen) {
-		haxe_Log.trace("SFEN::setPosition",{ fileName : "SFEN.hx", lineNumber : 26, className : "SFEN", methodName : "setPosition", customParams : [sfen]});
+		sfen = StringTools.replace(sfen,"startpos",this.startpos);
+		sfen = StringTools.replace(sfen,"sfen ","");
+		haxe_Log.trace("SFEN::setPosition",{ fileName : "SFEN.hx", lineNumber : 24, className : "SFEN", methodName : "setPosition", customParams : [sfen]});
 		var tokens = sfen.split(" ");
 		var f = 8;
 		var r = 0;
@@ -294,7 +292,7 @@ SFEN.prototype = {
 		var token = "";
 		var sq = 0;
 		this.board = [];
-		haxe_Log.trace(tokens,{ fileName : "SFEN.hx", lineNumber : 35, className : "SFEN", methodName : "setPosition"});
+		haxe_Log.trace(tokens,{ fileName : "SFEN.hx", lineNumber : 33, className : "SFEN", methodName : "setPosition"});
 		var _g = 0;
 		var _g1 = tokens[0].length;
 		while(_g < _g1) {
@@ -339,6 +337,11 @@ Std.parseInt = function(x) {
 	}
 	return v;
 };
+var StringTools = function() { };
+StringTools.__name__ = true;
+StringTools.replace = function(s,sub,by) {
+	return s.split(sub).join(by);
+};
 var Types = function() { };
 Types.__name__ = true;
 Types.Is_SqOK = function(s) {
@@ -368,7 +371,7 @@ Types.Make_Piece = function(c,pt) {
 	return c << 4 | pt;
 };
 Types.Square = function(f,r) {
-	return r * 9 + f;
+	return f * 9 + r;
 };
 Types.getPieceColor = function(pt) {
 	if(pt == 0) {
@@ -472,12 +475,12 @@ data_Move.generateMoveFromString = function(ft) {
 	var m = new data_Move();
 	var f = Std.parseInt(HxOverrides.substr(ft,0,1)) - 1;
 	var r = HxOverrides.cca(ft,1) - 97;
-	haxe_Log.trace("gene1 f: " + f + ", r: " + r,{ fileName : "data/Move.hx", lineNumber : 20, className : "data.Move", methodName : "generateMoveFromString"});
 	m.from = Types.Square(f,r);
+	haxe_Log.trace("gene1 f: " + f + ", r: " + r + " from: " + m.from,{ fileName : "data/Move.hx", lineNumber : 21, className : "data.Move", methodName : "generateMoveFromString"});
 	f = Std.parseInt(HxOverrides.substr(ft,2,1)) - 1;
 	r = HxOverrides.cca(ft,3) - 97;
-	haxe_Log.trace("gene2 f: " + f + ", r: " + r,{ fileName : "data/Move.hx", lineNumber : 24, className : "data.Move", methodName : "generateMoveFromString"});
 	m.to = Types.Square(f,r);
+	haxe_Log.trace("gene2 f: " + f + ", r: " + r + " to: " + m.to,{ fileName : "data/Move.hx", lineNumber : 25, className : "data.Move", methodName : "generateMoveFromString"});
 	return m;
 };
 data_Move.prototype = {

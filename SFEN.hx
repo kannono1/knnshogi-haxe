@@ -1,17 +1,16 @@
 package;
 
 import util.StringUtil;
+import data.Move;
 
 class SFEN {
-	private var startpos = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1 moves';
+	private var startpos = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
 	private var board:Array<Int> = [];
+	private var sideToMove:Int = Types.BLACK;
+	private var moves:Array<Move> = [];
 
 	public function new(sfen:String) {
-		if (sfen == 'startpos') {
-			setPosition(startpos);
-		} else {
-			setPosition(sfen);
-		}
+		setPosition(sfen);
 	}
 
 	public function getBoard():Array<Int> {
@@ -22,7 +21,13 @@ class SFEN {
 		return arr;
 	}
 
-	public function setPosition(sfen:String):Void {
+	public function getMoves():Array<Move> {
+		return moves;
+	}
+
+	private function setPosition(sfen:String):Void {
+		sfen = StringTools.replace(sfen, 'startpos', startpos);
+		sfen = StringTools.replace(sfen, 'sfen ', '');
 		trace('SFEN::setPosition', sfen);
 		var tokens:Array<String> = sfen.split(' ');
 		var f = 8;
@@ -56,8 +61,8 @@ class SFEN {
 				promote = false;
 			}
 		}
-		// //
-		// this.sideToMove = this.getColorType(tokens[1]);
+		// Color
+		this.sideToMove = (tokens[1] == 'b') ? Types.BLACK : Types.WHITE;
 		// //
 		// var ct = 0;
 		// for (i = 0; i < tokens[2].length; i++) {
@@ -75,5 +80,13 @@ class SFEN {
 		//         ct = 0;
 		//     }
 		// }
+		// Moves
+		if (sfen.indexOf('moves') > 0) {
+			var mvs = sfen.split('moves ')[1].split(' ');
+			for (i in 0...mvs.length) {
+				var m = Move.generateMoveFromString(mvs[i]);
+				moves.push(m);
+			}
+		}
 	}
 }

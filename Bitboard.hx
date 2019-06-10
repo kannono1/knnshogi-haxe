@@ -7,7 +7,7 @@ class Bitboard {
 	public var lower = 0;
 	public var middle = 0;
 	public var upper = 0;
-	public var count:Int = 0;// ???
+	public var count:Int = 0; // ???
 	public var needCount:Bool = false;
 
 	public function new(l:Int = 0, m:Int = 0, u:Int = 0) {
@@ -116,6 +116,17 @@ class Bitboard {
 			middle |= (1 << (theIndex - NA));
 		} else {
 			upper |= (1 << (theIndex - NB));
+		}
+		needCount = true;
+	}
+
+	public function ClrBit(theIndex:Int) {
+		if (theIndex < 27) {
+			lower ^= (1 << theIndex);
+		} else if (theIndex < 54) {
+			middle ^= (1 << (theIndex - 27));
+		} else {
+			upper ^= (1 << (theIndex - 54));
 		}
 		needCount = true;
 	}

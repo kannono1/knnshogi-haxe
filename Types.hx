@@ -3,6 +3,8 @@ package;
 class Types {
 	static public inline var BLACK:Int = 0;
 	static public inline var WHITE:Int = 1;
+	public static inline var ALL_PIECES:Int = 0;
+	public static inline var PIECE_TYPE_NB:Int = 0;
 	public static inline var NO_PIECE_TYPE:Int = 0;
 	public static inline var PAWN:Int = 1;
 	public static inline var LANCE:Int = 2;
@@ -48,26 +50,58 @@ class Types {
 	public static inline var B_PRO_SILVER:Int = 28;
 	public static inline var B_HORSE:Int = 29;
 	public static inline var B_DRAGON:Int = 30;
-    public static inline var PIECE_NB:Int	= 31;
+	public static inline var PIECE_NB:Int = 31;
 	public static inline var SQ_A1:Int = 0;
 	public static inline var SQ_HB:Int = 80;
 	public static inline var SQ_NB:Int = 81;
-    public static inline var FILE_NB:Int	= 9;
-    public static inline var RANK_NB:Int	= 9;
+	public static inline var FILE_NB:Int = 9;
+	public static inline var RANK_NB:Int = 9;
+	public static inline var MAX_MOVES:Int = 600;
+	public static inline var DELTA_N:Int = 1; // 飛び(上下左右)の方向のシフトビット
+	public static inline var DELTA_E:Int = -9;
+	public static inline var DELTA_S:Int = 1;
+	public static inline var DELTA_W:Int = 9;
 
-    public static function Is_SqOK( s:Int ) : Bool { return ( s >= SQ_A1 && s <= SQ_HB ); }
-    public static function File_Of( s:Int ) : Int { return Std.int(s / RANK_NB); }	
-	public static function Rank_Of( s:Int ) : Int { return s % FILE_NB; }	
-    public static function FileString_Of( s:Int ) : String { return '${File_Of(s) +1}'; }	
-	public static function RankString_Of( s:Int ) : String { return String.fromCharCode(97 +Rank_Of(s)); }	
-    public static function RawTypeOf( p:Int ) : Int { return p % 8; }
-    public static function Make_Piece( c:Int, pt:Int ) : Int { return (c << 4) | pt; }// == (c * PIECE_WHITE) + pt
-    public static function Square( f:Int, r:Int ) : Int { return (f * RANK_NB) + r; }
+	public static function Is_SqOK(s:Int):Bool {
+		return (s >= SQ_A1 && s <= SQ_HB);
+	}
+
+	public static function File_Of(s:Int):Int {
+		return Std.int(s / RANK_NB);
+	}
+
+	public static function Rank_Of(s:Int):Int {
+		return s % FILE_NB;
+	}
+
+	public static function FileString_Of(s:Int):String {
+		return '${File_Of(s) + 1}';
+	}
+
+	public static function RankString_Of(s:Int):String {
+		return String.fromCharCode(97 + Rank_Of(s));
+	}
+
+	public static function RawTypeOf(p:Int):Int {
+		return p % 8;
+	}
+
+	public static function Make_Piece(c:Int, pt:Int):Int {
+		return (c << 4) | pt;
+	}
+
+	public static function Square(f:Int, r:Int):Int {
+		return (f * RANK_NB) + r;
+	}
 
 	static public function getPieceColor(pt:Int):Int {
 		if (pt == 0)
 			return -1;
 		return (pt < 16) ? 0 : 1;
+	}
+
+	public static function TypeOf_Piece(pc:Int):Int {
+		return pc % 16;
 	}
 
 	static public function getPieceType(token:String):Int {
