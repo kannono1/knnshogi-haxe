@@ -232,6 +232,27 @@ EReg.prototype = {
 		return this.r.m != null;
 	}
 };
+var HxOverrides = function() { };
+HxOverrides.__name__ = true;
+HxOverrides.cca = function(s,index) {
+	var x = s.charCodeAt(index);
+	if(x != x) {
+		return undefined;
+	}
+	return x;
+};
+HxOverrides.substr = function(s,pos,len) {
+	if(len == null) {
+		len = s.length;
+	} else if(len < 0) {
+		if(pos == 0) {
+			len = s.length + len;
+		} else {
+			return "";
+		}
+	}
+	return s.substr(pos,len);
+};
 var Main = $hx_exports["Main"] = function() { };
 Main.__name__ = true;
 Main.main = function() {
@@ -264,7 +285,7 @@ SFEN.prototype = {
 		return arr;
 	}
 	,setPosition: function(sfen) {
-		haxe_Log.trace("SFEN::setPosition",{ fileName : "SFEN.hx", lineNumber : 27, className : "SFEN", methodName : "setPosition", customParams : [sfen]});
+		haxe_Log.trace("SFEN::setPosition",{ fileName : "SFEN.hx", lineNumber : 26, className : "SFEN", methodName : "setPosition", customParams : [sfen]});
 		var tokens = sfen.split(" ");
 		var f = 8;
 		var r = 0;
@@ -273,7 +294,7 @@ SFEN.prototype = {
 		var token = "";
 		var sq = 0;
 		this.board = [];
-		haxe_Log.trace(tokens,{ fileName : "SFEN.hx", lineNumber : 36, className : "SFEN", methodName : "setPosition"});
+		haxe_Log.trace(tokens,{ fileName : "SFEN.hx", lineNumber : 35, className : "SFEN", methodName : "setPosition"});
 		var _g = 0;
 		var _g1 = tokens[0].length;
 		while(_g < _g1) {
@@ -328,16 +349,26 @@ Types.Is_SqOK = function(s) {
 	}
 };
 Types.File_Of = function(s) {
-	return s % 9;
+	return s / 9 | 0;
 };
 Types.Rank_Of = function(s) {
-	return s / 9 | 0;
+	return s % 9;
+};
+Types.FileString_Of = function(s) {
+	return "" + (Types.File_Of(s) + 1);
+};
+Types.RankString_Of = function(s) {
+	var code = 97 + Types.Rank_Of(s);
+	return String.fromCodePoint(code);
 };
 Types.RawTypeOf = function(p) {
 	return p % 8;
 };
 Types.Make_Piece = function(c,pt) {
 	return c << 4 | pt;
+};
+Types.Square = function(f,r) {
+	return r * 9 + f;
 };
 Types.getPieceColor = function(pt) {
 	if(pt == 0) {
@@ -436,9 +467,22 @@ data_Move.generateMove = function(from,to) {
 	m.to = to;
 	return m;
 };
+data_Move.generateMoveFromString = function(ft) {
+	haxe_Log.trace("gene s: " + ft,{ fileName : "data/Move.hx", lineNumber : 16, className : "data.Move", methodName : "generateMoveFromString"});
+	var m = new data_Move();
+	var f = Std.parseInt(HxOverrides.substr(ft,0,1)) - 1;
+	var r = HxOverrides.cca(ft,1) - 97;
+	haxe_Log.trace("gene1 f: " + f + ", r: " + r,{ fileName : "data/Move.hx", lineNumber : 20, className : "data.Move", methodName : "generateMoveFromString"});
+	m.from = Types.Square(f,r);
+	f = Std.parseInt(HxOverrides.substr(ft,2,1)) - 1;
+	r = HxOverrides.cca(ft,3) - 97;
+	haxe_Log.trace("gene2 f: " + f + ", r: " + r,{ fileName : "data/Move.hx", lineNumber : 24, className : "data.Move", methodName : "generateMoveFromString"});
+	m.to = Types.Square(f,r);
+	return m;
+};
 data_Move.prototype = {
 	toString: function() {
-		return "from: " + this.from + " to: " + this.to;
+		return "" + Types.FileString_Of(this.from) + Types.RankString_Of(this.from) + Types.FileString_Of(this.to) + Types.RankString_Of(this.to);
 	}
 };
 var haxe_Log = function() { };
@@ -567,10 +611,11 @@ js_Boot.__string_rec = function(o,s) {
 	}
 };
 var ui_Game = function(ui_) {
+	this.moves = [];
 	this.playerColor = 0;
 	this.sideToMove = 0;
 	this.board = [];
-	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 17, className : "ui.Game", methodName : "new"});
+	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 18, className : "ui.Game", methodName : "new"});
 	this.ui = ui_;
 	this.createWorker();
 	BB.Init();
@@ -578,23 +623,34 @@ var ui_Game = function(ui_) {
 ui_Game.__name__ = true;
 ui_Game.prototype = {
 	createWorker: function() {
-		haxe_Log.trace("Game::createWorker",{ fileName : "ui/Game.hx", lineNumber : 24, className : "ui.Game", methodName : "createWorker"});
+		haxe_Log.trace("Game::createWorker",{ fileName : "ui/Game.hx", lineNumber : 25, className : "ui.Game", methodName : "createWorker"});
 		this.worker = new Worker("Engine.js");
 		this.worker.onmessage = $bind(this,this.onMessage);
 	}
 	,doPlayerMove: function(from,to) {
-		haxe_Log.trace("Game::doPlayerMove from: " + from + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 30, className : "ui.Game", methodName : "doPlayerMove"});
+		haxe_Log.trace("Game::doPlayerMove from: " + from + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 31, className : "ui.Game", methodName : "doPlayerMove"});
 		var move = data_Move.generateMove(from,to);
 		this.doMove(move);
 	}
 	,doMove: function(move) {
-		haxe_Log.trace("Game::doMove " + move.toString(),{ fileName : "ui/Game.hx", lineNumber : 36, className : "ui.Game", methodName : "doMove"});
+		haxe_Log.trace("Game::doMove " + move.toString(),{ fileName : "ui/Game.hx", lineNumber : 37, className : "ui.Game", methodName : "doMove"});
 		this.board[move.to] = this.board[move.from];
 		this.board[move.from] = 0;
+		this.moves.push(move);
 		this.changeSideToMove();
 		if(this.isEnemyTurn()) {
-			this.worker.postMessage("Hello worker ---");
+			this.worker.postMessage("position startpos moves " + this.getMovesString());
 		}
+	}
+	,getMovesString: function() {
+		var s = "";
+		var _g = 0;
+		var _g1 = this.moves.length;
+		while(_g < _g1) {
+			var i = _g++;
+			s += this.moves[i].toString();
+		}
+		return s;
 	}
 	,getMovableSq: function(sq,pt) {
 		var attack = BB.stepAttacksBB[pt][sq];
@@ -609,20 +665,20 @@ ui_Game.prototype = {
 	}
 	,changeSideToMove: function() {
 		this.sideToMove = (this.sideToMove + 1) % 2;
-		haxe_Log.trace("changeSideToMove: " + this.sideToMove,{ fileName : "ui/Game.hx", lineNumber : 62, className : "ui.Game", methodName : "changeSideToMove"});
+		haxe_Log.trace("changeSideToMove: " + this.sideToMove,{ fileName : "ui/Game.hx", lineNumber : 72, className : "ui.Game", methodName : "changeSideToMove"});
 	}
 	,onMessage: function(s) {
-		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 66, className : "ui.Game", methodName : "onMessage"});
+		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 76, className : "ui.Game", methodName : "onMessage"});
 		var move = data_Move.generateMove(20,21);
 		this.doMove(move);
 		this.ui.onEnemyMoved();
 	}
 	,start: function() {
-		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 73, className : "ui.Game", methodName : "start"});
+		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 83, className : "ui.Game", methodName : "start"});
 		this.setPosition("startpos");
 	}
 	,setPosition: function(sfen) {
-		haxe_Log.trace("Game::setPosition",{ fileName : "ui/Game.hx", lineNumber : 78, className : "ui.Game", methodName : "setPosition", customParams : [sfen]});
+		haxe_Log.trace("Game::setPosition",{ fileName : "ui/Game.hx", lineNumber : 88, className : "ui.Game", methodName : "setPosition", customParams : [sfen]});
 		var sf = new SFEN(sfen);
 		this.board = sf.getBoard();
 		this.ui.updateUi(0);
@@ -731,6 +787,7 @@ util_StringUtil.isNumberString = function(s) {
 };
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = m.bind(o); o.hx__closures__[m.__id__] = f; } return f; }
+if( String.fromCodePoint == null ) String.fromCodePoint = function(c) { return c < 0x10000 ? String.fromCharCode(c) : String.fromCharCode((c>>10)+0xD7C0)+String.fromCharCode((c&0x3FF)+0xDC00); }
 String.__name__ = true;
 Array.__name__ = true;
 Object.defineProperty(js__$Boot_HaxeError.prototype,"message",{ get : function() {

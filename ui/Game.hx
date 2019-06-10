@@ -12,6 +12,7 @@ class Game {
 
 	private var ui:UI;
 	private var worker:Worker;
+    private var moves:Array<Move> = [];
 
 	public function new(ui_:UI) {
 		trace('Game::new');
@@ -36,11 +37,20 @@ class Game {
 		trace('Game::doMove ${move.toString()}');
 		board[move.to] = board[move.from];
 		board[move.from] = 0;
+        moves.push(move);
 		changeSideToMove();
 		if (isEnemyTurn()) {
-			worker.postMessage('Hello worker ---');
+			worker.postMessage('position startpos moves '+getMovesString() );
 		}
 	}
+
+    private function getMovesString():String {
+        var s = '';
+        for(i in 0...moves.length){
+            s += moves[i].toString();
+        }
+        return s;
+    }
 
 	public function getMovableSq(sq:Int, pt:Int):Array<Int> {
 		var attack:Bitboard = BB.stepAttacksBB[pt][sq];

@@ -53,13 +53,16 @@ class Types {
 	public static inline var SQ_HB:Int = 80;
 	public static inline var SQ_NB:Int = 81;
     public static inline var FILE_NB:Int	= 9;
-    public static inline var RANK_NB:Int	= 9;//8;
+    public static inline var RANK_NB:Int	= 9;
 
     public static function Is_SqOK( s:Int ) : Bool { return ( s >= SQ_A1 && s <= SQ_HB ); }
-    public static function File_Of( s:Int ) : Int { return s % FILE_NB; }	
-	public static function Rank_Of( s:Int ) : Int { return Std.int(s / RANK_NB); }	
+    public static function File_Of( s:Int ) : Int { return Std.int(s / RANK_NB); }	
+	public static function Rank_Of( s:Int ) : Int { return s % FILE_NB; }	
+    public static function FileString_Of( s:Int ) : String { return '${File_Of(s) +1}'; }	
+	public static function RankString_Of( s:Int ) : String { return String.fromCharCode(97 +Rank_Of(s)); }	
     public static function RawTypeOf( p:Int ) : Int { return p % 8; }
     public static function Make_Piece( c:Int, pt:Int ) : Int { return (c << 4) | pt; }// == (c * PIECE_WHITE) + pt
+    public static function Square( f:Int, r:Int ) : Int { return (f * RANK_NB) + r; }
 
 	static public function getPieceColor(pt:Int):Int {
 		if (pt == 0)
