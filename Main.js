@@ -428,10 +428,10 @@ js_Boot.__string_rec = function(o,s) {
 	}
 };
 var ui_Game = function(ui_) {
+	this.sfen = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL w - 1 moves";
 	this.playerColor = 0;
 	this.sideToMove = 0;
 	this.board = [];
-	this.sfen = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL w - 1 moves";
 	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 18, className : "ui.Game", methodName : "new"});
 	this.ui = ui_;
 	this.createWorker();
@@ -455,12 +455,12 @@ ui_Game.prototype = {
 		}
 	}
 	,doPlayerMove: function(from,to) {
-		haxe_Log.trace("Game::doPlayerMove from: " + from + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 41, className : "ui.Game", methodName : "doPlayerMove"});
+		haxe_Log.trace("Game::doPlayerMove from: " + from + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 45, className : "ui.Game", methodName : "doPlayerMove"});
 		var move = data_Move.generateMove(from,to);
 		this.doMove(move);
 	}
 	,doMove: function(move) {
-		haxe_Log.trace("Game::doMove " + move.toString(),{ fileName : "ui/Game.hx", lineNumber : 46, className : "ui.Game", methodName : "doMove"});
+		haxe_Log.trace("Game::doMove " + move.toString(),{ fileName : "ui/Game.hx", lineNumber : 51, className : "ui.Game", methodName : "doMove"});
 		this.board[move.to] = this.board[move.from];
 		this.board[move.from] = 0;
 		this.changeSideToMove();
@@ -473,20 +473,20 @@ ui_Game.prototype = {
 	}
 	,changeSideToMove: function() {
 		this.sideToMove = (this.sideToMove + 1) % 2;
-		haxe_Log.trace("changeSideToMove: " + this.sideToMove,{ fileName : "ui/Game.hx", lineNumber : 61, className : "ui.Game", methodName : "changeSideToMove"});
+		haxe_Log.trace("changeSideToMove: " + this.sideToMove,{ fileName : "ui/Game.hx", lineNumber : 66, className : "ui.Game", methodName : "changeSideToMove"});
 	}
 	,onMessage: function(s) {
-		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 65, className : "ui.Game", methodName : "onMessage"});
+		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 70, className : "ui.Game", methodName : "onMessage"});
 		var move = data_Move.generateMove(20,21);
 		this.doMove(move);
 		this.ui.onEnemyMoved();
 	}
 	,start: function() {
-		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 72, className : "ui.Game", methodName : "start"});
+		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 77, className : "ui.Game", methodName : "start"});
 		this.setPosition(this.sfen);
 	}
 	,setPosition: function(sfen) {
-		haxe_Log.trace("Game::setPosition",{ fileName : "ui/Game.hx", lineNumber : 77, className : "ui.Game", methodName : "setPosition", customParams : [sfen]});
+		haxe_Log.trace("Game::setPosition",{ fileName : "ui/Game.hx", lineNumber : 82, className : "ui.Game", methodName : "setPosition", customParams : [sfen]});
 		var tokens = sfen.split(" ");
 		var f = 8;
 		var r = 0;
@@ -495,7 +495,7 @@ ui_Game.prototype = {
 		var token = "";
 		var sq = 0;
 		this.board = [];
-		haxe_Log.trace(tokens,{ fileName : "ui/Game.hx", lineNumber : 86, className : "ui.Game", methodName : "setPosition"});
+		haxe_Log.trace(tokens,{ fileName : "ui/Game.hx", lineNumber : 91, className : "ui.Game", methodName : "setPosition"});
 		var _g = 0;
 		var _g1 = tokens[0].length;
 		while(_g < _g1) {
@@ -526,10 +526,7 @@ ui_Game.prototype = {
 				promote = false;
 			}
 		}
-		this.updateUi();
-	}
-	,updateUi: function() {
-		this.ui.updateUi();
+		this.ui.updateUi(0);
 	}
 };
 var ui_Mode = function() { };
@@ -546,19 +543,18 @@ ui_UI.prototype = {
 		this.game.start();
 	}
 	,onClickCell: function(sq) {
-		haxe_Log.trace("on click:",{ fileName : "ui/UI.hx", lineNumber : 18, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
+		haxe_Log.trace("on click:",{ fileName : "ui/UI.hx", lineNumber : 20, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
 		if(this.operationMode == 0) {
 			this.selectedSq = sq;
+			this.updateUi(1);
 		} else if(this.operationMode == 1) {
 			this.game.doPlayerMove(this.selectedSq,sq);
+			this.updateUi(2);
 		}
-		this.operationMode++;
-		this.updateUi();
 	}
 	,onEnemyMoved: function() {
-		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 29, className : "ui.UI", methodName : "onEnemyMoved"});
-		this.operationMode = 0;
-		this.updateUi();
+		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 31, className : "ui.UI", methodName : "onEnemyMoved"});
+		this.updateUi(0);
 	}
 	,isPlayerPiece: function(sq,pt) {
 		var c = Types.getPieceColor(pt);
@@ -566,6 +562,21 @@ ui_UI.prototype = {
 			return pt > 0;
 		} else {
 			return false;
+		}
+	}
+	,updateUi: function(mode) {
+		this.operationMode = mode;
+		if(this.operationMode == 1) {
+			var pt = this.game.board[this.selectedSq];
+			haxe_Log.trace("sq: " + this.selectedSq + " pt: " + pt,{ fileName : "ui/UI.hx", lineNumber : 44, className : "ui.UI", methodName : "updateUi"});
+			var b = BB.stepAttacksBB[pt][this.selectedSq];
+			haxe_Log.trace(b.toStringBB(),{ fileName : "ui/UI.hx", lineNumber : 46, className : "ui.UI", methodName : "updateUi"});
+		}
+		haxe_Log.trace("UI::updateUi mode:" + this.operationMode,{ fileName : "ui/UI.hx", lineNumber : 48, className : "ui.UI", methodName : "updateUi"});
+		var _g = 0;
+		while(_g < 81) {
+			var sq = _g++;
+			this.setCell(sq,this.game.board[sq]);
 		}
 	}
 	,setCell: function(sq,pt) {
@@ -587,13 +598,6 @@ ui_UI.prototype = {
 			cell.style.transform = "rotate(180deg)";
 		}
 		cell.innerHTML = s;
-	}
-	,updateUi: function() {
-		var _g = 0;
-		while(_g < 81) {
-			var sq = _g++;
-			this.setCell(sq,this.game.board[sq]);
-		}
 	}
 };
 var util_MathUtil = function() { };
@@ -629,7 +633,7 @@ js_Boot.__toStr = ({ }).toString;
 BB.squareDistance = [];
 BB.stepAttacksBB = [];
 BB.squareBB = [];
-BB.steps = [[0,0,0,0,0,0,0,0,0],[9,0,0,0,0,0,0,0,0],[9,18,27,36,45,54,63,72,0],[17,19,0,0,0,0,0,0,0],[9,8,10,-10,-8,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[9,8,10,-1,1,-9,0,0,0],[9,8,10,-1,1,-9,-10,-8,0],[9,8,10,-1,1,-9,0,0,0],[9,8,10,-1,1,-9,0,0,0],[9,8,10,-1,1,-9,0,0,0],[9,8,10,-1,1,-9,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]];
+BB.steps = [[0,0,0,0,0,0,0,0,0],[-1,0,0,0,0,0,0,0,0],[-1,-2,-3,-4,-5,-6,-7,-8,0],[7,-11,0,0,0,0,0,0,0],[-1,8,10,-10,-8,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,10,-8,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]];
 Bitboard.NA = 27;
 Bitboard.NB = 54;
 Types.BLACK = 0;
@@ -687,5 +691,6 @@ Types.FILE_NB = 9;
 Types.RANK_NB = 9;
 ui_Mode.OPERATION_SELECT = 0;
 ui_Mode.OPERATION_PUT = 1;
+ui_Mode.OPERATION_WAITING = 2;
 Main.main();
 })(typeof exports != "undefined" ? exports : typeof window != "undefined" ? window : typeof self != "undefined" ? self : this);

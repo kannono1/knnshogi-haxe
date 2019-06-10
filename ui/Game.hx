@@ -6,12 +6,12 @@ import data.Move;
 import util.StringUtil;
 
 class Game {
-	private var ui:UI;
-	private var sfen = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL w - 1 moves';
-
 	public var board:Array<Int> = [];
 	public var sideToMove:Int = 0;
 	public var playerColor:Int = 0;
+
+	private var ui:UI;
+	private var sfen = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL w - 1 moves';
 	private var worker:Worker;
 
 	public function new(ui_:UI) {
@@ -26,22 +26,27 @@ class Game {
 		worker = new Worker('Engine.js');
 		worker.onmessage = onMessage;
 	}
-    public function isMovableSq(from:Int, to:Int):Bool{
+
+	public function isMovableSq(from:Int, to:Int):Bool {
 		var pt = board[from];
 		// var sqArr:Array<Int> = Piece.getEffectedSq(pt, from);
 		// if(pt == 1){
 
 		// }
-        if (from - to == 1 ) return true;
-        else if (from - to == 2 ) return true;
-		else return false;
-    }
+		if (from - to == 1)
+			return true;
+		else if (from - to == 2)
+			return true;
+		else
+			return false;
+	}
 
 	public function doPlayerMove(from:Int, to:Int) {
 		trace('Game::doPlayerMove from: $from to: $to');
 		var move = Move.generateMove(from, to);
 		doMove(move);
 	}
+
 	public function doMove(move:Move) {
 		trace('Game::doMove ${move.toString()}');
 		board[move.to] = board[move.from];
@@ -126,13 +131,13 @@ class Game {
 		//         ct = 0;
 		//     }
 		// }
-		this.updateUi();
+		ui.updateUi(Mode.OPERATION_SELECT);
 	}
 
-	public function updateUi() {
+	// public function updateUi() {
 		// for (sq in 0...81) {
 		// 	ui.setCell(sq, this.board[sq]);
 		// }
-		ui.updateUi();
-	}
+		// ui.updateUi();
+	// }
 }
