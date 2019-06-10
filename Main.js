@@ -88,6 +88,7 @@ var Bitboard = function(l,m,u) {
 		l = 0;
 	}
 	this.needCount = false;
+	this.count = 0;
 	this.upper = 0;
 	this.middle = 0;
 	this.lower = 0;
@@ -96,8 +97,49 @@ var Bitboard = function(l,m,u) {
 	this.upper = u;
 };
 Bitboard.__name__ = true;
+Bitboard.LeastSB = function(theInt) {
+	var i = -1;
+	if((theInt & 65535) == 0) {
+		i += 16;
+		theInt >>>= 16;
+	}
+	if((theInt & 255) == 0) {
+		i += 8;
+		theInt >>>= 8;
+	}
+	if((theInt & 15) == 0) {
+		i += 4;
+		theInt >>>= 4;
+	}
+	if((theInt & 3) == 0) {
+		i += 2;
+		theInt >>>= 2;
+	}
+	if((theInt & 1) == 0) {
+		++i;
+		theInt >>>= 1;
+	}
+	if((theInt & 1) != 0) {
+		++i;
+	}
+	return i;
+};
 Bitboard.prototype = {
-	isSet: function(sq) {
+	Copy: function(other) {
+		this.lower = other.lower;
+		this.middle = other.middle;
+		this.upper = other.upper;
+		this.count = other.count;
+		this.needCount = other.needCount;
+	}
+	,IsNonZero: function() {
+		if(!(this.lower != 0 || this.middle != 0)) {
+			return this.upper != 0;
+		} else {
+			return true;
+		}
+	}
+	,isSet: function(sq) {
 		if(sq < 27) {
 			return (this.lower & 1 << sq) != 0;
 		} else if(sq < 54) {
@@ -106,11 +148,45 @@ Bitboard.prototype = {
 			return (this.upper & 1 << sq - 54) != 0;
 		}
 	}
+	,LSB: function() {
+		if(this.lower != 0) {
+			return Bitboard.LeastSB(this.lower);
+		}
+		if(this.middle != 0) {
+			return Bitboard.LeastSB(this.middle) + 27;
+		}
+		if(this.upper != 0) {
+			return Bitboard.LeastSB(this.upper) + 54;
+		}
+		return -1;
+	}
 	,OR: function(other) {
 		this.lower |= other.lower;
 		this.middle |= other.middle;
 		this.upper |= other.upper;
 		this.needCount = true;
+	}
+	,PopLSB: function() {
+		var index = -1;
+		if(this.lower != 0) {
+			this.count--;
+			index = Bitboard.LeastSB(this.lower);
+			this.lower &= this.lower - 1;
+			return index;
+		}
+		if(this.middle != 0) {
+			this.count--;
+			index = 27 + Bitboard.LeastSB(this.middle);
+			this.middle &= this.middle - 1;
+			return index;
+		}
+		if(this.upper != 0) {
+			this.count--;
+			index = 54 + Bitboard.LeastSB(this.upper);
+			this.upper &= this.upper - 1;
+			return index;
+		}
+		return -1;
 	}
 	,SetBit: function(theIndex) {
 		if(theIndex < 27) {
@@ -565,31 +641,45 @@ ui_UI.prototype = {
 		}
 	}
 	,updateUi: function(mode) {
+		var linkable = false;
+		var pt = 0;
 		this.operationMode = mode;
-		if(this.operationMode == 1) {
-			var pt = this.game.board[this.selectedSq];
-			haxe_Log.trace("sq: " + this.selectedSq + " pt: " + pt,{ fileName : "ui/UI.hx", lineNumber : 44, className : "ui.UI", methodName : "updateUi"});
-			var b = BB.stepAttacksBB[pt][this.selectedSq];
-			haxe_Log.trace(b.toStringBB(),{ fileName : "ui/UI.hx", lineNumber : 46, className : "ui.UI", methodName : "updateUi"});
-		}
-		haxe_Log.trace("UI::updateUi mode:" + this.operationMode,{ fileName : "ui/UI.hx", lineNumber : 48, className : "ui.UI", methodName : "updateUi"});
-		var _g = 0;
-		while(_g < 81) {
-			var sq = _g++;
-			this.setCell(sq,this.game.board[sq]);
-		}
-	}
-	,setCell: function(sq,pt) {
-		var c = Types.getPieceColor(pt);
-		var s = "" + Types.getPieceLabel(pt);
 		if(this.operationMode == 0) {
-			if(this.isPlayerPiece(sq,pt)) {
-				s = "<a href=\"javascript:Main.onClickCell(" + sq + ")\">" + s + "</a>";
+			var _g = 0;
+			while(_g < 81) {
+				var sq = _g++;
+				pt = this.game.board[sq];
+				linkable = this.isPlayerPiece(sq,pt);
+				haxe_Log.trace("linkable " + (linkable == null ? "null" : "" + linkable) + ", sq: " + sq + ", pt: " + pt,{ fileName : "ui/UI.hx", lineNumber : 48, className : "ui.UI", methodName : "updateUi"});
+				this.setCell(sq,this.game.board[sq],linkable);
 			}
 		} else if(this.operationMode == 1) {
-			if(this.game.isMovableSq(this.selectedSq,sq)) {
-				s = "<a href=\"javascript:Main.onClickCell(" + sq + ")\">" + s + "</a>";
+			pt = this.game.board[this.selectedSq];
+			var attack = BB.stepAttacksBB[pt][this.selectedSq];
+			var b = new Bitboard();
+			b.Copy(attack);
+			while(b.IsNonZero()) {
+				var s = b.PopLSB();
+				haxe_Log.trace("s: " + s,{ fileName : "ui/UI.hx", lineNumber : 59, className : "ui.UI", methodName : "updateUi"});
 			}
+			var _g1 = 0;
+			while(_g1 < 81) {
+				var sq1 = _g1++;
+				this.setCell(sq1,this.game.board[sq1],false);
+			}
+		} else {
+			var _g2 = 0;
+			while(_g2 < 81) {
+				var sq2 = _g2++;
+				this.setCell(sq2,this.game.board[sq2],false);
+			}
+		}
+	}
+	,setCell: function(sq,pt,linkable) {
+		var c = Types.getPieceColor(pt);
+		var s = "" + Types.getPieceLabel(pt);
+		if(linkable) {
+			s = "<a href=\"javascript:Main.onClickCell(" + sq + ")\">" + s + "</a>";
 		}
 		var cell = window.document.getElementById("cell_" + sq);
 		if(this.game.playerColor == c) {
