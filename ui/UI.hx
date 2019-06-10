@@ -6,16 +6,12 @@ class UI {
 	private var game:Game;
 	private var operationMode:Int = Mode.OPERATION_SELECT;
 	private var selectedSq:Int = 0;
-    private var OPE_MODE_SELECT_PIECE = 0;
 
 	public function new() {
-		trace('UI::New');
 		Browser.window.onload = onLoad;
 		game = new Game(this);
 	}
-
 	function onLoad():Void {
-		trace('haxe onload');
 		game.start();
 	}
 	public function onClickCell(sq:Int){

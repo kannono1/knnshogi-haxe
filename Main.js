@@ -6,6 +6,77 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
+var BB = function() { };
+BB.__name__ = true;
+BB.SquareDistance = function(s1,s2) {
+	return BB.squareDistance[s1][s2];
+};
+BB.FileDistance = function(s1,s2) {
+	return util_MathUtil.abs(Types.File_Of(s1) - Types.File_Of(s2));
+};
+BB.RankDistance = function(s1,s2) {
+	return util_MathUtil.abs(Types.Rank_Of(s1) - Types.Rank_Of(s2));
+};
+BB.Init = function() {
+	var _g = 0;
+	while(_g < 81) {
+		var sq = _g++;
+		BB.squareBB[sq] = new Bitboard();
+		BB.squareBB[sq].SetBit(sq);
+	}
+	var _g1 = 0;
+	while(_g1 < 81) {
+		var s1 = _g1++;
+		BB.squareDistance[s1] = [];
+		var _g11 = 0;
+		while(_g11 < 81) {
+			var s2 = _g11++;
+			BB.squareDistance[s1][s2] = util_MathUtil.max(BB.FileDistance(s1,s2),BB.RankDistance(s1,s2));
+		}
+	}
+	var _g2 = 0;
+	while(_g2 < 31) {
+		var pt = _g2++;
+		BB.stepAttacksBB[pt] = [];
+		var _g21 = 0;
+		while(_g21 < 81) {
+			var s11 = _g21++;
+			BB.stepAttacksBB[pt][s11] = new Bitboard();
+		}
+	}
+	var _g3 = 0;
+	while(_g3 < 1) {
+		var c = _g3++;
+		var _g31 = 1;
+		while(_g31 < 14) {
+			var pt1 = _g31++;
+			var _g32 = 0;
+			while(_g32 < 81) {
+				var s = _g32++;
+				var _g33 = 0;
+				while(_g33 < 9) {
+					var k = _g33++;
+					if(BB.steps[pt1][k] == 0) {
+						continue;
+					}
+					var to = s;
+					if(c == 0) {
+						to += BB.steps[pt1][k];
+					} else {
+						to -= BB.steps[pt1][k];
+					}
+					if(Types.Is_SqOK(to) == false) {
+						continue;
+					}
+					if(BB.SquareDistance(s,to) >= 3 && Types.RawTypeOf(pt1) != 2) {
+						continue;
+					}
+					BB.stepAttacksBB[Types.Make_Piece(c,pt1)][s].OR(BB.squareBB[to]);
+				}
+			}
+		}
+	}
+};
 var Bitboard = function(l,m,u) {
 	if(u == null) {
 		u = 0;
@@ -16,6 +87,7 @@ var Bitboard = function(l,m,u) {
 	if(l == null) {
 		l = 0;
 	}
+	this.needCount = false;
 	this.upper = 0;
 	this.middle = 0;
 	this.lower = 0;
@@ -33,6 +105,22 @@ Bitboard.prototype = {
 		} else {
 			return (this.upper & 1 << sq - 54) != 0;
 		}
+	}
+	,OR: function(other) {
+		this.lower |= other.lower;
+		this.middle |= other.middle;
+		this.upper |= other.upper;
+		this.needCount = true;
+	}
+	,SetBit: function(theIndex) {
+		if(theIndex < 27) {
+			this.lower |= 1 << theIndex;
+		} else if(theIndex < 54) {
+			this.middle |= 1 << theIndex - 27;
+		} else {
+			this.upper |= 1 << theIndex - 54;
+		}
+		this.needCount = true;
 	}
 	,toStringBB: function() {
 		var s = "";
@@ -71,11 +159,9 @@ EReg.prototype = {
 var Main = $hx_exports["Main"] = function() { };
 Main.__name__ = true;
 Main.main = function() {
-	haxe_Log.trace("Hello haxe",{ fileName : "Main.hx", lineNumber : 9, className : "Main", methodName : "main"});
+	haxe_Log.trace("Hello haxe",{ fileName : "Main.hx", lineNumber : 10, className : "Main", methodName : "main"});
 	var ui1 = new ui_UI();
 	Main.gui = ui1;
-	var bb = new Bitboard(1,3,7);
-	haxe_Log.trace(bb.toStringBB(),{ fileName : "Main.hx", lineNumber : 15, className : "Main", methodName : "main"});
 };
 Main.onClickCell = function(sq) {
 	Main.gui.onClickCell(sq);
@@ -95,6 +181,25 @@ Std.parseInt = function(x) {
 };
 var Types = function() { };
 Types.__name__ = true;
+Types.Is_SqOK = function(s) {
+	if(s >= 0) {
+		return s <= 80;
+	} else {
+		return false;
+	}
+};
+Types.File_Of = function(s) {
+	return s % 9;
+};
+Types.Rank_Of = function(s) {
+	return s / 9 | 0;
+};
+Types.RawTypeOf = function(p) {
+	return p % 8;
+};
+Types.Make_Piece = function(c,pt) {
+	return c << 4 | pt;
+};
 Types.getPieceColor = function(pt) {
 	if(pt == 0) {
 		return -1;
@@ -327,9 +432,10 @@ var ui_Game = function(ui_) {
 	this.sideToMove = 0;
 	this.board = [];
 	this.sfen = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL w - 1 moves";
-	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 19, className : "ui.Game", methodName : "new"});
+	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 18, className : "ui.Game", methodName : "new"});
 	this.ui = ui_;
 	this.createWorker();
+	BB.Init();
 };
 ui_Game.__name__ = true;
 ui_Game.prototype = {
@@ -429,21 +535,18 @@ ui_Game.prototype = {
 var ui_Mode = function() { };
 ui_Mode.__name__ = true;
 var ui_UI = function() {
-	this.OPE_MODE_SELECT_PIECE = 0;
 	this.selectedSq = 0;
 	this.operationMode = 0;
-	haxe_Log.trace("UI::New",{ fileName : "ui/UI.hx", lineNumber : 12, className : "ui.UI", methodName : "new"});
 	window.onload = $bind(this,this.onLoad);
 	this.game = new ui_Game(this);
 };
 ui_UI.__name__ = true;
 ui_UI.prototype = {
 	onLoad: function() {
-		haxe_Log.trace("haxe onload",{ fileName : "ui/UI.hx", lineNumber : 18, className : "ui.UI", methodName : "onLoad"});
 		this.game.start();
 	}
 	,onClickCell: function(sq) {
-		haxe_Log.trace("on click:",{ fileName : "ui/UI.hx", lineNumber : 22, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
+		haxe_Log.trace("on click:",{ fileName : "ui/UI.hx", lineNumber : 18, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
 		if(this.operationMode == 0) {
 			this.selectedSq = sq;
 		} else if(this.operationMode == 1) {
@@ -453,7 +556,7 @@ ui_UI.prototype = {
 		this.updateUi();
 	}
 	,onEnemyMoved: function() {
-		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 33, className : "ui.UI", methodName : "onEnemyMoved"});
+		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 29, className : "ui.UI", methodName : "onEnemyMoved"});
 		this.operationMode = 0;
 		this.updateUi();
 	}
@@ -493,6 +596,22 @@ ui_UI.prototype = {
 		}
 	}
 };
+var util_MathUtil = function() { };
+util_MathUtil.__name__ = true;
+util_MathUtil.abs = function(a) {
+	if(a >= 0) {
+		return a;
+	} else {
+		return -a;
+	}
+};
+util_MathUtil.max = function(a,b) {
+	if(a > b) {
+		return a;
+	} else {
+		return b;
+	}
+};
 var util_StringUtil = function() { };
 util_StringUtil.__name__ = true;
 util_StringUtil.isNumberString = function(s) {
@@ -507,10 +626,65 @@ Object.defineProperty(js__$Boot_HaxeError.prototype,"message",{ get : function()
 	return String(this.val);
 }});
 js_Boot.__toStr = ({ }).toString;
+BB.squareDistance = [];
+BB.stepAttacksBB = [];
+BB.squareBB = [];
+BB.steps = [[0,0,0,0,0,0,0,0,0],[9,0,0,0,0,0,0,0,0],[9,18,27,36,45,54,63,72,0],[17,19,0,0,0,0,0,0,0],[9,8,10,-10,-8,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[9,8,10,-1,1,-9,0,0,0],[9,8,10,-1,1,-9,-10,-8,0],[9,8,10,-1,1,-9,0,0,0],[9,8,10,-1,1,-9,0,0,0],[9,8,10,-1,1,-9,0,0,0],[9,8,10,-1,1,-9,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]];
 Bitboard.NA = 27;
 Bitboard.NB = 54;
 Types.BLACK = 0;
 Types.WHITE = 1;
+Types.NO_PIECE_TYPE = 0;
+Types.PAWN = 1;
+Types.LANCE = 2;
+Types.KNIGHT = 3;
+Types.SILVER = 4;
+Types.BISHOP = 5;
+Types.ROOK = 6;
+Types.GOLD = 7;
+Types.KING = 8;
+Types.PRO_PAWN = 9;
+Types.PRO_LANCE = 10;
+Types.PRO_KNIGHT = 11;
+Types.PRO_SILVER = 12;
+Types.HORSE = 13;
+Types.DRAGON = 14;
+Types.NO_PIECE = 0;
+Types.W_PAWN = 1;
+Types.W_LANCE = 2;
+Types.W_KNIGHT = 3;
+Types.W_SILVER = 4;
+Types.W_BISHOP = 5;
+Types.W_ROOK = 6;
+Types.W_GOLD = 7;
+Types.W_KING = 8;
+Types.W_PRO_PAWN = 9;
+Types.W_PRO_LANCE = 10;
+Types.W_PRO_KNIGHT = 11;
+Types.W_PRO_SILVER = 12;
+Types.W_HORSE = 13;
+Types.W_DRAGON = 14;
+Types.PIECE_WHITE = 16;
+Types.B_PAWN = 17;
+Types.B_LANCE = 18;
+Types.B_KNIGHT = 19;
+Types.B_SILVER = 20;
+Types.B_BISHOP = 21;
+Types.B_ROOK = 22;
+Types.B_GOLD = 23;
+Types.B_KING = 24;
+Types.B_PRO_PAWN = 25;
+Types.B_PRO_LANCE = 26;
+Types.B_PRO_KNIGHT = 27;
+Types.B_PRO_SILVER = 28;
+Types.B_HORSE = 29;
+Types.B_DRAGON = 30;
+Types.PIECE_NB = 31;
+Types.SQ_A1 = 0;
+Types.SQ_HB = 80;
+Types.SQ_NB = 81;
+Types.FILE_NB = 9;
+Types.RANK_NB = 9;
 ui_Mode.OPERATION_SELECT = 0;
 ui_Mode.OPERATION_PUT = 1;
 Main.main();

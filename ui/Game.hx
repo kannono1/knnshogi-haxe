@@ -5,7 +5,6 @@ import js.html.Worker;
 import data.Move;
 import util.StringUtil;
 
-// import engine.Engine;
 class Game {
 	private var ui:UI;
 	private var sfen = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL w - 1 moves';
@@ -19,6 +18,7 @@ class Game {
 		trace('Game::new');
 		ui = ui_;
 		createWorker();
+		BB.Init();
 	}
 
 	private function createWorker() {
