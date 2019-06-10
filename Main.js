@@ -243,6 +243,69 @@ Main.onClickCell = function(sq) {
 	Main.gui.onClickCell(sq);
 };
 Math.__name__ = true;
+var SFEN = function(sfen) {
+	this.board = [];
+	this.startpos = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1 moves";
+	if(sfen == "startpos") {
+		this.setPosition(this.startpos);
+	} else {
+		this.setPosition(sfen);
+	}
+};
+SFEN.__name__ = true;
+SFEN.prototype = {
+	getBoard: function() {
+		var arr = [];
+		var _g = 0;
+		while(_g < 81) {
+			var i = _g++;
+			arr.push(this.board[i]);
+		}
+		return arr;
+	}
+	,setPosition: function(sfen) {
+		haxe_Log.trace("SFEN::setPosition",{ fileName : "SFEN.hx", lineNumber : 27, className : "SFEN", methodName : "setPosition", customParams : [sfen]});
+		var tokens = sfen.split(" ");
+		var f = 8;
+		var r = 0;
+		var promote = false;
+		var i = 0;
+		var token = "";
+		var sq = 0;
+		this.board = [];
+		haxe_Log.trace(tokens,{ fileName : "SFEN.hx", lineNumber : 36, className : "SFEN", methodName : "setPosition"});
+		var _g = 0;
+		var _g1 = tokens[0].length;
+		while(_g < _g1) {
+			var i1 = _g++;
+			var token1 = tokens[0].charAt(i1);
+			if(util_StringUtil.isNumberString(token1)) {
+				var _g2 = 0;
+				var _g11 = Std.parseInt(token1);
+				while(_g2 < _g11) {
+					var n = _g2++;
+					sq = f * 9 + r;
+					this.board[sq] = 0;
+					--f;
+				}
+			} else if(token1 == "+") {
+				promote = true;
+			} else if(token1 == "/") {
+				f = 8;
+				++r;
+			} else {
+				sq = f * 9 + r;
+				var pt = Types.getPieceType(token1);
+				if(promote) {
+					pt += 8;
+				}
+				this.board[sq] = pt;
+				--f;
+				promote = false;
+			}
+		}
+	}
+};
 var Std = function() { };
 Std.__name__ = true;
 Std.string = function(s) {
@@ -504,11 +567,10 @@ js_Boot.__string_rec = function(o,s) {
 	}
 };
 var ui_Game = function(ui_) {
-	this.sfen = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL w - 1 moves";
 	this.playerColor = 0;
 	this.sideToMove = 0;
 	this.board = [];
-	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 18, className : "ui.Game", methodName : "new"});
+	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 17, className : "ui.Game", methodName : "new"});
 	this.ui = ui_;
 	this.createWorker();
 	BB.Init();
@@ -516,27 +578,17 @@ var ui_Game = function(ui_) {
 ui_Game.__name__ = true;
 ui_Game.prototype = {
 	createWorker: function() {
-		haxe_Log.trace("Game::createWorker",{ fileName : "ui/Game.hx", lineNumber : 25, className : "ui.Game", methodName : "createWorker"});
+		haxe_Log.trace("Game::createWorker",{ fileName : "ui/Game.hx", lineNumber : 24, className : "ui.Game", methodName : "createWorker"});
 		this.worker = new Worker("Engine.js");
 		this.worker.onmessage = $bind(this,this.onMessage);
 	}
-	,isMovableSq: function(from,to) {
-		var pt = this.board[from];
-		if(from - to == 1) {
-			return true;
-		} else if(from - to == 2) {
-			return true;
-		} else {
-			return false;
-		}
-	}
 	,doPlayerMove: function(from,to) {
-		haxe_Log.trace("Game::doPlayerMove from: " + from + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 45, className : "ui.Game", methodName : "doPlayerMove"});
+		haxe_Log.trace("Game::doPlayerMove from: " + from + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 30, className : "ui.Game", methodName : "doPlayerMove"});
 		var move = data_Move.generateMove(from,to);
 		this.doMove(move);
 	}
 	,doMove: function(move) {
-		haxe_Log.trace("Game::doMove " + move.toString(),{ fileName : "ui/Game.hx", lineNumber : 51, className : "ui.Game", methodName : "doMove"});
+		haxe_Log.trace("Game::doMove " + move.toString(),{ fileName : "ui/Game.hx", lineNumber : 36, className : "ui.Game", methodName : "doMove"});
 		this.board[move.to] = this.board[move.from];
 		this.board[move.from] = 0;
 		this.changeSideToMove();
@@ -544,64 +596,35 @@ ui_Game.prototype = {
 			this.worker.postMessage("Hello worker ---");
 		}
 	}
+	,getMovableSq: function(sq,pt) {
+		var attack = BB.stepAttacksBB[pt][sq];
+		var b = new Bitboard();
+		var arr = [];
+		b.Copy(attack);
+		while(b.IsNonZero()) arr.push(b.PopLSB());
+		return arr;
+	}
 	,isEnemyTurn: function() {
 		return this.sideToMove == 1;
 	}
 	,changeSideToMove: function() {
 		this.sideToMove = (this.sideToMove + 1) % 2;
-		haxe_Log.trace("changeSideToMove: " + this.sideToMove,{ fileName : "ui/Game.hx", lineNumber : 66, className : "ui.Game", methodName : "changeSideToMove"});
+		haxe_Log.trace("changeSideToMove: " + this.sideToMove,{ fileName : "ui/Game.hx", lineNumber : 62, className : "ui.Game", methodName : "changeSideToMove"});
 	}
 	,onMessage: function(s) {
-		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 70, className : "ui.Game", methodName : "onMessage"});
+		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 66, className : "ui.Game", methodName : "onMessage"});
 		var move = data_Move.generateMove(20,21);
 		this.doMove(move);
 		this.ui.onEnemyMoved();
 	}
 	,start: function() {
-		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 77, className : "ui.Game", methodName : "start"});
-		this.setPosition(this.sfen);
+		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 73, className : "ui.Game", methodName : "start"});
+		this.setPosition("startpos");
 	}
 	,setPosition: function(sfen) {
-		haxe_Log.trace("Game::setPosition",{ fileName : "ui/Game.hx", lineNumber : 82, className : "ui.Game", methodName : "setPosition", customParams : [sfen]});
-		var tokens = sfen.split(" ");
-		var f = 8;
-		var r = 0;
-		var promote = false;
-		var i = 0;
-		var token = "";
-		var sq = 0;
-		this.board = [];
-		haxe_Log.trace(tokens,{ fileName : "ui/Game.hx", lineNumber : 91, className : "ui.Game", methodName : "setPosition"});
-		var _g = 0;
-		var _g1 = tokens[0].length;
-		while(_g < _g1) {
-			var i1 = _g++;
-			var token1 = tokens[0].charAt(i1);
-			if(util_StringUtil.isNumberString(token1)) {
-				var _g2 = 0;
-				var _g11 = Std.parseInt(token1);
-				while(_g2 < _g11) {
-					var n = _g2++;
-					sq = f * 9 + r;
-					this.board[sq] = 0;
-					--f;
-				}
-			} else if(token1 == "+") {
-				promote = true;
-			} else if(token1 == "/") {
-				f = 8;
-				++r;
-			} else {
-				sq = f * 9 + r;
-				var pt = Types.getPieceType(token1);
-				if(promote) {
-					pt += 8;
-				}
-				this.board[sq] = pt;
-				--f;
-				promote = false;
-			}
-		}
+		haxe_Log.trace("Game::setPosition",{ fileName : "ui/Game.hx", lineNumber : 78, className : "ui.Game", methodName : "setPosition", customParams : [sfen]});
+		var sf = new SFEN(sfen);
+		this.board = sf.getBoard();
 		this.ui.updateUi(0);
 	}
 };
@@ -650,22 +673,16 @@ ui_UI.prototype = {
 				var sq = _g++;
 				pt = this.game.board[sq];
 				linkable = this.isPlayerPiece(sq,pt);
-				haxe_Log.trace("linkable " + (linkable == null ? "null" : "" + linkable) + ", sq: " + sq + ", pt: " + pt,{ fileName : "ui/UI.hx", lineNumber : 48, className : "ui.UI", methodName : "updateUi"});
 				this.setCell(sq,this.game.board[sq],linkable);
 			}
 		} else if(this.operationMode == 1) {
 			pt = this.game.board[this.selectedSq];
-			var attack = BB.stepAttacksBB[pt][this.selectedSq];
-			var b = new Bitboard();
-			b.Copy(attack);
-			while(b.IsNonZero()) {
-				var s = b.PopLSB();
-				haxe_Log.trace("s: " + s,{ fileName : "ui/UI.hx", lineNumber : 59, className : "ui.UI", methodName : "updateUi"});
-			}
+			var arr = this.game.getMovableSq(this.selectedSq,pt);
 			var _g1 = 0;
 			while(_g1 < 81) {
 				var sq1 = _g1++;
-				this.setCell(sq1,this.game.board[sq1],false);
+				linkable = arr.indexOf(sq1) > -1;
+				this.setCell(sq1,this.game.board[sq1],linkable);
 			}
 		} else {
 			var _g2 = 0;

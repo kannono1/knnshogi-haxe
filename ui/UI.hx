@@ -49,15 +49,10 @@ class UI {
 			}
 		} else if (this.operationMode == Mode.OPERATION_PUT) {
 			pt = game.board[this.selectedSq];
-			var attack:Bitboard = BB.stepAttacksBB[pt][selectedSq];
-			var b:Bitboard = new Bitboard();
-			b.Copy(attack);
-			while (b.IsNonZero()) {
-				var s:Int = b.PopLSB();
-				trace('s: $s');
-			}
+            var arr:Array<Int> = game.getMovableSq(selectedSq, pt);
 			for (sq in 0...81) {
-				this.setCell(sq, game.board[sq], false);
+                linkable = ( arr.indexOf(sq) > -1 );
+				this.setCell(sq, game.board[sq], linkable);
 			}
 		} else {
 			for (sq in 0...81) {
