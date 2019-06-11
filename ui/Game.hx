@@ -8,10 +8,11 @@ import util.StringUtil;
 class Game {
 	public var board:Array<Int> = [];
 	public var sideToMove:Int = 0;
+    public var hand:Array<Array<Int>> = [];
 	public var playerColor:Int = 0;
 
     // private var _sfen = 'startpos';
-    private var _sfen = 'sfen lnsgkgsnl/9/pppppppp1/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
+    private var _sfen = 'sfen lnsgkgsnl/9/pppppppp1/9/9/9/PPPPPPPP1/9/LNS1KGSN1 b PBRGLpbr 1';
 	private var ui:UI;
 	private var worker:Worker;
     private var moves:Array<Move> = [];
@@ -89,8 +90,10 @@ class Game {
 
 	public function setPosition(sfen:String):Void {
 		trace('Game::setPosition', sfen);
-        var sf:SFEN = new SFEN(sfen);
-        board = sf.getBoard();
+        var sfn:SFEN = new SFEN(sfen);
+        board = sfn.getBoard();
+        hand = sfn.getHand();
+        trace('hand: $hand');
 		ui.updateUi(Mode.OPERATION_SELECT);
 	}
 }

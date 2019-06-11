@@ -1,5 +1,6 @@
 package;
 
+import util.MathUtil;
 import util.StringUtil;
 import data.Move;
 
@@ -7,6 +8,10 @@ class SFEN {
 	private static inline var startpos = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
 	private var board:Array<Int> = [];
 	private var sideToMove:Int = Types.BLACK;
+    private var hand:Array<Array<Int>> = [
+		[0, 0, 0, 0, 0, 0, 0, 0],// 0PLNSBRG
+		[0, 0, 0, 0, 0, 0, 0, 0] // NO_PIECEのときは常に0
+    ];
 	private var moves:Array<Move> = [];
 
 	public function new(sfen:String) {
@@ -20,6 +25,10 @@ class SFEN {
 		}
 		return arr;
 	}
+
+    public function getHand():Array<Array<Int>> {
+        return hand;
+    }
 
 	public function getMoves():Array<Move> {
 		return moves;
@@ -67,23 +76,23 @@ class SFEN {
 		}
 		// Color
 		this.sideToMove = (tokens[1] == 'b') ? Types.BLACK : Types.WHITE;
-		// //
-		// var ct = 0;
-		// for (i = 0; i < tokens[2].length; i++) {
-		//     var token = tokens[2][i];
-		//     if (token == '-') {
-		//         break;
-		//     }
-		//     else if (isNaN(token) == false) {
-		//         ct = parseInt(token) + ct * 10;
-		//     }
-		//     else {
-		//         ct = Math.max(ct, 1);
-		//         var pt = this.getPieceType(token);
-		//         this.setHand(this.getPieceColor(pt), this.getPieceRaw(pt), ct);
-		//         ct = 0;
-		//     }
-		// }
+		// Hand
+		var ct = 0;
+		for (i in 0...tokens[2].length) {
+		    var token = tokens[2].charAt(i);
+		    if (token == '-') {
+		        break;
+		    }
+		    else if (StringUtil.isNumberString(token)) {
+		        ct = Std.parseInt(token) + ct * 10;
+		    }
+		    else {
+		        ct = MathUtil.max(ct, 1);
+		        var pc = Types.getPieceType(token);
+                hand[Types.getPieceColor(pc)][Types.RawTypeOf(pc)] = ct;
+		        ct = 0;
+		    }
+		}
 		// Moves
 		if (sfen.indexOf('moves') > 0) {
 			var mvs = sfen.split('moves ')[1].split(' ');

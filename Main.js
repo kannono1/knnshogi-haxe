@@ -403,9 +403,13 @@ Main.main = function() {
 Main.onClickCell = function(sq) {
 	Main.gui.onClickCell(sq);
 };
+Main.onClickHand = function(pr) {
+	Main.gui.onClickHand(pr);
+};
 Math.__name__ = true;
 var SFEN = function(sfen) {
 	this.moves = [];
+	this.hand = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]];
 	this.sideToMove = 0;
 	this.board = [];
 	this.setPosition(sfen);
@@ -421,6 +425,9 @@ SFEN.prototype = {
 		}
 		return arr;
 	}
+	,getHand: function() {
+		return this.hand;
+	}
 	,getMoves: function() {
 		return this.moves;
 	}
@@ -430,7 +437,7 @@ SFEN.prototype = {
 	,setPosition: function(sfen) {
 		sfen = StringTools.replace(sfen,"startpos","lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1");
 		sfen = StringTools.replace(sfen,"sfen ","");
-		haxe_Log.trace("SFEN::setPosition",{ fileName : "SFEN.hx", lineNumber : 35, className : "SFEN", methodName : "setPosition", customParams : [sfen]});
+		haxe_Log.trace("SFEN::setPosition",{ fileName : "SFEN.hx", lineNumber : 44, className : "SFEN", methodName : "setPosition", customParams : [sfen]});
 		var tokens = sfen.split(" ");
 		var f = 8;
 		var r = 0;
@@ -439,7 +446,7 @@ SFEN.prototype = {
 		var token = "";
 		var sq = 0;
 		this.board = [];
-		haxe_Log.trace(tokens,{ fileName : "SFEN.hx", lineNumber : 44, className : "SFEN", methodName : "setPosition"});
+		haxe_Log.trace(tokens,{ fileName : "SFEN.hx", lineNumber : 53, className : "SFEN", methodName : "setPosition"});
 		var _g = 0;
 		var _g1 = tokens[0].length;
 		while(_g < _g1) {
@@ -471,13 +478,30 @@ SFEN.prototype = {
 			}
 		}
 		this.sideToMove = tokens[1] == "b" ? 0 : 1;
+		var ct = 0;
+		var _g21 = 0;
+		var _g3 = tokens[2].length;
+		while(_g21 < _g3) {
+			var i2 = _g21++;
+			var token2 = tokens[2].charAt(i2);
+			if(token2 == "-") {
+				break;
+			} else if(util_StringUtil.isNumberString(token2)) {
+				ct = Std.parseInt(token2) + ct * 10;
+			} else {
+				ct = util_MathUtil.max(ct,1);
+				var pc = Types.getPieceType(token2);
+				this.hand[Types.getPieceColor(pc)][Types.RawTypeOf(pc)] = ct;
+				ct = 0;
+			}
+		}
 		if(sfen.indexOf("moves") > 0) {
 			var mvs = sfen.split("moves ")[1].split(" ");
-			var _g21 = 0;
-			var _g3 = mvs.length;
-			while(_g21 < _g3) {
-				var i2 = _g21++;
-				var m = data_Move.generateMoveFromString(mvs[i2]);
+			var _g4 = 0;
+			var _g5 = mvs.length;
+			while(_g4 < _g5) {
+				var i3 = _g4++;
+				var m = data_Move.generateMoveFromString(mvs[i3]);
 				this.moves.push(m);
 			}
 		}
@@ -519,7 +543,7 @@ Types.FileString_Of = function(s) {
 	return "" + (Types.File_Of(s) + 1);
 };
 Types.File_To_Char = function(f) {
-	return Types.FileString_Of(f);
+	return "" + (f + 1);
 };
 Types.Rank_To_Char = function(r,toLower) {
 	if(toLower == null) {
@@ -927,11 +951,12 @@ js_Boot.__string_rec = function(o,s) {
 };
 var ui_Game = function(ui_) {
 	this.moves = [];
-	this._sfen = "sfen lnsgkgsnl/9/pppppppp1/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1";
+	this._sfen = "sfen lnsgkgsnl/9/pppppppp1/9/9/9/PPPPPPPP1/9/LNS1KGSN1 b PBRGLpbr 1";
 	this.playerColor = 0;
+	this.hand = [];
 	this.sideToMove = 0;
 	this.board = [];
-	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 20, className : "ui.Game", methodName : "new"});
+	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 21, className : "ui.Game", methodName : "new"});
 	this.ui = ui_;
 	this.createWorker();
 	BB.Init();
@@ -939,17 +964,17 @@ var ui_Game = function(ui_) {
 ui_Game.__name__ = true;
 ui_Game.prototype = {
 	createWorker: function() {
-		haxe_Log.trace("Game::createWorker",{ fileName : "ui/Game.hx", lineNumber : 27, className : "ui.Game", methodName : "createWorker"});
+		haxe_Log.trace("Game::createWorker",{ fileName : "ui/Game.hx", lineNumber : 28, className : "ui.Game", methodName : "createWorker"});
 		this.worker = new Worker("Engine.js");
 		this.worker.onmessage = $bind(this,this.onMessage);
 	}
 	,doPlayerMove: function(from,to) {
-		haxe_Log.trace("Game::doPlayerMove from: " + from + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 33, className : "ui.Game", methodName : "doPlayerMove"});
+		haxe_Log.trace("Game::doPlayerMove from: " + from + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 34, className : "ui.Game", methodName : "doPlayerMove"});
 		var move = data_Move.generateMove(from,to);
 		this.doMove(move);
 	}
 	,doMove: function(move) {
-		haxe_Log.trace("Game::doMove " + move.toString(),{ fileName : "ui/Game.hx", lineNumber : 39, className : "ui.Game", methodName : "doMove"});
+		haxe_Log.trace("Game::doMove " + move.toString(),{ fileName : "ui/Game.hx", lineNumber : 40, className : "ui.Game", methodName : "doMove"});
 		this.board[move.to] = this.board[move.from];
 		this.board[move.from] = 0;
 		this.moves.push(move);
@@ -981,23 +1006,25 @@ ui_Game.prototype = {
 	}
 	,changeSideToMove: function() {
 		this.sideToMove = (this.sideToMove + 1) % 2;
-		haxe_Log.trace("changeSideToMove: " + this.sideToMove,{ fileName : "ui/Game.hx", lineNumber : 74, className : "ui.Game", methodName : "changeSideToMove"});
+		haxe_Log.trace("changeSideToMove: " + this.sideToMove,{ fileName : "ui/Game.hx", lineNumber : 75, className : "ui.Game", methodName : "changeSideToMove"});
 	}
 	,onMessage: function(s) {
-		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 78, className : "ui.Game", methodName : "onMessage"});
+		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 79, className : "ui.Game", methodName : "onMessage"});
 		var tokens = s.data.split(" ");
 		var move = data_Move.generateMoveFromString(tokens[1]);
 		this.doMove(move);
 		this.ui.onEnemyMoved();
 	}
 	,start: function() {
-		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 86, className : "ui.Game", methodName : "start"});
+		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 87, className : "ui.Game", methodName : "start"});
 		this.setPosition(this._sfen);
 	}
 	,setPosition: function(sfen) {
-		haxe_Log.trace("Game::setPosition",{ fileName : "ui/Game.hx", lineNumber : 91, className : "ui.Game", methodName : "setPosition", customParams : [sfen]});
-		var sf = new SFEN(sfen);
-		this.board = sf.getBoard();
+		haxe_Log.trace("Game::setPosition",{ fileName : "ui/Game.hx", lineNumber : 92, className : "ui.Game", methodName : "setPosition", customParams : [sfen]});
+		var sfn = new SFEN(sfen);
+		this.board = sfn.getBoard();
+		this.hand = sfn.getHand();
+		haxe_Log.trace("hand: " + Std.string(this.hand),{ fileName : "ui/Game.hx", lineNumber : 96, className : "ui.Game", methodName : "setPosition"});
 		this.ui.updateUi(0);
 	}
 };
@@ -1015,7 +1042,7 @@ ui_UI.prototype = {
 		this.game.start();
 	}
 	,onClickCell: function(sq) {
-		haxe_Log.trace("on click:",{ fileName : "ui/UI.hx", lineNumber : 20, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
+		haxe_Log.trace("on clickCell:",{ fileName : "ui/UI.hx", lineNumber : 20, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
 		if(this.operationMode == 0) {
 			this.selectedSq = sq;
 			this.updateUi(1);
@@ -1024,8 +1051,11 @@ ui_UI.prototype = {
 			this.updateUi(2);
 		}
 	}
+	,onClickHand: function(pr) {
+		haxe_Log.trace("on clickHand:",{ fileName : "ui/UI.hx", lineNumber : 31, className : "ui.UI", methodName : "onClickHand", customParams : [pr]});
+	}
 	,onEnemyMoved: function() {
-		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 31, className : "ui.UI", methodName : "onEnemyMoved"});
+		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 36, className : "ui.UI", methodName : "onEnemyMoved"});
 		this.updateUi(0);
 	}
 	,isPlayerPiece: function(sq,pt) {
@@ -1048,21 +1078,55 @@ ui_UI.prototype = {
 				linkable = this.isPlayerPiece(sq,pt);
 				this.setCell(sq,this.game.board[sq],linkable);
 			}
+			var _g1 = 1;
+			while(_g1 < 8) {
+				var i = _g1++;
+				this.setHand(0,i,this.game.hand[0][i],this.game.hand[0][i] > 0);
+				this.setHand(1,i,this.game.hand[1][i],false);
+			}
 		} else if(this.operationMode == 1) {
 			pt = this.game.board[this.selectedSq];
 			var arr = this.game.getMovableSq(this.selectedSq,pt);
-			var _g1 = 0;
-			while(_g1 < 81) {
-				var sq1 = _g1++;
+			var _g2 = 0;
+			while(_g2 < 81) {
+				var sq1 = _g2++;
 				linkable = arr.indexOf(sq1) > -1;
 				this.setCell(sq1,this.game.board[sq1],linkable);
 			}
+			this.setHand(0,1,this.game.hand[0][1],false);
+			this.setHand(1,1,this.game.hand[1][1],false);
+			this.setHand(0,2,this.game.hand[0][2],false);
+			this.setHand(1,2,this.game.hand[1][2],false);
+			this.setHand(0,3,this.game.hand[0][3],false);
+			this.setHand(1,3,this.game.hand[1][3],false);
+			this.setHand(0,4,this.game.hand[0][4],false);
+			this.setHand(1,4,this.game.hand[1][4],false);
+			this.setHand(0,5,this.game.hand[0][5],false);
+			this.setHand(1,5,this.game.hand[1][5],false);
+			this.setHand(0,6,this.game.hand[0][6],false);
+			this.setHand(1,6,this.game.hand[1][6],false);
+			this.setHand(0,7,this.game.hand[0][7],false);
+			this.setHand(1,7,this.game.hand[1][7],false);
 		} else {
-			var _g2 = 0;
-			while(_g2 < 81) {
-				var sq2 = _g2++;
+			var _g3 = 0;
+			while(_g3 < 81) {
+				var sq2 = _g3++;
 				this.setCell(sq2,this.game.board[sq2],false);
 			}
+			this.setHand(0,1,this.game.hand[0][1],false);
+			this.setHand(1,1,this.game.hand[1][1],false);
+			this.setHand(0,2,this.game.hand[0][2],false);
+			this.setHand(1,2,this.game.hand[1][2],false);
+			this.setHand(0,3,this.game.hand[0][3],false);
+			this.setHand(1,3,this.game.hand[1][3],false);
+			this.setHand(0,4,this.game.hand[0][4],false);
+			this.setHand(1,4,this.game.hand[1][4],false);
+			this.setHand(0,5,this.game.hand[0][5],false);
+			this.setHand(1,5,this.game.hand[1][5],false);
+			this.setHand(0,6,this.game.hand[0][6],false);
+			this.setHand(1,6,this.game.hand[1][6],false);
+			this.setHand(0,7,this.game.hand[0][7],false);
+			this.setHand(1,7,this.game.hand[1][7],false);
 		}
 	}
 	,setCell: function(sq,pt,linkable) {
@@ -1072,6 +1136,23 @@ ui_UI.prototype = {
 			s = "<a href=\"javascript:Main.onClickCell(" + sq + ")\">" + s + "</a>";
 		}
 		var cell = window.document.getElementById("cell_" + sq);
+		if(this.game.playerColor == c) {
+			cell.style.transform = "";
+		} else {
+			cell.style.transform = "rotate(180deg)";
+		}
+		cell.innerHTML = s;
+	}
+	,setHand: function(c,i,n,linkable) {
+		haxe_Log.trace("setHand c:" + c + " i:" + i + " n:" + n,{ fileName : "ui/UI.hx", lineNumber : 97, className : "ui.UI", methodName : "setHand"});
+		var cell = window.document.getElementById("hand_" + c + "_" + i);
+		var s = "　";
+		if(n > 0) {
+			s = "" + Types.getPieceLabel(i) + n;
+		}
+		if(linkable) {
+			s = "<a href=\"javascript:Main.onClickHand(" + i + ")\">" + s + "</a>";
+		}
 		if(this.game.playerColor == c) {
 			cell.style.transform = "";
 		} else {

@@ -5,6 +5,7 @@ import data.Move;
 class Position {
 	private var board:Array<Int> = [];
 	private var sideToMove:Int = Types.BLACK;
+    private var hand:Array<Array<Int>> = [];
 	private var byTypeBB:Array<Bitboard> = [];
 	private var byColorBB:Array<Bitboard> = [];
 
@@ -91,6 +92,7 @@ class Position {
 			PutPiece(i, c, pt);
 		}
 		trace('Position::setPosition $sfen');
+        hand = sf.getHand();
 		var moves = sf.getMoves();
 		for (i in 0...moves.length) {
 			doMove(moves[i]);

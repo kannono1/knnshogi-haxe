@@ -15,4 +15,7 @@ class Main {
 	static public function onClickCell(sq:Int) {
 		gui.onClickCell(sq);
 	}
+	static public function onClickHand(pr:Int) {
+		gui.onClickHand(pr);
+	}
 }
