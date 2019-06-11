@@ -24,6 +24,12 @@ class Bitboard {
 		needCount = other.needCount;
 	}
 
+	public function newCOPY():Bitboard {
+		var newBB:Bitboard = new Bitboard();
+		newBB.Copy(this);
+		return newBB;
+	}
+
 	public function IsNonZero():Bool {
 		return (lower != 0 || middle != 0 || upper != 0);
 	}
@@ -86,6 +92,13 @@ class Bitboard {
 		needCount = true;
 	}
 
+	public function newOR(other:Bitboard):Bitboard {
+		var newBB:Bitboard = new Bitboard();
+		newBB.Copy(this);
+		newBB.OR(other);
+		return newBB;
+	}
+
 	public function PopLSB():Int {
 		var index:Int = -1;
 		if (lower != 0) {
@@ -109,6 +122,59 @@ class Bitboard {
 		return -1;
 	}
 
+	public function ShiftL(theShift:Int) {
+		if (theShift < 27) {
+			upper = upper << theShift;
+			upper |= (middle >>> (27 - theShift));
+			middle = middle << theShift;
+			middle |= (lower >>> (27 - theShift));
+			lower = lower << theShift;
+		} else if (theShift < 54) {
+			upper = (middle >>> (theShift - 27));
+			upper |= (lower >>> (54 - theShift));
+			middle = lower << (theShift - 27);
+			lower = 0;
+		} else {
+			upper = (lower << (theShift - 54));
+			lower = 0;
+		}
+		needCount = true;
+	}
+
+	public function newShiftL(theShift:Int):Bitboard {
+		var newBB:Bitboard = new Bitboard();
+		newBB.Copy(this);
+		newBB.ShiftL(theShift);
+		return newBB;
+	}
+
+	public function ShiftR(theShift:Int) {
+		if (theShift < 27) {
+			lower = lower >>> theShift;
+			lower |= (((middle << (27 - theShift)) >>> (27 - theShift)) << (27 - theShift));
+			middle = middle >>> theShift;
+			middle |= (((upper << (27 - theShift)) >>> (27 - theShift)) << (27 - theShift));
+			upper = upper >>> theShift;
+		} else if (theShift < 54) {
+			lower = middle >>> (theShift - 27);
+			lower |= (((upper << (27 - theShift)) >>> (27 - theShift)) << (27 - theShift));
+			middle = upper >>> (theShift - 27);
+			upper = 0;
+		} else {
+			lower = (upper >>> (theShift - 54));
+			middle = 0;
+			upper = 0;
+		}
+		needCount = true;
+	}
+
+	public function newShiftR(theShift:Int):Bitboard {
+		var newBB:Bitboard = new Bitboard();
+		newBB.Copy(this);
+		newBB.ShiftR(theShift);
+		return newBB;
+	}
+
 	public function SetBit(theIndex:Int) {
 		if (theIndex < NA) {
 			lower |= (1 << theIndex);
@@ -129,6 +195,42 @@ class Bitboard {
 			upper ^= (1 << (theIndex - 54));
 		}
 		needCount = true;
+	}
+
+	public function NORM27():Bitboard {
+		lower &= 0x7FFFFFF;
+		middle &= 0x7FFFFFF;
+		upper &= 0x7FFFFFF;
+		needCount = true;
+		return this;
+	}
+
+	public function AND(other:Bitboard) {
+		lower &= other.lower;
+		middle &= other.middle;
+		upper &= other.upper;
+		needCount = true;
+	}
+
+	public function newAND(other:Bitboard):Bitboard {
+		var newBB:Bitboard = new Bitboard();
+		newBB.Copy(this);
+		newBB.AND(other);
+		return newBB;
+	}
+
+	public function NOT() {
+		lower = ~lower;
+		middle = ~middle;
+		upper = ~upper;
+		count = 81 - count;
+	}
+
+	public function newNOT():Bitboard {
+		var newBB:Bitboard = new Bitboard();
+		newBB.Copy(this);
+		newBB.NOT();
+		return newBB;
 	}
 
 	public function toStringBB():String {

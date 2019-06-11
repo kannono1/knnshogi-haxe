@@ -3,6 +3,9 @@ package;
 class Types {
 	static public inline var BLACK:Int = 0;
 	static public inline var WHITE:Int = 1;
+	public static inline var FILE_A:Int = 0;
+	public static inline var RANK_1:Int = 0;
+	static public inline var COLOR_NB:Int = 2;
 	public static inline var ALL_PIECES:Int = 0;
 	public static inline var PIECE_TYPE_NB:Int = 0;
 	public static inline var NO_PIECE_TYPE:Int = 0;
@@ -57,10 +60,26 @@ class Types {
 	public static inline var FILE_NB:Int = 9;
 	public static inline var RANK_NB:Int = 9;
 	public static inline var MAX_MOVES:Int = 600;
-	public static inline var DELTA_N:Int = 1; // 飛び(上下左右)の方向のシフトビット
+	public static inline var DELTA_N:Int = -1; // 飛び(上下左右)の方向のシフトビット
 	public static inline var DELTA_E:Int = -9;
 	public static inline var DELTA_S:Int = 1;
 	public static inline var DELTA_W:Int = 9;
+	public static inline var DELTA_NN:Int = DELTA_N + DELTA_N; // 飛び(斜め)の方向のシフトビット
+	public static inline var DELTA_NE:Int = DELTA_N + DELTA_E;
+	public static inline var DELTA_SE:Int = DELTA_S + DELTA_E;
+	public static inline var DELTA_SS:Int = DELTA_S + DELTA_S;
+	public static inline var DELTA_SW:Int = DELTA_S + DELTA_W;
+	public static inline var DELTA_NW:Int = DELTA_N + DELTA_W;
+	public static inline var MOVE_NONE:Int = 0;
+	public static inline var MOVE_NORMAL:Int = 0;
+	public static inline var MOVE_DROP:Int = 1 << 14;
+	public static inline var MOVE_PROMO:Int = 1 << 15;
+	public static inline var VALUE_ZERO:Int = 0;
+	public static inline var VALUE_DRAW:Int = 0;
+	public static inline var VALUE_KNOWN_WIN:Int = 15000;
+	public static inline var VALUE_MATE:Int = 30000;
+	public static inline var VALUE_INFINITE:Int = 30001;
+	public static inline var VALUE_NONE:Int = 30002;
 
 	public static function Is_SqOK(s:Int):Bool {
 		return (s >= SQ_A1 && s <= SQ_HB);
@@ -76,6 +95,80 @@ class Types {
 
 	public static function FileString_Of(s:Int):String {
 		return '${File_Of(s) + 1}';
+	}
+
+	public static function File_To_Char(f:Int):String {
+		return FileString_Of(f);
+	}
+
+	public static function Rank_To_Char(r:Int, toLower:Bool = true):String {
+		if (toLower) {
+			return String.fromCharCode(('a').charCodeAt(0) + r);
+		} else {
+			return String.fromCharCode(('A').charCodeAt(0) + r);
+		}
+	}
+
+	public static function Square_To_String(s:Int):String {
+		return File_To_Char(File_Of(s)) + Rank_To_Char(Rank_Of(s));
+	}
+
+	public static function Move_FromSq(m:Int):Int {
+		return (m >>> 7) & 0x7F;
+	}
+
+	public static function Move_Dropped_Piece(m:Int):Int {
+		return (m >>> 7) & 0x7F;
+	}
+
+	public static function Move_ToSq(m:Int):Int {
+		return m & 0x7F;
+	}
+
+	public static function Move_Type(m:Int):Int {
+		return m & (3 << 14);
+	}
+
+	public static function Move_To_String(m:Int):String {
+		if (Is_Drop(m)) {
+			return PieceToChar(Move_Dropped_Piece(m)) + "*" + Square_To_String(Move_ToSq(m)) + " " + Move_Type_String(m) + " : " + m;
+		} else { // move
+			return Square_To_String(Move_FromSq(m)) + Square_To_String(Move_ToSq(m)) + " " + Move_Type_String(m) + " : " + m;
+		}
+	}
+
+	public static function Move_Type_String(m:Int):String {
+		if (Move_Type(m) == MOVE_DROP) {
+			return "Drop";
+		}
+		if (Move_Type(m) == MOVE_PROMO) {
+			return "Promo";
+		}
+		return "Normal";
+	}
+
+	public static function Make_Move(from:Int, to:Int):Int {
+		return to | (from << 7);
+	}
+
+	public static function Make_Move_Promote(from:Int, to:Int):Int {
+		return to | (from << 7) | MOVE_PROMO;
+	}
+
+	public static function Make_Move_Drop(pt:Int, sq:Int):Int {
+		return sq | (pt << 7) | MOVE_DROP;
+	}
+
+	public static function Is_Move_OK(m:Int):Bool {
+		return (Move_FromSq(m) != Move_ToSq(m));
+	}
+
+	public static function Is_Promote(m:Int):Bool {
+		return (m & MOVE_PROMO) != 0;
+	}
+
+	public static function Is_Drop(m:Int):Bool {
+		return (m & MOVE_DROP) != 0;
 	}
 
 	public static function RankString_Of(s:Int):String {
@@ -102,6 +195,94 @@ class Types {
 
 	public static function TypeOf_Piece(pc:Int):Int {
 		return pc % 16;
+	}
+
+	public static function PieceToChar(pt:Int):String {
+		if (pt == B_PAWN) {
+			return "P";
+		}
+		if (pt == B_LANCE) {
+			return "L";
+		}
+		if (pt == B_SILVER) {
+			return "S";
+		}
+		if (pt == B_KNIGHT) {
+			return "N";
+		}
+		if (pt == B_BISHOP) {
+			return "B";
+		}
+		if (pt == B_ROOK) {
+			return "R";
+		}
+		if (pt == B_GOLD) {
+			return "G";
+		}
+		if (pt == B_KING) {
+			return "K";
+		}
+		if (pt == B_PRO_PAWN) {
+			return "+P";
+		}
+		if (pt == B_PRO_LANCE) {
+			return "+L";
+		}
+		if (pt == B_PRO_KNIGHT) {
+			return "+N";
+		}
+		if (pt == B_PRO_SILVER) {
+			return "+S";
+		}
+		if (pt == B_HORSE) {
+			return "+B";
+		}
+		if (pt == B_DRAGON) {
+			return "+R";
+		}
+		if (pt == W_PAWN) {
+			return "p";
+		}
+		if (pt == W_LANCE) {
+			return "l";
+		}
+		if (pt == W_KNIGHT) {
+			return "n";
+		}
+		if (pt == W_SILVER) {
+			return "s";
+		}
+		if (pt == W_BISHOP) {
+			return "b";
+		}
+		if (pt == W_ROOK) {
+			return "r";
+		}
+		if (pt == W_GOLD) {
+			return "g";
+		}
+		if (pt == W_KING) {
+			return "k";
+		}
+		if (pt == W_PRO_PAWN) {
+			return "+p";
+		}
+		if (pt == W_PRO_LANCE) {
+			return "+l";
+		}
+		if (pt == W_PRO_KNIGHT) {
+			return "+n";
+		}
+		if (pt == W_PRO_SILVER) {
+			return "+s";
+		}
+		if (pt == W_HORSE) {
+			return "+b";
+		}
+		if (pt == W_DRAGON) {
+			return "+r";
+		}
+		return "?";
 	}
 
 	static public function getPieceType(token:String):Int {

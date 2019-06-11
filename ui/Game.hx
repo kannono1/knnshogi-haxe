@@ -74,7 +74,8 @@ class Game {
 
 	private function onMessage(s:MessageEvent) {
 		trace('Game::onThink ${s.data}');
-		var move = Move.generateMove(20, 21);
+        var tokens = s.data.split(' ');
+		var move = Move.generateMoveFromString(tokens[1]);
 		doMove(move);
 		ui.onEnemyMoved();
 	}

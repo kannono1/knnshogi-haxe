@@ -3,10 +3,10 @@ package;
 import data.Move;
 
 class Position {
-	public var byTypeBB:Array<Bitboard> = [];
-
 	private var board:Array<Int> = [];
 	private var sideToMove:Int = Types.BLACK;
+	private var byTypeBB:Array<Bitboard> = [];
+	private var byColorBB:Array<Bitboard> = [];
 
 	public function new() {
 		trace('Posision::new');
@@ -15,13 +15,22 @@ class Position {
 
 	public function InitBB() {
 		trace('Posision::InitBB');
+		byTypeBB = [];
 		for (i in 0...Types.PIECE_NB) {
 			byTypeBB.push(new Bitboard());
+		}
+		byColorBB = [];
+		for (i in 0...Types.COLOR_NB) {
+			byColorBB.push(new Bitboard());
 		}
 	}
 
 	public function PiecesAll():Bitboard {
 		return byTypeBB[Types.ALL_PIECES];
+	}
+
+	public function PiecesColourType(c:Int, pt:Int):Bitboard {
+		return byColorBB[c].newAND(byTypeBB[pt]);
 	}
 
 	private function changeSideToMove() {
@@ -41,12 +50,12 @@ class Position {
 		RemovePiece(from, us, pt);
 		MovePiece(from, to, us, pt);
 		changeSideToMove();
-		trace(byTypeBB[Types.ALL_PIECES].toStringBB());
 	}
 
 	public function PutPiece(sq:Int, c:Int, pt:Int) {
 		trace('Position::PutPiece sq:$sq c:$c pt:$pt');
 		board[sq] = Types.Make_Piece(c, pt);
+		byColorBB[c].SetBit(sq);
 		byTypeBB[Types.ALL_PIECES].SetBit(sq);
 		byTypeBB[pt].SetBit(sq);
 	}
@@ -55,6 +64,7 @@ class Position {
 		trace('Position::MovePiece from:$from to:$to c:$c pt:$pt');
 		board[to] = Types.Make_Piece(c, pt);
 		board[from] = 0;
+		byColorBB[c].SetBit(to);
 		byTypeBB[Types.ALL_PIECES].SetBit(to);
 		byTypeBB[pt].SetBit(to);
 	}
@@ -62,21 +72,22 @@ class Position {
 	private function RemovePiece(sq:Int, c:Int, pt:Int) {
 		trace('Position::RemovePiece sq:$sq c:$c pt:$pt');
 		board[sq] = 0;
+		byColorBB[c].ClrBit(sq);
 		byTypeBB[Types.ALL_PIECES].ClrBit(sq);
 		byTypeBB[pt].ClrBit(sq);
 	}
 
 	public function setPosition(sfen) {
 		var sf:SFEN = new SFEN(sfen);
-		var bd = sf.getBoard();
+		board = sf.getBoard();
 		for (i in 0...81) {
-			var pc = bd[i];
+			var pc = board[i];
 			var pt = Types.TypeOf_Piece(pc);
 			var c = Types.getPieceColor(pc);
 			if (pc == 0) {
 				continue;
 			}
-            PutPiece(i, c, pt);
+			PutPiece(i, c, pt);
 		}
 		trace('Position::setPosition $sfen');
 		var moves = sf.getMoves();

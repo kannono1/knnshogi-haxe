@@ -18,44 +18,61 @@ BB.RankDistance = function(s1,s2) {
 	return util_MathUtil.abs(Types.Rank_Of(s1) - Types.Rank_Of(s2));
 };
 BB.Init = function() {
+	haxe_Log.trace("Init::BB",{ fileName : "BB.hx", lineNumber : 74, className : "BB", methodName : "Init"});
+	BB.filesBB = [];
+	BB.ranksBB = [];
 	var _g = 0;
-	while(_g < 81) {
-		var sq = _g++;
+	while(_g < 9) {
+		var i = _g++;
+		BB.filesBB.push(new Bitboard(511,0,0));
+		BB.filesBB[i].ShiftL(9 * i);
+		BB.ranksBB.push(new Bitboard(262657,262657,262657));
+		BB.ranksBB[i].ShiftL(i);
+	}
+	BB.enemyField1[1] = BB.ranksBB[8].newCOPY();
+	BB.enemyField1[0] = BB.ranksBB[0].newCOPY();
+	BB.enemyField2[1] = BB.ranksBB[8].newOR(BB.ranksBB[7]);
+	BB.enemyField2[0] = BB.ranksBB[0].newOR(BB.ranksBB[1]);
+	BB.enemyField3[1] = BB.enemyField2[1].newOR(BB.ranksBB[6]);
+	BB.enemyField3[0] = BB.enemyField2[0].newOR(BB.ranksBB[2]);
+	var _g1 = 0;
+	while(_g1 < 81) {
+		var sq = _g1++;
 		BB.squareBB[sq] = new Bitboard();
 		BB.squareBB[sq].SetBit(sq);
 	}
-	var _g1 = 0;
-	while(_g1 < 81) {
-		var s1 = _g1++;
+	var _g2 = 0;
+	while(_g2 < 81) {
+		var s1 = _g2++;
 		BB.squareDistance[s1] = [];
-		var _g11 = 0;
-		while(_g11 < 81) {
-			var s2 = _g11++;
+		var _g21 = 0;
+		while(_g21 < 81) {
+			var s2 = _g21++;
 			BB.squareDistance[s1][s2] = util_MathUtil.max(BB.FileDistance(s1,s2),BB.RankDistance(s1,s2));
 		}
 	}
-	var _g2 = 0;
-	while(_g2 < 31) {
-		var pt = _g2++;
+	var _g3 = 0;
+	while(_g3 < 31) {
+		var pt = _g3++;
 		BB.stepAttacksBB[pt] = [];
-		var _g21 = 0;
-		while(_g21 < 81) {
-			var s11 = _g21++;
+		var _g31 = 0;
+		while(_g31 < 81) {
+			var s11 = _g31++;
 			BB.stepAttacksBB[pt][s11] = new Bitboard();
 		}
 	}
-	var _g3 = 0;
-	while(_g3 < 1) {
-		var c = _g3++;
-		var _g31 = 1;
-		while(_g31 < 14) {
-			var pt1 = _g31++;
-			var _g32 = 0;
-			while(_g32 < 81) {
-				var s = _g32++;
-				var _g33 = 0;
-				while(_g33 < 9) {
-					var k = _g33++;
+	var _g4 = 0;
+	while(_g4 < 1) {
+		var c = _g4++;
+		var _g41 = 1;
+		while(_g41 < 14) {
+			var pt1 = _g41++;
+			var _g42 = 0;
+			while(_g42 < 81) {
+				var s = _g42++;
+				var _g43 = 0;
+				while(_g43 < 9) {
+					var k = _g43++;
 					if(BB.steps[pt1][k] == 0) {
 						continue;
 					}
@@ -76,6 +93,28 @@ BB.Init = function() {
 			}
 		}
 	}
+};
+BB.ShiftBB = function(b,deltta) {
+	if(deltta == -1) {
+		return b.newShiftR(1);
+	}
+	if(deltta == 1) {
+		return b.newShiftL(1);
+	}
+	if(deltta == -10) {
+		return b.newAND(BB.filesBB[8].newNOT()).newShiftL(10);
+	}
+	if(deltta == -8) {
+		return b.newAND(BB.filesBB[8].newNOT()).newShiftR(8);
+	}
+	if(deltta == 8) {
+		return b.newAND(BB.filesBB[0].newNOT()).newShiftL(8);
+	}
+	if(deltta == 10) {
+		return b.newAND(BB.filesBB[0].newNOT()).newShiftR(10);
+	}
+	var zero = new Bitboard();
+	return zero;
 };
 var Bitboard = function(l,m,u) {
 	if(u == null) {
@@ -132,6 +171,11 @@ Bitboard.prototype = {
 		this.count = other.count;
 		this.needCount = other.needCount;
 	}
+	,newCOPY: function() {
+		var newBB = new Bitboard();
+		newBB.Copy(this);
+		return newBB;
+	}
 	,IsNonZero: function() {
 		if(!(this.lower != 0 || this.middle != 0)) {
 			return this.upper != 0;
@@ -166,6 +210,12 @@ Bitboard.prototype = {
 		this.upper |= other.upper;
 		this.needCount = true;
 	}
+	,newOR: function(other) {
+		var newBB = new Bitboard();
+		newBB.Copy(this);
+		newBB.OR(other);
+		return newBB;
+	}
 	,PopLSB: function() {
 		var index = -1;
 		if(this.lower != 0) {
@@ -188,6 +238,55 @@ Bitboard.prototype = {
 		}
 		return -1;
 	}
+	,ShiftL: function(theShift) {
+		if(theShift < 27) {
+			this.upper <<= theShift;
+			this.upper |= this.middle >>> 27 - theShift;
+			this.middle <<= theShift;
+			this.middle |= this.lower >>> 27 - theShift;
+			this.lower <<= theShift;
+		} else if(theShift < 54) {
+			this.upper = this.middle >>> theShift - 27;
+			this.upper |= this.lower >>> 54 - theShift;
+			this.middle = this.lower << theShift - 27;
+			this.lower = 0;
+		} else {
+			this.upper = this.lower << theShift - 54;
+			this.lower = 0;
+		}
+		this.needCount = true;
+	}
+	,newShiftL: function(theShift) {
+		var newBB = new Bitboard();
+		newBB.Copy(this);
+		newBB.ShiftL(theShift);
+		return newBB;
+	}
+	,ShiftR: function(theShift) {
+		if(theShift < 27) {
+			this.lower >>>= theShift;
+			this.lower |= this.middle << 27 - theShift >>> 27 - theShift << 27 - theShift;
+			this.middle >>>= theShift;
+			this.middle |= this.upper << 27 - theShift >>> 27 - theShift << 27 - theShift;
+			this.upper >>>= theShift;
+		} else if(theShift < 54) {
+			this.lower = this.middle >>> theShift - 27;
+			this.lower |= this.upper << 27 - theShift >>> 27 - theShift << 27 - theShift;
+			this.middle = this.upper >>> theShift - 27;
+			this.upper = 0;
+		} else {
+			this.lower = this.upper >>> theShift - 54;
+			this.middle = 0;
+			this.upper = 0;
+		}
+		this.needCount = true;
+	}
+	,newShiftR: function(theShift) {
+		var newBB = new Bitboard();
+		newBB.Copy(this);
+		newBB.ShiftR(theShift);
+		return newBB;
+	}
 	,SetBit: function(theIndex) {
 		if(theIndex < 27) {
 			this.lower |= 1 << theIndex;
@@ -197,6 +296,47 @@ Bitboard.prototype = {
 			this.upper |= 1 << theIndex - 54;
 		}
 		this.needCount = true;
+	}
+	,ClrBit: function(theIndex) {
+		if(theIndex < 27) {
+			this.lower ^= 1 << theIndex;
+		} else if(theIndex < 54) {
+			this.middle ^= 1 << theIndex - 27;
+		} else {
+			this.upper ^= 1 << theIndex - 54;
+		}
+		this.needCount = true;
+	}
+	,NORM27: function() {
+		this.lower &= 134217727;
+		this.middle &= 134217727;
+		this.upper &= 134217727;
+		this.needCount = true;
+		return this;
+	}
+	,AND: function(other) {
+		this.lower &= other.lower;
+		this.middle &= other.middle;
+		this.upper &= other.upper;
+		this.needCount = true;
+	}
+	,newAND: function(other) {
+		var newBB = new Bitboard();
+		newBB.Copy(this);
+		newBB.AND(other);
+		return newBB;
+	}
+	,NOT: function() {
+		this.lower = ~this.lower;
+		this.middle = ~this.middle;
+		this.upper = ~this.upper;
+		this.count = 81 - this.count;
+	}
+	,newNOT: function() {
+		var newBB = new Bitboard();
+		newBB.Copy(this);
+		newBB.NOT();
+		return newBB;
 	}
 	,toStringBB: function() {
 		var s = "";
@@ -265,8 +405,10 @@ Main.onClickCell = function(sq) {
 };
 Math.__name__ = true;
 var SFEN = function(sfen) {
+	this.moves = [];
+	this.sideToMove = 0;
 	this.board = [];
-	this.startpos = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1 moves";
+	this.startpos = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1";
 	this.setPosition(sfen);
 };
 SFEN.__name__ = true;
@@ -280,10 +422,13 @@ SFEN.prototype = {
 		}
 		return arr;
 	}
+	,getMoves: function() {
+		return this.moves;
+	}
 	,setPosition: function(sfen) {
 		sfen = StringTools.replace(sfen,"startpos",this.startpos);
 		sfen = StringTools.replace(sfen,"sfen ","");
-		haxe_Log.trace("SFEN::setPosition",{ fileName : "SFEN.hx", lineNumber : 24, className : "SFEN", methodName : "setPosition", customParams : [sfen]});
+		haxe_Log.trace("SFEN::setPosition",{ fileName : "SFEN.hx", lineNumber : 31, className : "SFEN", methodName : "setPosition", customParams : [sfen]});
 		var tokens = sfen.split(" ");
 		var f = 8;
 		var r = 0;
@@ -292,7 +437,7 @@ SFEN.prototype = {
 		var token = "";
 		var sq = 0;
 		this.board = [];
-		haxe_Log.trace(tokens,{ fileName : "SFEN.hx", lineNumber : 33, className : "SFEN", methodName : "setPosition"});
+		haxe_Log.trace(tokens,{ fileName : "SFEN.hx", lineNumber : 40, className : "SFEN", methodName : "setPosition"});
 		var _g = 0;
 		var _g1 = tokens[0].length;
 		while(_g < _g1) {
@@ -321,6 +466,17 @@ SFEN.prototype = {
 				this.board[sq] = pt;
 				--f;
 				promote = false;
+			}
+		}
+		this.sideToMove = tokens[1] == "b" ? 0 : 1;
+		if(sfen.indexOf("moves") > 0) {
+			var mvs = sfen.split("moves ")[1].split(" ");
+			var _g21 = 0;
+			var _g3 = mvs.length;
+			while(_g21 < _g3) {
+				var i2 = _g21++;
+				var m = data_Move.generateMoveFromString(mvs[i2]);
+				this.moves.push(m);
 			}
 		}
 	}
@@ -360,6 +516,67 @@ Types.Rank_Of = function(s) {
 Types.FileString_Of = function(s) {
 	return "" + (Types.File_Of(s) + 1);
 };
+Types.Move_FromSq = function(m) {
+	return m >>> 7 & 127;
+};
+Types.Move_Dropped_Piece = function(m) {
+	return m >>> 7 & 127;
+};
+Types.Move_ToSq = function(m) {
+	return m & 127;
+};
+Types.Move_Type = function(m) {
+	return m & 49152;
+};
+Types.File_To_Char = function(f,toLower) {
+	if(toLower) {
+		var code = HxOverrides.cca("a",0) + f;
+		return String.fromCodePoint(code);
+	}
+	var code1 = HxOverrides.cca("A",0) + f;
+	return String.fromCodePoint(code1);
+};
+Types.Rank_To_Char = function(r) {
+	var code = HxOverrides.cca("1",0) + r;
+	return String.fromCodePoint(code);
+};
+Types.Square_To_String = function(s) {
+	return Types.File_To_Char(Types.File_Of(s),true) + Types.Rank_To_Char(Types.Rank_Of(s));
+};
+Types.Move_To_String = function(m) {
+	if(Types.Is_Drop(m)) {
+		return Types.PieceToChar(Types.Move_Dropped_Piece(m)) + "*" + Types.Square_To_String(Types.Move_ToSq(m)) + " " + Types.Move_Type_String(m) + " : " + m;
+	} else {
+		return Types.Square_To_String(Types.Move_FromSq(m)) + Types.Square_To_String(Types.Move_ToSq(m)) + " " + Types.Move_Type_String(m) + " : " + m;
+	}
+};
+Types.Move_Type_String = function(m) {
+	if(Types.Move_Type(m) == 16384) {
+		return "Drop";
+	}
+	if(Types.Move_Type(m) == 32768) {
+		return "Promo";
+	}
+	return "Normal";
+};
+Types.Make_Move = function(from,to) {
+	return to | from << 7;
+};
+Types.Make_Move_Promote = function(from,to) {
+	return to | from << 7 | 32768;
+};
+Types.Make_Move_Drop = function(pt,sq) {
+	return sq | pt << 7 | 16384;
+};
+Types.Is_Move_OK = function(m) {
+	return Types.Move_FromSq(m) != Types.Move_ToSq(m);
+};
+Types.Is_Promote = function(m) {
+	return (m & 32768) != 0;
+};
+Types.Is_Drop = function(m) {
+	return (m & 16384) != 0;
+};
 Types.RankString_Of = function(s) {
 	var code = 97 + Types.Rank_Of(s);
 	return String.fromCodePoint(code);
@@ -382,6 +599,96 @@ Types.getPieceColor = function(pt) {
 	} else {
 		return 1;
 	}
+};
+Types.TypeOf_Piece = function(pc) {
+	return pc % 16;
+};
+Types.PieceToChar = function(pt) {
+	if(pt == 17) {
+		return "P";
+	}
+	if(pt == 18) {
+		return "L";
+	}
+	if(pt == 20) {
+		return "S";
+	}
+	if(pt == 19) {
+		return "N";
+	}
+	if(pt == 21) {
+		return "B";
+	}
+	if(pt == 22) {
+		return "R";
+	}
+	if(pt == 23) {
+		return "G";
+	}
+	if(pt == 24) {
+		return "K";
+	}
+	if(pt == 25) {
+		return "+P";
+	}
+	if(pt == 26) {
+		return "+L";
+	}
+	if(pt == 27) {
+		return "+N";
+	}
+	if(pt == 28) {
+		return "+S";
+	}
+	if(pt == 29) {
+		return "+B";
+	}
+	if(pt == 30) {
+		return "+R";
+	}
+	if(pt == 1) {
+		return "p";
+	}
+	if(pt == 2) {
+		return "l";
+	}
+	if(pt == 3) {
+		return "n";
+	}
+	if(pt == 4) {
+		return "s";
+	}
+	if(pt == 5) {
+		return "b";
+	}
+	if(pt == 6) {
+		return "r";
+	}
+	if(pt == 7) {
+		return "g";
+	}
+	if(pt == 8) {
+		return "k";
+	}
+	if(pt == 9) {
+		return "+p";
+	}
+	if(pt == 10) {
+		return "+l";
+	}
+	if(pt == 11) {
+		return "+n";
+	}
+	if(pt == 12) {
+		return "+s";
+	}
+	if(pt == 13) {
+		return "+b";
+	}
+	if(pt == 14) {
+		return "+r";
+	}
+	return "?";
 };
 Types.getPieceType = function(token) {
 	switch(token) {
@@ -672,16 +979,17 @@ ui_Game.prototype = {
 	}
 	,onMessage: function(s) {
 		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 76, className : "ui.Game", methodName : "onMessage"});
-		var move = data_Move.generateMove(20,21);
+		var tokens = s.data.split(" ");
+		var move = data_Move.generateMoveFromString(tokens[1]);
 		this.doMove(move);
 		this.ui.onEnemyMoved();
 	}
 	,start: function() {
-		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 83, className : "ui.Game", methodName : "start"});
+		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 84, className : "ui.Game", methodName : "start"});
 		this.setPosition("startpos");
 	}
 	,setPosition: function(sfen) {
-		haxe_Log.trace("Game::setPosition",{ fileName : "ui/Game.hx", lineNumber : 88, className : "ui.Game", methodName : "setPosition", customParams : [sfen]});
+		haxe_Log.trace("Game::setPosition",{ fileName : "ui/Game.hx", lineNumber : 89, className : "ui.Game", methodName : "setPosition", customParams : [sfen]});
 		var sf = new SFEN(sfen);
 		this.board = sf.getBoard();
 		this.ui.updateUi(0);
@@ -800,11 +1108,19 @@ js_Boot.__toStr = ({ }).toString;
 BB.squareDistance = [];
 BB.stepAttacksBB = [];
 BB.squareBB = [];
+BB.enemyField1 = [];
+BB.enemyField2 = [];
+BB.enemyField3 = [];
 BB.steps = [[0,0,0,0,0,0,0,0,0],[-1,0,0,0,0,0,0,0,0],[-1,-2,-3,-4,-5,-6,-7,-8,0],[7,-11,0,0,0,0,0,0,0],[-1,8,10,-10,-8,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,10,-8,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]];
 Bitboard.NA = 27;
 Bitboard.NB = 54;
 Types.BLACK = 0;
 Types.WHITE = 1;
+Types.FILE_A = 0;
+Types.RANK_1 = 0;
+Types.COLOR_NB = 2;
+Types.ALL_PIECES = 0;
+Types.PIECE_TYPE_NB = 0;
 Types.NO_PIECE_TYPE = 0;
 Types.PAWN = 1;
 Types.LANCE = 2;
@@ -856,6 +1172,27 @@ Types.SQ_HB = 80;
 Types.SQ_NB = 81;
 Types.FILE_NB = 9;
 Types.RANK_NB = 9;
+Types.MAX_MOVES = 600;
+Types.DELTA_N = -1;
+Types.DELTA_E = -9;
+Types.DELTA_S = 1;
+Types.DELTA_W = 9;
+Types.DELTA_NN = -2;
+Types.DELTA_NE = -10;
+Types.DELTA_SE = -8;
+Types.DELTA_SS = 2;
+Types.DELTA_SW = 10;
+Types.DELTA_NW = 8;
+Types.MOVE_NONE = 0;
+Types.MOVE_NORMAL = 0;
+Types.MOVE_DROP = 16384;
+Types.MOVE_PROMO = 32768;
+Types.VALUE_ZERO = 0;
+Types.VALUE_DRAW = 0;
+Types.VALUE_KNOWN_WIN = 15000;
+Types.VALUE_MATE = 30000;
+Types.VALUE_INFINITE = 30001;
+Types.VALUE_NONE = 30002;
 ui_Mode.OPERATION_SELECT = 0;
 ui_Mode.OPERATION_PUT = 1;
 ui_Mode.OPERATION_WAITING = 2;
