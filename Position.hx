@@ -48,11 +48,21 @@ class Position {
 	}
 
 	private function doMoveFull(move:Move) {
+        trace('Position::doMove ${move.toString()}');
 		var from = move.from;
 		var to = move.to;
 		var us = sideToMove;
+		var them:Int = Types.OppColour(us);
 		var pc = board[from];
 		var pt = Types.TypeOf_Piece(pc);
+		var captured:Int = Types.TypeOf_Piece(PieceOn(to));
+		var capturedRaw:Int = Types.RawTypeOf(captured);
+		trace('catured: $captured capturedRaw: $capturedRaw');
+		if (captured != 0) {
+			var capsq:Int = to;
+			AddHand(us, capturedRaw);
+			RemovePiece(capsq, them, captured);
+		}
 		RemovePiece(from, us, pt);
 		MovePiece(from, to, us, pt);
 		changeSideToMove();
@@ -81,6 +91,22 @@ class Position {
 		byColorBB[c].ClrBit(sq);
 		byTypeBB[Types.ALL_PIECES].ClrBit(sq);
 		byTypeBB[pt].ClrBit(sq);
+	}
+
+	public function HandExists(c:Int, pr:Int):Bool {
+		return hand[c][pr] > 0;
+	}
+
+	public function AddHand(c:Int, pr:Int, n:Int = 1) {
+		hand[c][pr] += n;
+	}
+
+	public function SubHand(c:Int, pr:Int, n:Int = 1) {
+		hand[c][pr] -= n;
+	}
+
+	public function HandCount(c:Int, pr:Int):Int {
+		return hand[c][pr];
 	}
 
 	public function setPosition(sfen) {

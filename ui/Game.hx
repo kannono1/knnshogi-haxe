@@ -36,16 +36,9 @@ class Game extends Position {
 
 	override private function doMove(move:Move) {
 		trace('Game::doMove ${move.toString()}');
-        var to:Int = move.to;
-        var from:Int = move.from;
-        var captured:Int = Types.TypeOf_Piece( PieceOn(to) );
-		var capturedRaw:Int= Types.RawTypeOf(captured);
-        trace('catured: $captured capturedRaw: $capturedRaw');
-		if( captured != 0 ) {
-			// AddHand(us, capturedRaw);
-        }
         moves.push(move);
         super.doMove(move);
+        trace('hand $hand');
 		if (isEnemyTurn()) {
 			worker.postMessage('position $_sfen moves '+getMovesString() );
 		}

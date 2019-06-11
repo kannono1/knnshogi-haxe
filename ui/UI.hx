@@ -94,7 +94,6 @@ class UI {
 	}
 
 	private function setHand(c:Int, i:Int, n:Int, linkable:Bool) {
-		trace('setHand c:$c i:$i n:$n');
 		var cell = Browser.document.getElementById('hand_${c}_${i}');
 		var s = '　';
 		if (n > 0) {

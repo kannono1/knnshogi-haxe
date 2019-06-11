@@ -81,6 +81,10 @@ class Types {
 	public static inline var VALUE_INFINITE:Int = 30001;
 	public static inline var VALUE_NONE:Int = 30002;
 
+	public static function OppColour(c:Int):Int {
+		return c ^ 1;
+	}
+
 	public static function Is_SqOK(s:Int):Bool {
 		return (s >= SQ_A1 && s <= SQ_HB);
 	}
@@ -98,7 +102,7 @@ class Types {
 	}
 
 	public static function File_To_Char(f:Int):String {
-		return '${f +1}';
+		return '${f + 1}';
 	}
 
 	public static function Rank_To_Char(r:Int, toLower:Bool = true):String {
