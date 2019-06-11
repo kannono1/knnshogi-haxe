@@ -1165,7 +1165,7 @@ var ui_Game = function(ui_) {
 	this.moves = [];
 	this._sfen = "sfen lnsgkgsnl/9/pppppppp1/9/9/8p/PPPPPPPPP/9/LNS1KGSN1 b BRGLbr 1";
 	this.playerColor = 0;
-	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 17, className : "ui.Game", methodName : "new"});
+	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 18, className : "ui.Game", methodName : "new"});
 	Position.call(this);
 	this.ui = ui_;
 	this.createWorker();
@@ -1175,20 +1175,20 @@ ui_Game.__name__ = true;
 ui_Game.__super__ = Position;
 ui_Game.prototype = $extend(Position.prototype,{
 	createWorker: function() {
-		haxe_Log.trace("Game::createWorker",{ fileName : "ui/Game.hx", lineNumber : 25, className : "ui.Game", methodName : "createWorker"});
+		haxe_Log.trace("Game::createWorker",{ fileName : "ui/Game.hx", lineNumber : 26, className : "ui.Game", methodName : "createWorker"});
 		this.worker = new Worker("Engine.js");
 		this.worker.onmessage = $bind(this,this.onMessage);
 	}
 	,doPlayerMove: function(from,to) {
-		haxe_Log.trace("Game::doPlayerMove from: " + from + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 31, className : "ui.Game", methodName : "doPlayerMove"});
+		haxe_Log.trace("Game::doPlayerMove from: " + from + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 32, className : "ui.Game", methodName : "doPlayerMove"});
 		var move = Types.Make_Move(from,to);
 		this.doMove(move);
 	}
 	,doMove: function(move) {
-		haxe_Log.trace("Game::doMove " + Types.Move_To_String(move),{ fileName : "ui/Game.hx", lineNumber : 37, className : "ui.Game", methodName : "doMove"});
+		haxe_Log.trace("Game::doMove " + Types.Move_To_String(move),{ fileName : "ui/Game.hx", lineNumber : 38, className : "ui.Game", methodName : "doMove"});
 		this.moves.push(move);
 		Position.prototype.doMove.call(this,move);
-		haxe_Log.trace("hand " + Std.string(this.hand),{ fileName : "ui/Game.hx", lineNumber : 40, className : "ui.Game", methodName : "doMove"});
+		haxe_Log.trace("hand " + Std.string(this.hand),{ fileName : "ui/Game.hx", lineNumber : 41, className : "ui.Game", methodName : "doMove"});
 		if(this.isEnemyTurn()) {
 			this.worker.postMessage("position " + this._sfen + " moves " + this.getMovesString());
 		}
@@ -1204,7 +1204,7 @@ ui_Game.prototype = $extend(Position.prototype,{
 		return s;
 	}
 	,getMovableSq: function(sq,pt) {
-		haxe_Log.trace("Game::getMovableSq sq: " + sq + " pt: " + pt,{ fileName : "ui/Game.hx", lineNumber : 55, className : "ui.Game", methodName : "getMovableSq"});
+		haxe_Log.trace("Game::getMovableSq sq: " + sq + " pt: " + pt,{ fileName : "ui/Game.hx", lineNumber : 56, className : "ui.Game", methodName : "getMovableSq"});
 		var attack = BB.stepAttacksBB[pt][sq];
 		var b = new Bitboard();
 		var arr = [];
@@ -1216,7 +1216,7 @@ ui_Game.prototype = $extend(Position.prototype,{
 		return this.sideToMove == 1;
 	}
 	,onMessage: function(s) {
-		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 71, className : "ui.Game", methodName : "onMessage"});
+		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 72, className : "ui.Game", methodName : "onMessage"});
 		var tokens = s.data.split(" ");
 		var move = Types.generateMoveFromString(tokens[1]);
 		if(move == 0) {
@@ -1227,11 +1227,11 @@ ui_Game.prototype = $extend(Position.prototype,{
 		}
 	}
 	,start: function() {
-		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 83, className : "ui.Game", methodName : "start"});
+		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 84, className : "ui.Game", methodName : "start"});
 		this.setPosition(this._sfen);
 	}
 	,endGame: function() {
-		haxe_Log.trace("Game::End",{ fileName : "ui/Game.hx", lineNumber : 88, className : "ui.Game", methodName : "endGame"});
+		haxe_Log.trace("Game::End",{ fileName : "ui/Game.hx", lineNumber : 89, className : "ui.Game", methodName : "endGame"});
 		this.ui.onEndGame(this.sideToMove);
 	}
 	,setPosition: function(sfen) {
@@ -1239,8 +1239,6 @@ ui_Game.prototype = $extend(Position.prototype,{
 		this.ui.updateUi(0);
 	}
 });
-var ui_Mode = function() { };
-ui_Mode.__name__ = true;
 var ui_UI = function() {
 	this.selectedSq = 0;
 	this.operationMode = 0;
@@ -1253,20 +1251,24 @@ ui_UI.prototype = {
 		this.game.start();
 	}
 	,onClickCell: function(sq) {
-		haxe_Log.trace("on clickCell:",{ fileName : "ui/UI.hx", lineNumber : 20, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
-		if(this.operationMode == 0) {
+		haxe_Log.trace("on clickCell:",{ fileName : "ui/UI.hx", lineNumber : 21, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
+		switch(this.operationMode) {
+		case 0:
 			this.selectedSq = sq;
 			this.updateUi(1);
-		} else if(this.operationMode == 1) {
+			break;
+		case 1:
 			this.game.doPlayerMove(this.selectedSq,sq);
-			this.updateUi(2);
+			this.updateUi(3);
+			break;
+		default:
 		}
 	}
 	,onClickHand: function(pr) {
-		haxe_Log.trace("on clickHand:",{ fileName : "ui/UI.hx", lineNumber : 31, className : "ui.UI", methodName : "onClickHand", customParams : [pr]});
+		haxe_Log.trace("on clickHand:",{ fileName : "ui/UI.hx", lineNumber : 34, className : "ui.UI", methodName : "onClickHand", customParams : [pr]});
 	}
 	,onEnemyMoved: function() {
-		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 36, className : "ui.UI", methodName : "onEnemyMoved"});
+		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 38, className : "ui.UI", methodName : "onEnemyMoved"});
 		this.updateUi(0);
 	}
 	,onEndGame: function(winner) {
@@ -1284,7 +1286,8 @@ ui_UI.prototype = {
 		var linkable = false;
 		var pt = 0;
 		this.operationMode = mode;
-		if(this.operationMode == 0) {
+		switch(this.operationMode) {
+		case 0:
 			var _g = 0;
 			while(_g < 81) {
 				var sq = _g++;
@@ -1298,7 +1301,8 @@ ui_UI.prototype = {
 				this.setHand(0,i,this.game.hand[0][i],this.game.hand[0][i] > 0);
 				this.setHand(1,i,this.game.hand[1][i],false);
 			}
-		} else if(this.operationMode == 1) {
+			break;
+		case 1:
 			pt = this.game.board[this.selectedSq];
 			var arr = this.game.getMovableSq(this.selectedSq,pt);
 			var _g2 = 0;
@@ -1321,7 +1325,8 @@ ui_UI.prototype = {
 			this.setHand(1,6,this.game.hand[1][6],false);
 			this.setHand(0,7,this.game.hand[0][7],false);
 			this.setHand(1,7,this.game.hand[1][7],false);
-		} else {
+			break;
+		default:
 			var _g3 = 0;
 			while(_g3 < 81) {
 				var sq2 = _g3++;
@@ -1494,8 +1499,5 @@ Types.VALUE_KNOWN_WIN = 15000;
 Types.VALUE_MATE = 30000;
 Types.VALUE_INFINITE = 30001;
 Types.VALUE_NONE = 30002;
-ui_Mode.OPERATION_SELECT = 0;
-ui_Mode.OPERATION_PUT = 1;
-ui_Mode.OPERATION_WAITING = 2;
 Main.main();
 })(typeof exports != "undefined" ? exports : typeof window != "undefined" ? window : typeof self != "undefined" ? self : this);

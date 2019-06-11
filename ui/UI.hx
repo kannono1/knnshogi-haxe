@@ -1,10 +1,11 @@
 package ui;
 
 import js.Browser;
+import ui.Mode.OPERATION_MODE;
 
 class UI {
 	private var game:Game;
-	private var operationMode:Int = Mode.OPERATION_SELECT;
+	private var operationMode = OPERATION_MODE.SELECT;
 	private var selectedSq:Int = 0;
 
 	public function new() {
@@ -18,67 +19,69 @@ class UI {
 
 	public function onClickCell(sq:Int) {
 		trace('on clickCell:', sq);
-		if (this.operationMode == Mode.OPERATION_SELECT) {
-			this.selectedSq = sq;
-			this.updateUi(Mode.OPERATION_PUT);
-		} else if (this.operationMode == Mode.OPERATION_PUT) {
-			game.doPlayerMove(this.selectedSq, sq);
-			this.updateUi(Mode.OPERATION_WAITING);
+		switch (this.operationMode) {
+			case SELECT:
+				this.selectedSq = sq;
+				this.updateUi(OPERATION_MODE.MOVE);
+			case MOVE:
+				game.doPlayerMove(this.selectedSq, sq);
+				this.updateUi(OPERATION_MODE.WAIT);
+			default:
 		}
 	}
 
-    public function onClickHand(pr:Int) {
+	public function onClickHand(pr:Int) {
 		trace('on clickHand:', pr);
-        
-    }
+	}
 
 	public function onEnemyMoved() {
 		trace('UI::onEnemyMoved');
-		this.updateUi(Mode.OPERATION_SELECT);
+		this.updateUi(OPERATION_MODE.SELECT);
 	}
 
-    public function onEndGame(winner:Int){
-        Browser.alert('${winner}の勝ちです');
-    }
+	public function onEndGame(winner:Int) {
+		Browser.alert('${winner}の勝ちです');
+	}
 
 	private function isPlayerPiece(sq:Int, pt:Int):Bool {
 		var c = Types.getPieceColor(pt);
 		return (game.sideToMove == c && pt > 0);
 	}
 
-	public function updateUi(mode:Int) {
+	public function updateUi(mode:OPERATION_MODE) {
 		var linkable:Bool = false;
 		var pt:Int = 0;
 		operationMode = mode;
-		if (this.operationMode == Mode.OPERATION_SELECT) {
-			for (sq in 0...81) {
-				pt = game.board[sq];
-				linkable = isPlayerPiece(sq, pt);
-				this.setCell(sq, game.board[sq], linkable);
-			}
-			for (i in 1...8) {
-				setHand(Types.BLACK, i, game.hand[Types.BLACK][i], (game.hand[Types.BLACK][i] > 0) );
-				setHand(Types.WHITE, i, game.hand[Types.WHITE][i], false );
-			}
-		} else if (this.operationMode == Mode.OPERATION_PUT) {
-			pt = game.board[this.selectedSq];
-			var arr:Array<Int> = game.getMovableSq(selectedSq, pt);
-			for (sq in 0...81) {
-				linkable = (arr.indexOf(sq) > -1);
-				this.setCell(sq, game.board[sq], linkable);
-			}
-			for (i in 1...8) {
-				setHand(Types.BLACK, i, game.hand[Types.BLACK][i], false);
-				setHand(Types.WHITE, i, game.hand[Types.WHITE][i], false);
-			}
-		} else {
-			for (sq in 0...81) {
-				this.setCell(sq, game.board[sq], false);
-			}
-			for (i in 1...8) {
-				setHand(Types.BLACK, i, game.hand[Types.BLACK][i], false);
-				setHand(Types.WHITE, i, game.hand[Types.WHITE][i], false);
-			}
+		switch (this.operationMode) {
+			case SELECT:
+				for (sq in 0...81) {
+					pt = game.board[sq];
+					linkable = isPlayerPiece(sq, pt);
+					this.setCell(sq, game.board[sq], linkable);
+				}
+				for (i in 1...8) {
+					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], (game.hand[Types.BLACK][i] > 0));
+					setHand(Types.WHITE, i, game.hand[Types.WHITE][i], false);
+				}
+			case MOVE:
+				pt = game.board[this.selectedSq];
+				var arr:Array<Int> = game.getMovableSq(selectedSq, pt);
+				for (sq in 0...81) {
+					linkable = (arr.indexOf(sq) > -1);
+					this.setCell(sq, game.board[sq], linkable);
+				}
+				for (i in 1...8) {
+					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], false);
+					setHand(Types.WHITE, i, game.hand[Types.WHITE][i], false);
+				}
+			default:
+				for (sq in 0...81) {
+					this.setCell(sq, game.board[sq], false);
+				}
+				for (i in 1...8) {
+					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], false);
+					setHand(Types.WHITE, i, game.hand[Types.WHITE][i], false);
+				}
 		}
 	}
 

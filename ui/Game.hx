@@ -3,6 +3,7 @@ package ui;
 import js.html.MessageEvent;
 import js.html.Worker;
 import util.StringUtil;
+import ui.Mode.OPERATION_MODE;
 
 class Game extends Position {
 	public var playerColor:Int = 0;
@@ -91,6 +92,6 @@ class Game extends Position {
 
 	override public function setPosition(sfen:String):Void {
 		super.setPosition(sfen);
-		ui.updateUi(Mode.OPERATION_SELECT);
+		ui.updateUi(OPERATION_MODE.SELECT);
 	}
 }
