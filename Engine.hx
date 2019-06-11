@@ -2,7 +2,6 @@ package;
 
 import js.html.DedicatedWorkerGlobalScope;
 import js.html.MessageEvent;
-import data.Move;
 
 class Engine {
 	static private var global:DedicatedWorkerGlobalScope = js.Lib.eval("self");

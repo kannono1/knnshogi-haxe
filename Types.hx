@@ -121,12 +121,12 @@ class Types {
 		return (m >>> 7) & 0x7F;
 	}
 
-	public static function Move_Dropped_Piece(m:Int):Int {
-		return (m >>> 7) & 0x7F;
-	}
-
 	public static function Move_ToSq(m:Int):Int {
 		return m & 0x7F;
+	}
+
+	public static function Move_Dropped_Piece(m:Int):Int {
+		return (m >>> 7) & 0x7F;
 	}
 
 	public static function Move_Type(m:Int):Int {
@@ -135,10 +135,14 @@ class Types {
 
 	public static function Move_To_String(m:Int):String {
 		if (Is_Drop(m)) {
-			return PieceToChar(Move_Dropped_Piece(m)) + "*" + Square_To_String(Move_ToSq(m)) + " " + Move_Type_String(m) + " : " + m;
+			return PieceToChar(Move_Dropped_Piece(m)) + "*" + Square_To_String(Move_ToSq(m));
 		} else { // move
-			return Square_To_String(Move_FromSq(m)) + Square_To_String(Move_ToSq(m)) + " " + Move_Type_String(m) + " : " + m;
+			return Square_To_String(Move_FromSq(m)) + Square_To_String(Move_ToSq(m));
 		}
+	}
+
+	public static function Move_To_StringLong(m:Int):String {
+		return Move_To_String(m) + " " + Move_Type_String(m) + " : " + m;
 	}
 
 	public static function Move_Type_String(m:Int):String {
@@ -161,6 +165,16 @@ class Types {
 
 	public static function Make_Move_Drop(pt:Int, sq:Int):Int {
 		return sq | (pt << 7) | MOVE_DROP;
+	}
+
+	static public function generateMoveFromString(ft:String):Int {
+		var f:Int = Std.parseInt(ft.substr(0, 1)) - 1;
+		var r:Int = ft.charCodeAt(1) - 97;
+		var from = Types.Square(f, r);
+		f = Std.parseInt(ft.substr(2, 1)) - 1;
+		r = ft.charCodeAt(3) - 97;
+		var to = Types.Square(f, r);
+		return Make_Move(from, to);
 	}
 
 	public static function Is_Move_OK(m:Int):Bool {

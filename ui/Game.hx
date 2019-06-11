@@ -2,7 +2,6 @@ package ui;
 
 import js.html.MessageEvent;
 import js.html.Worker;
-import data.Move;
 import util.StringUtil;
 
 class Game extends Position {
@@ -12,7 +11,7 @@ class Game extends Position {
 	private var _sfen = 'sfen lnsgkgsnl/9/pppppppp1/9/9/8p/PPPPPPPPP/9/LNS1KGSN1 b BRGLbr 1';
 	private var ui:UI;
 	private var worker:Worker;
-	private var moves:Array<Move> = [];
+	private var moves:Array<Int> = [];
 
 	public function new(ui_:UI) {
 		trace('Game::new');
@@ -30,12 +29,12 @@ class Game extends Position {
 
 	public function doPlayerMove(from:Int, to:Int) {
 		trace('Game::doPlayerMove from: $from to: $to');
-		var move = Move.generateMove(from, to);
+		var move:Int = Types.Make_Move(from, to);
 		doMove(move);
 	}
 
-	override private function doMove(move:Move) {
-		trace('Game::doMove ${move.toString()}');
+	override private function doMove(move:Int) {
+		trace('Game::doMove ${Types.Move_To_String(move)}');
 		moves.push(move);
 		super.doMove(move);
 		trace('hand $hand');
@@ -45,9 +44,9 @@ class Game extends Position {
 	}
 
 	private function getMovesString():String {
-		var s = moves[0].toString();
+		var s = Types.Move_To_String(moves[0]);
 		for (i in 1...moves.length) {
-			s += ' ' + moves[i].toString();
+			s += ' ' + Types.Move_To_String(moves[i]);
 		}
 		return s;
 	}
@@ -71,8 +70,8 @@ class Game extends Position {
 	private function onMessage(s:MessageEvent) {
 		trace('Game::onThink ${s.data}');
 		var tokens = s.data.split(' ');
-		var move = Move.generateMoveFromString(tokens[1]);
-		if (move.to == 0 && move.from == 0) {
+		var move:Int = Types.generateMoveFromString(tokens[1]);
+		if (move == 0) {
 			endGame();
 		} else {
 			doMove(move);

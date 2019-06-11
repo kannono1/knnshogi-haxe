@@ -1,7 +1,5 @@
 package;
 
-import data.Move;
-
 @:allow()
 class Position {
 	public var board:Array<Int> = [];
@@ -43,14 +41,14 @@ class Position {
 		sideToMove = (sideToMove + 1) % 2;
 	}
 
-	private function doMove(move:Move) {
+	private function doMove(move:Int) {
 		doMoveFull(move);
 	}
 
-	private function doMoveFull(move:Move) {
-        trace('Position::doMove ${move.toString()}');
-		var from = move.from;
-		var to = move.to;
+	private function doMoveFull(move:Int) {
+        trace('Position::doMove ${Types.Move_To_String(move)}');
+		var from = Types.Move_FromSq(move);
+		var to = Types.Move_ToSq(move);
 		var us = sideToMove;
 		var them:Int = Types.OppColour(us);
 		var pc = board[from];
