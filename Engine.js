@@ -472,20 +472,19 @@ MoveList.prototype = {
 		}
 		var emptySquares = target;
 		var pawnsNotOn7 = pos.PiecesColourType(us,1).newAND(tRank8BB.newNOT());
-		var s1 = BB.ShiftBB(pawnsNotOn7,up);
 		var b1 = BB.ShiftBB(pawnsNotOn7,up).newAND(emptySquares);
 		this.SerializePawns(b1,up,us);
 	}
 	,GenerateAll: function(pos,us,target) {
-		haxe_Log.trace("MoveList::GenerateAll c: " + us,{ fileName : "MoveList.hx", lineNumber : 53, className : "MoveList", methodName : "GenerateAll"});
+		haxe_Log.trace("MoveList::GenerateAll c: " + us,{ fileName : "MoveList.hx", lineNumber : 52, className : "MoveList", methodName : "GenerateAll"});
 		this.generatePawnMoves(pos,us,target);
 	}
 	,Generate: function(pos) {
 		var us = pos.SideToMove();
 		var pc;
-		haxe_Log.trace("MoveList::Generate c: " + us,{ fileName : "MoveList.hx", lineNumber : 60, className : "MoveList", methodName : "Generate"});
+		haxe_Log.trace("MoveList::Generate c: " + us,{ fileName : "MoveList.hx", lineNumber : 59, className : "MoveList", methodName : "Generate"});
 		var target = pos.PiecesAll().newNOT();
-		haxe_Log.trace(target.toStringBB(),{ fileName : "MoveList.hx", lineNumber : 62, className : "MoveList", methodName : "Generate"});
+		haxe_Log.trace(target.toStringBB(),{ fileName : "MoveList.hx", lineNumber : 61, className : "MoveList", methodName : "Generate"});
 		this.GenerateAll(pos,us,target);
 	}
 };
@@ -704,7 +703,6 @@ var SFEN = function(sfen) {
 	this.moves = [];
 	this.sideToMove = 0;
 	this.board = [];
-	this.startpos = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1";
 	this.setPosition(sfen);
 };
 SFEN.__name__ = true;
@@ -725,7 +723,7 @@ SFEN.prototype = {
 		return this.sideToMove;
 	}
 	,setPosition: function(sfen) {
-		sfen = StringTools.replace(sfen,"startpos",this.startpos);
+		sfen = StringTools.replace(sfen,"startpos","lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1");
 		sfen = StringTools.replace(sfen,"sfen ","");
 		haxe_Log.trace("SFEN::setPosition",{ fileName : "SFEN.hx", lineNumber : 35, className : "SFEN", methodName : "setPosition", customParams : [sfen]});
 		var tokens = sfen.split(" ");
@@ -875,7 +873,7 @@ Types.FileString_Of = function(s) {
 	return "" + (Types.File_Of(s) + 1);
 };
 Types.File_To_Char = function(f) {
-	return Types.FileString_Of(f);
+	return "" + (f + 1);
 };
 Types.Rank_To_Char = function(r,toLower) {
 	if(toLower == null) {
@@ -1320,6 +1318,7 @@ BB.steps = [[0,0,0,0,0,0,0,0,0],[-1,0,0,0,0,0,0,0,0],[-1,-2,-3,-4,-5,-6,-7,-8,0]
 Bitboard.NA = 27;
 Bitboard.NB = 54;
 Engine.global = eval("self");
+SFEN.startpos = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1";
 Search.rootMoves = [];
 Search.numRootMoves = 0;
 Types.BLACK = 0;

@@ -98,7 +98,7 @@ class Types {
 	}
 
 	public static function File_To_Char(f:Int):String {
-		return FileString_Of(f);
+		return '${f +1}';
 	}
 
 	public static function Rank_To_Char(r:Int, toLower:Bool = true):String {

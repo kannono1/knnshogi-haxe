@@ -4,7 +4,7 @@ import util.StringUtil;
 import data.Move;
 
 class SFEN {
-	private var startpos = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
+	private static inline var startpos = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
 	private var board:Array<Int> = [];
 	private var sideToMove:Int = Types.BLACK;
 	private var moves:Array<Move> = [];

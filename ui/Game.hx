@@ -10,6 +10,8 @@ class Game {
 	public var sideToMove:Int = 0;
 	public var playerColor:Int = 0;
 
+    // private var _sfen = 'startpos';
+    private var _sfen = 'sfen lnsgkgsnl/9/pppppppp1/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
 	private var ui:UI;
 	private var worker:Worker;
     private var moves:Array<Move> = [];
@@ -40,7 +42,7 @@ class Game {
         moves.push(move);
 		changeSideToMove();
 		if (isEnemyTurn()) {
-			worker.postMessage('position startpos moves '+getMovesString() );
+			worker.postMessage('position $_sfen moves '+getMovesString() );
 		}
 	}
 
@@ -82,7 +84,7 @@ class Game {
 
 	public function start() {
 		trace('Game::start');
-		setPosition('startpos');
+		setPosition(_sfen);
 	}
 
 	public function setPosition(sfen:String):Void {

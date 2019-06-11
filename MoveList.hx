@@ -44,7 +44,6 @@ class MoveList {
 		var emptySquares:Bitboard = target;
 		// var pawnsOn7:SF_Bitboard    = pos.PiecesColourType( us, SF_Types.PAWN ).newAND( tRank8BB );
 		var pawnsNotOn7:Bitboard = pos.PiecesColourType(us, Types.PAWN).newAND(tRank8BB.newNOT()); // 最上段に達していない歩
-		var s1 = BB.ShiftBB(pawnsNotOn7, up);
 		var b1 = BB.ShiftBB(pawnsNotOn7, up).newAND(emptySquares); // Shift upで歩を進め、空白マスでフィルタ
 		SerializePawns(b1, up, us);
 	}
