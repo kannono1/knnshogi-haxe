@@ -31,6 +31,7 @@ class Engine {
 		if (msg.indexOf('position ') == 0) {
 			pos.setPosition(msg.substr(9));
 			pos.printBoard();
+			trace('pos.c: ${pos.SideToMove()}');
 			Search.Reset(pos);
 			Search.Think();
 			var moveResult:Int = Search.rootMoves[0].pv[0];

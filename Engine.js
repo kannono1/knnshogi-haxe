@@ -393,11 +393,12 @@ Engine.onMessage = function(m) {
 	if(msg.indexOf("position ") == 0) {
 		Engine.pos.setPosition(HxOverrides.substr(msg,9,null));
 		Engine.pos.printBoard();
+		haxe_Log.trace("pos.c: " + Engine.pos.SideToMove(),{ fileName : "Engine.hx", lineNumber : 34, className : "Engine", methodName : "onMessage"});
 		Search.Reset(Engine.pos);
 		Search.Think();
 		var moveResult = Search.rootMoves[0].pv[0];
 		res = "bestmove " + Types.Move_To_String(moveResult);
-		haxe_Log.trace(res,{ fileName : "Engine.hx", lineNumber : 38, className : "Engine", methodName : "onMessage"});
+		haxe_Log.trace(res,{ fileName : "Engine.hx", lineNumber : 39, className : "Engine", methodName : "onMessage"});
 		Engine.global.postMessage(res);
 	}
 };
@@ -605,6 +606,7 @@ Position.prototype = {
 	}
 	,setPosition: function(sfen) {
 		var sf = new SFEN(sfen);
+		this.sideToMove = sf.SideToMove();
 		this.board = sf.getBoard();
 		var _g = 0;
 		while(_g < 81) {
@@ -617,7 +619,7 @@ Position.prototype = {
 			}
 			this.PutPiece(i,c,pt);
 		}
-		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 92, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 93, className : "Position", methodName : "setPosition"});
 		var moves = sf.getMoves();
 		var _g1 = 0;
 		var _g2 = moves.length;
@@ -625,7 +627,7 @@ Position.prototype = {
 			var i1 = _g1++;
 			this.doMove(moves[i1]);
 		}
-		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 97, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 98, className : "Position", methodName : "setPosition"});
 	}
 	,SideToMove: function() {
 		return this.sideToMove;
@@ -695,7 +697,7 @@ Position.prototype = {
 			s += HxOverrides.substr("  " + this.board[sq8],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 115, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 116, className : "Position", methodName : "printBoard"});
 	}
 };
 var SFEN = function(sfen) {
@@ -719,10 +721,13 @@ SFEN.prototype = {
 	,getMoves: function() {
 		return this.moves;
 	}
+	,SideToMove: function() {
+		return this.sideToMove;
+	}
 	,setPosition: function(sfen) {
 		sfen = StringTools.replace(sfen,"startpos",this.startpos);
 		sfen = StringTools.replace(sfen,"sfen ","");
-		haxe_Log.trace("SFEN::setPosition",{ fileName : "SFEN.hx", lineNumber : 31, className : "SFEN", methodName : "setPosition", customParams : [sfen]});
+		haxe_Log.trace("SFEN::setPosition",{ fileName : "SFEN.hx", lineNumber : 35, className : "SFEN", methodName : "setPosition", customParams : [sfen]});
 		var tokens = sfen.split(" ");
 		var f = 8;
 		var r = 0;
@@ -731,7 +736,7 @@ SFEN.prototype = {
 		var token = "";
 		var sq = 0;
 		this.board = [];
-		haxe_Log.trace(tokens,{ fileName : "SFEN.hx", lineNumber : 40, className : "SFEN", methodName : "setPosition"});
+		haxe_Log.trace(tokens,{ fileName : "SFEN.hx", lineNumber : 44, className : "SFEN", methodName : "setPosition"});
 		var _g = 0;
 		var _g1 = tokens[0].length;
 		while(_g < _g1) {

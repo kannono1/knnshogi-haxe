@@ -516,6 +516,24 @@ Types.Rank_Of = function(s) {
 Types.FileString_Of = function(s) {
 	return "" + (Types.File_Of(s) + 1);
 };
+Types.File_To_Char = function(f) {
+	return Types.FileString_Of(f);
+};
+Types.Rank_To_Char = function(r,toLower) {
+	if(toLower == null) {
+		toLower = true;
+	}
+	if(toLower) {
+		var code = HxOverrides.cca("a",0) + r;
+		return String.fromCodePoint(code);
+	} else {
+		var code1 = HxOverrides.cca("A",0) + r;
+		return String.fromCodePoint(code1);
+	}
+};
+Types.Square_To_String = function(s) {
+	return Types.File_To_Char(Types.File_Of(s)) + Types.Rank_To_Char(Types.Rank_Of(s));
+};
 Types.Move_FromSq = function(m) {
 	return m >>> 7 & 127;
 };
@@ -527,21 +545,6 @@ Types.Move_ToSq = function(m) {
 };
 Types.Move_Type = function(m) {
 	return m & 49152;
-};
-Types.File_To_Char = function(f,toLower) {
-	if(toLower) {
-		var code = HxOverrides.cca("a",0) + f;
-		return String.fromCodePoint(code);
-	}
-	var code1 = HxOverrides.cca("A",0) + f;
-	return String.fromCodePoint(code1);
-};
-Types.Rank_To_Char = function(r) {
-	var code = HxOverrides.cca("1",0) + r;
-	return String.fromCodePoint(code);
-};
-Types.Square_To_String = function(s) {
-	return Types.File_To_Char(Types.File_Of(s),true) + Types.Rank_To_Char(Types.Rank_Of(s));
 };
 Types.Move_To_String = function(m) {
 	if(Types.Is_Drop(m)) {
@@ -953,12 +956,12 @@ ui_Game.prototype = {
 		}
 	}
 	,getMovesString: function() {
-		var s = "";
-		var _g = 0;
+		var s = this.moves[0].toString();
+		var _g = 1;
 		var _g1 = this.moves.length;
 		while(_g < _g1) {
 			var i = _g++;
-			s += this.moves[i].toString();
+			s += " " + this.moves[i].toString();
 		}
 		return s;
 	}

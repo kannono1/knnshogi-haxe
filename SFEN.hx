@@ -25,6 +25,10 @@ class SFEN {
 		return moves;
 	}
 
+    public function SideToMove():Int{
+        return sideToMove;
+    }
+
 	private function setPosition(sfen:String):Void {
 		sfen = StringTools.replace(sfen, 'startpos', startpos);
 		sfen = StringTools.replace(sfen, 'sfen ', '');

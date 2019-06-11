@@ -79,6 +79,7 @@ class Position {
 
 	public function setPosition(sfen) {
 		var sf:SFEN = new SFEN(sfen);
+        sideToMove = sf.SideToMove();
 		board = sf.getBoard();
 		for (i in 0...81) {
 			var pc = board[i];

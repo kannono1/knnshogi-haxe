@@ -45,9 +45,9 @@ class Game {
 	}
 
     private function getMovesString():String {
-        var s = '';
-        for(i in 0...moves.length){
-            s += moves[i].toString();
+        var s = moves[0].toString();
+        for(i in 1...moves.length){
+            s += ' ' + moves[i].toString();
         }
         return s;
     }
