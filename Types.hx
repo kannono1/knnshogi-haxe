@@ -1,5 +1,11 @@
 package;
 
+abstract Move(Int) to Int {
+	inline public function new(i:Int) {
+		this = i;
+	}
+}
+
 class Types {
 	static public inline var BLACK:Int = 0;
 	static public inline var WHITE:Int = 1;
@@ -70,7 +76,7 @@ class Types {
 	public static inline var DELTA_SS:Int = DELTA_S + DELTA_S;
 	public static inline var DELTA_SW:Int = DELTA_S + DELTA_W;
 	public static inline var DELTA_NW:Int = DELTA_N + DELTA_W;
-	public static inline var MOVE_NONE:Int = 0;
+	public static inline var MOVE_NONE:Move = new Move(0);
 	public static inline var MOVE_NORMAL:Int = 0;
 	public static inline var MOVE_DROP:Int = 1 << 14;
 	public static inline var MOVE_PROMO:Int = 1 << 15;
@@ -117,23 +123,23 @@ class Types {
 		return File_To_Char(File_Of(s)) + Rank_To_Char(Rank_Of(s));
 	}
 
-	public static function Move_FromSq(m:Int):Int {
+	public static function Move_FromSq(m:Move):Int {
 		return (m >>> 7) & 0x7F;
 	}
 
-	public static function Move_ToSq(m:Int):Int {
+	public static function Move_ToSq(m:Move):Int {
 		return m & 0x7F;
 	}
 
-	public static function Move_Dropped_Piece(m:Int):Int {
+	public static function Move_Dropped_Piece(m:Move):Int {
 		return (m >>> 7) & 0x7F;
 	}
 
-	public static function Move_Type(m:Int):Int {
+	public static function Move_Type(m:Move):Int {
 		return m & (3 << 14);
 	}
 
-	public static function Move_To_String(m:Int):String {
+	public static function Move_To_String(m:Move):String {
 		if (Is_Drop(m)) {
 			return PieceToChar(Move_Dropped_Piece(m)) + "*" + Square_To_String(Move_ToSq(m));
 		} else { // move
@@ -141,11 +147,11 @@ class Types {
 		}
 	}
 
-	public static function Move_To_StringLong(m:Int):String {
+	public static function Move_To_StringLong(m:Move):String {
 		return Move_To_String(m) + " " + Move_Type_String(m) + " : " + m;
 	}
 
-	public static function Move_Type_String(m:Int):String {
+	public static function Move_Type_String(m:Move):String {
 		if (Move_Type(m) == MOVE_DROP) {
 			return "Drop";
 		}
@@ -155,19 +161,19 @@ class Types {
 		return "Normal";
 	}
 
-	public static function Make_Move(from:Int, to:Int):Int {
-		return to | (from << 7);
+	public static function Make_Move(from:Int, to:Int):Move {
+		return new Move(to | (from << 7));
 	}
 
-	public static function Make_Move_Promote(from:Int, to:Int):Int {
-		return to | (from << 7) | MOVE_PROMO;
+	public static function Make_Move_Promote(from:Int, to:Int):Move {
+		return new Move(to | (from << 7) | MOVE_PROMO);
 	}
 
-	public static function Make_Move_Drop(pt:Int, sq:Int):Int {
-		return sq | (pt << 7) | MOVE_DROP;
+	public static function Make_Move_Drop(pt:Int, sq:Int):Move {
+		return new Move(sq | (pt << 7) | MOVE_DROP);
 	}
 
-	static public function generateMoveFromString(ft:String):Int {
+	static public function generateMoveFromString(ft:String):Move {
 		var f:Int = Std.parseInt(ft.substr(0, 1)) - 1;
 		var r:Int = ft.charCodeAt(1) - 97;
 		var from = Types.Square(f, r);
@@ -177,15 +183,15 @@ class Types {
 		return Make_Move(from, to);
 	}
 
-	public static function Is_Move_OK(m:Int):Bool {
+	public static function Is_Move_OK(m:Move):Bool {
 		return (Move_FromSq(m) != Move_ToSq(m));
 	}
 
-	public static function Is_Promote(m:Int):Bool {
+	public static function Is_Promote(m:Move):Bool {
 		return (m & MOVE_PROMO) != 0;
 	}
 
-	public static function Is_Drop(m:Int):Bool {
+	public static function Is_Drop(m:Move):Bool {
 		return (m & MOVE_DROP) != 0;
 	}
 

@@ -2,6 +2,7 @@ package;
 
 import js.html.DedicatedWorkerGlobalScope;
 import js.html.MessageEvent;
+import Types.Move;
 
 class Engine {
 	static private var global:DedicatedWorkerGlobalScope = js.Lib.eval("self");
@@ -33,7 +34,7 @@ class Engine {
 			trace('pos.c: ${pos.SideToMove()}');
 			Search.Reset(pos);
 			Search.Think();
-			var moveResult:Int = Search.rootMoves[0].pv[0];
+			var moveResult:Move = Search.rootMoves[0].pv[0];
 			res = 'bestmove ${Types.Move_To_String( moveResult )}';
 			trace(res);
 			global.postMessage(res);

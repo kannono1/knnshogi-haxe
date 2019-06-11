@@ -5,6 +5,8 @@ import js.html.Worker;
 import util.StringUtil;
 import ui.Mode.OPERATION_MODE;
 
+import Types.Move;
+
 class Game extends Position {
 	public var playerColor:Int = 0;
 
@@ -12,7 +14,7 @@ class Game extends Position {
 	private var _sfen = 'sfen lnsgkgsnl/9/pppppppp1/9/9/8p/PPPPPPPPP/9/LNS1KGSN1 b BRGLbr 1';
 	private var ui:UI;
 	private var worker:Worker;
-	private var moves:Array<Int> = [];
+	private var moves:Array<Move> = [];
 
 	public function new(ui_:UI) {
 		trace('Game::new');
@@ -30,11 +32,11 @@ class Game extends Position {
 
 	public function doPlayerMove(from:Int, to:Int) {
 		trace('Game::doPlayerMove from: $from to: $to');
-		var move:Int = Types.Make_Move(from, to);
+		var move:Move = Types.Make_Move(from, to);
 		doMove(move);
 	}
 
-	override private function doMove(move:Int) {
+	override private function doMove(move:Move) {
 		trace('Game::doMove ${Types.Move_To_String(move)}');
 		moves.push(move);
 		super.doMove(move);
@@ -71,7 +73,7 @@ class Game extends Position {
 	private function onMessage(s:MessageEvent) {
 		trace('Game::onThink ${s.data}');
 		var tokens = s.data.split(' ');
-		var move:Int = Types.generateMoveFromString(tokens[1]);
+		var move:Move = Types.generateMoveFromString(tokens[1]);
 		if (move == 0) {
 			endGame();
 		} else {

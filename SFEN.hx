@@ -2,6 +2,7 @@ package;
 
 import util.MathUtil;
 import util.StringUtil;
+import Types.Move;
 
 class SFEN {
 	private static inline var startpos = 'lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
@@ -11,7 +12,7 @@ class SFEN {
 		[0, 0, 0, 0, 0, 0, 0, 0],// 0PLNSBRG
 		[0, 0, 0, 0, 0, 0, 0, 0] // NO_PIECEのときは常に0
     ];
-	private var moves:Array<Int> = [];
+	private var moves:Array<Move> = [];
 
 	public function new(sfen:String) {
 		setPosition(sfen);
@@ -29,7 +30,7 @@ class SFEN {
         return hand;
     }
 
-	public function getMoves():Array<Int> {
+	public function getMoves():Array<Move> {
 		return moves;
 	}
 
@@ -96,7 +97,7 @@ class SFEN {
 		if (sfen.indexOf('moves') > 0) {
 			var mvs = sfen.split('moves ')[1].split(' ');
 			for (i in 0...mvs.length) {
-				var m = Types.generateMoveFromString(mvs[i]);
+				var m:Move = Types.generateMoveFromString(mvs[i]);
 				moves.push(m);
 			}
 		}
