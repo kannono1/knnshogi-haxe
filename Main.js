@@ -1173,6 +1173,11 @@ js_Boot.__string_rec = function(o,s) {
 		return String(o);
 	}
 };
+var js_Browser = function() { };
+js_Browser.__name__ = true;
+js_Browser.alert = function(v) {
+	window.alert(js_Boot.__string_rec(v,""));
+};
 var ui_Game = function(ui_) {
 	this.moves = [];
 	this._sfen = "sfen lnsgkgsnl/9/pppppppp1/9/9/8p/PPPPPPPPP/9/LNS1KGSN1 b BRGLbr 1";
@@ -1228,15 +1233,23 @@ ui_Game.prototype = $extend(Position.prototype,{
 		return this.sideToMove == 1;
 	}
 	,onMessage: function(s) {
-		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 77, className : "ui.Game", methodName : "onMessage"});
+		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 72, className : "ui.Game", methodName : "onMessage"});
 		var tokens = s.data.split(" ");
 		var move = data_Move.generateMoveFromString(tokens[1]);
-		this.doMove(move);
-		this.ui.onEnemyMoved();
+		if(move.to == 0 && move.from == 0) {
+			this.endGame();
+		} else {
+			this.doMove(move);
+			this.ui.onEnemyMoved();
+		}
 	}
 	,start: function() {
-		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 85, className : "ui.Game", methodName : "start"});
+		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 84, className : "ui.Game", methodName : "start"});
 		this.setPosition(this._sfen);
+	}
+	,endGame: function() {
+		haxe_Log.trace("Game::End",{ fileName : "ui/Game.hx", lineNumber : 89, className : "ui.Game", methodName : "endGame"});
+		this.ui.onEndGame(this.sideToMove);
 	}
 	,setPosition: function(sfen) {
 		Position.prototype.setPosition.call(this,sfen);
@@ -1272,6 +1285,9 @@ ui_UI.prototype = {
 	,onEnemyMoved: function() {
 		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 36, className : "ui.UI", methodName : "onEnemyMoved"});
 		this.updateUi(0);
+	}
+	,onEndGame: function(winner) {
+		js_Browser.alert("" + winner + "の勝ちです");
 	}
 	,isPlayerPiece: function(sq,pt) {
 		var c = Types.getPieceColor(pt);

@@ -37,6 +37,10 @@ class UI {
 		this.updateUi(Mode.OPERATION_SELECT);
 	}
 
+    public function onEndGame(winner:Int){
+        Browser.alert('${winner}の勝ちです');
+    }
+
 	private function isPlayerPiece(sq:Int, pt:Int):Bool {
 		var c = Types.getPieceColor(pt);
 		return (game.sideToMove == c && pt > 0);

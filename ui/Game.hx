@@ -8,15 +8,15 @@ import util.StringUtil;
 class Game extends Position {
 	public var playerColor:Int = 0;
 
-    // private var _sfen = 'startpos';
-    private var _sfen = 'sfen lnsgkgsnl/9/pppppppp1/9/9/8p/PPPPPPPPP/9/LNS1KGSN1 b BRGLbr 1';
+	// private var _sfen = 'startpos';
+	private var _sfen = 'sfen lnsgkgsnl/9/pppppppp1/9/9/8p/PPPPPPPPP/9/LNS1KGSN1 b BRGLbr 1';
 	private var ui:UI;
 	private var worker:Worker;
-    private var moves:Array<Move> = [];
+	private var moves:Array<Move> = [];
 
 	public function new(ui_:UI) {
 		trace('Game::new');
-        super();
+		super();
 		ui = ui_;
 		createWorker();
 		BB.Init();
@@ -36,24 +36,24 @@ class Game extends Position {
 
 	override private function doMove(move:Move) {
 		trace('Game::doMove ${move.toString()}');
-        moves.push(move);
-        super.doMove(move);
-        trace('hand $hand');
+		moves.push(move);
+		super.doMove(move);
+		trace('hand $hand');
 		if (isEnemyTurn()) {
-			worker.postMessage('position $_sfen moves '+getMovesString() );
+			worker.postMessage('position $_sfen moves ' + getMovesString());
 		}
 	}
 
-    private function getMovesString():String {
-        var s = moves[0].toString();
-        for(i in 1...moves.length){
-            s += ' ' + moves[i].toString();
-        }
-        return s;
-    }
+	private function getMovesString():String {
+		var s = moves[0].toString();
+		for (i in 1...moves.length) {
+			s += ' ' + moves[i].toString();
+		}
+		return s;
+	}
 
 	public function getMovableSq(sq:Int, pt:Int):Array<Int> {
-        trace('Game::getMovableSq sq: $sq pt: $pt');
+		trace('Game::getMovableSq sq: $sq pt: $pt');
 		var attack:Bitboard = BB.stepAttacksBB[pt][sq];
 		var b:Bitboard = new Bitboard();
 		var arr:Array<Int> = [];
@@ -68,17 +68,16 @@ class Game extends Position {
 		return (sideToMove == 1);
 	}
 
-	// private function changeSideToMove() {
-	// 	sideToMove = (sideToMove + 1) % 2;
-	// 	trace('changeSideToMove: $sideToMove');
-	// }
-
 	private function onMessage(s:MessageEvent) {
 		trace('Game::onThink ${s.data}');
-        var tokens = s.data.split(' ');
+		var tokens = s.data.split(' ');
 		var move = Move.generateMoveFromString(tokens[1]);
-		doMove(move);
-		ui.onEnemyMoved();
+		if (move.to == 0 && move.from == 0) {
+			endGame();
+		} else {
+			doMove(move);
+			ui.onEnemyMoved();
+		}
 	}
 
 	public function start() {
@@ -86,8 +85,13 @@ class Game extends Position {
 		setPosition(_sfen);
 	}
 
+	public function endGame() {
+		trace('Game::End');
+        ui.onEndGame(sideToMove);
+	}
+
 	override public function setPosition(sfen:String):Void {
-        super.setPosition(sfen);
+		super.setPosition(sfen);
 		ui.updateUi(Mode.OPERATION_SELECT);
 	}
 }
