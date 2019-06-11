@@ -5,20 +5,18 @@ import js.html.Worker;
 import data.Move;
 import util.StringUtil;
 
-class Game {
-	public var board:Array<Int> = [];
-	public var sideToMove:Int = 0;
-    public var hand:Array<Array<Int>> = [];
+class Game extends Position {
 	public var playerColor:Int = 0;
 
     // private var _sfen = 'startpos';
-    private var _sfen = 'sfen lnsgkgsnl/9/pppppppp1/9/9/9/PPPPPPPP1/9/LNS1KGSN1 b PBRGLpbr 1';
+    private var _sfen = 'sfen lnsgkgsnl/9/pppppppp1/9/9/8p/PPPPPPPPP/9/LNS1KGSN1 b BRGLbr 1';
 	private var ui:UI;
 	private var worker:Worker;
     private var moves:Array<Move> = [];
 
 	public function new(ui_:UI) {
 		trace('Game::new');
+        super();
 		ui = ui_;
 		createWorker();
 		BB.Init();
@@ -36,12 +34,18 @@ class Game {
 		doMove(move);
 	}
 
-	public function doMove(move:Move) {
+	override private function doMove(move:Move) {
 		trace('Game::doMove ${move.toString()}');
-		board[move.to] = board[move.from];
-		board[move.from] = 0;
+        var to:Int = move.to;
+        var from:Int = move.from;
+        var captured:Int = Types.TypeOf_Piece( PieceOn(to) );
+		var capturedRaw:Int= Types.RawTypeOf(captured);
+        trace('catured: $captured capturedRaw: $capturedRaw');
+		if( captured != 0 ) {
+			// AddHand(us, capturedRaw);
+        }
         moves.push(move);
-		changeSideToMove();
+        super.doMove(move);
 		if (isEnemyTurn()) {
 			worker.postMessage('position $_sfen moves '+getMovesString() );
 		}
@@ -56,6 +60,7 @@ class Game {
     }
 
 	public function getMovableSq(sq:Int, pt:Int):Array<Int> {
+        trace('Game::getMovableSq sq: $sq pt: $pt');
 		var attack:Bitboard = BB.stepAttacksBB[pt][sq];
 		var b:Bitboard = new Bitboard();
 		var arr:Array<Int> = [];
@@ -70,10 +75,10 @@ class Game {
 		return (sideToMove == 1);
 	}
 
-	private function changeSideToMove() {
-		sideToMove = (sideToMove + 1) % 2;
-		trace('changeSideToMove: $sideToMove');
-	}
+	// private function changeSideToMove() {
+	// 	sideToMove = (sideToMove + 1) % 2;
+	// 	trace('changeSideToMove: $sideToMove');
+	// }
 
 	private function onMessage(s:MessageEvent) {
 		trace('Game::onThink ${s.data}');
@@ -88,12 +93,8 @@ class Game {
 		setPosition(_sfen);
 	}
 
-	public function setPosition(sfen:String):Void {
-		trace('Game::setPosition', sfen);
-        var sfn:SFEN = new SFEN(sfen);
-        board = sfn.getBoard();
-        hand = sfn.getHand();
-        trace('hand: $hand');
+	override public function setPosition(sfen:String):Void {
+        super.setPosition(sfen);
 		ui.updateUi(Mode.OPERATION_SELECT);
 	}
 }

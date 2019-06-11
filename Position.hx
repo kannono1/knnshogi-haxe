@@ -2,12 +2,13 @@ package;
 
 import data.Move;
 
+@:allow()
 class Position {
-	private var board:Array<Int> = [];
-	private var sideToMove:Int = Types.BLACK;
-    private var hand:Array<Array<Int>> = [];
-	private var byTypeBB:Array<Bitboard> = [];
-	private var byColorBB:Array<Bitboard> = [];
+	public var board:Array<Int> = [];
+	public var sideToMove:Int = Types.BLACK;
+	public var hand:Array<Array<Int>> = [];
+	public var byTypeBB:Array<Bitboard> = [];
+	public var byColorBB:Array<Bitboard> = [];
 
 	public function new() {
 		trace('Posision::new');
@@ -32,6 +33,10 @@ class Position {
 
 	public function PiecesColourType(c:Int, pt:Int):Bitboard {
 		return byColorBB[c].newAND(byTypeBB[pt]);
+	}
+
+	public function PieceOn(sq:Int):Int {
+		return board[sq];
 	}
 
 	private function changeSideToMove() {
@@ -80,7 +85,7 @@ class Position {
 
 	public function setPosition(sfen) {
 		var sf:SFEN = new SFEN(sfen);
-        sideToMove = sf.SideToMove();
+		sideToMove = sf.SideToMove();
 		board = sf.getBoard();
 		for (i in 0...81) {
 			var pc = board[i];
@@ -92,7 +97,7 @@ class Position {
 			PutPiece(i, c, pt);
 		}
 		trace('Position::setPosition $sfen');
-        hand = sf.getHand();
+		hand = sf.getHand();
 		var moves = sf.getMoves();
 		for (i in 0...moves.length) {
 			doMove(moves[i]);
