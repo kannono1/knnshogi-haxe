@@ -53,8 +53,15 @@ class Position {
 		var to = Types.Move_ToSq(move);
 		var us = sideToMove;
 		var them:Int = Types.OppColour(us);
-		var pc = board[from];
+		var pc:Int = MovedPieceAfter(move);
+		var pr:Int = Types.RawTypeOf(pc);
 		var pt = Types.TypeOf_Piece(pc);
+		if( Types.Is_Drop(move) ){
+			SubHand(us, pr);
+			PutPiece(to, us, pr);
+			changeSideToMove();
+			return;
+		}
 		var captured:Int = Types.TypeOf_Piece(PieceOn(to));
 		var capturedRaw:Int = Types.RawTypeOf(captured);
 		trace('catured: $captured capturedRaw: $capturedRaw');
@@ -107,6 +114,18 @@ class Position {
 
 	public function HandCount(c:Int, pr:Int):Int {
 		return hand[c][pr];
+	}
+
+	public function MovedPieceAfter(m:Move):Int {
+		if( Types.Is_Drop(m) ){
+			return (m >>> 7) & 0x7F;
+		}
+		else if( Types.Is_Promote(m) ){
+			return PieceOn( Types.Move_FromSq(m) ) + Types.MOVE_PROMO;
+		}
+		else{
+			return PieceOn( Types.Move_FromSq(m) );
+		}
 	}
 
 	public function setPosition(sfen) {

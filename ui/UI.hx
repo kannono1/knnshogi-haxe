@@ -7,6 +7,7 @@ class UI {
 	private var game:Game;
 	private var operationMode = OPERATION_MODE.SELECT;
 	private var selectedSq:Int = 0;
+	private var selectedHand:Int = 0; // pr
 
 	public function new() {
 		Browser.window.onload = onLoad;
@@ -26,12 +27,21 @@ class UI {
 			case MOVE:
 				game.doPlayerMove(this.selectedSq, sq);
 				this.updateUi(OPERATION_MODE.WAIT);
+			case PUT:
+				game.doPlayerPut(this.selectedHand, sq);
+				this.updateUi(OPERATION_MODE.WAIT);
 			default:
 		}
 	}
 
 	public function onClickHand(pr:Int) {
 		trace('on clickHand:', pr);
+		switch (this.operationMode) {
+			case SELECT:
+				this.selectedHand = pr;
+				this.updateUi(OPERATION_MODE.PUT);
+			default:
+		}
 	}
 
 	public function onEnemyMoved() {
@@ -66,6 +76,16 @@ class UI {
 			case MOVE:
 				pt = game.board[this.selectedSq];
 				var arr:Array<Int> = game.getMovableSq(selectedSq, pt);
+				for (sq in 0...81) {
+					linkable = (arr.indexOf(sq) > -1);
+					this.setCell(sq, game.board[sq], linkable);
+				}
+				for (i in 1...8) {
+					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], false);
+					setHand(Types.WHITE, i, game.hand[Types.WHITE][i], false);
+				}
+			case PUT:
+				var arr:Array<Int> = game.getEmptySq(selectedHand);
 				for (sq in 0...81) {
 					linkable = (arr.indexOf(sq) > -1);
 					this.setCell(sq, game.board[sq], linkable);

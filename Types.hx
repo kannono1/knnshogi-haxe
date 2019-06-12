@@ -169,8 +169,8 @@ class Types {
 		return new Move(to | (from << 7) | MOVE_PROMO);
 	}
 
-	public static function Make_Move_Drop(pt:Int, sq:Int):Move {
-		return new Move(sq | (pt << 7) | MOVE_DROP);
+	public static function Make_Move_Drop(pr:Int, sq:Int):Move {
+		return new Move(sq | (pr << 7) | MOVE_DROP);
 	}
 
 	static public function generateMoveFromString(ft:String):Move {

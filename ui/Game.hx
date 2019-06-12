@@ -35,6 +35,11 @@ class Game extends Position {
 		var move:Move = Types.Make_Move(from, to);
 		doMove(move);
 	}
+	public function doPlayerPut(pr:Int, to:Int) {
+		trace('Game::doPlayerPut pr: $pr to: $to');
+		var move:Move = Types.Make_Move_Drop(pr, to);
+		doMove(move);
+	}
 
 	override private function doMove(move:Move) {
 		trace('Game::doMove ${Types.Move_To_String(move)}');
@@ -60,6 +65,16 @@ class Game extends Position {
 		var b:Bitboard = new Bitboard();
 		var arr:Array<Int> = [];
 		b.Copy(attack);
+		while (b.IsNonZero()) {
+			arr.push(b.PopLSB());
+		}
+		return arr;
+	}
+	public function getEmptySq(pr:Int):Array<Int> {
+		trace('Game::getEmptySq pr: $pr');
+		var b:Bitboard = PiecesAll().newNOT().NORM27();
+		trace(b.toStringBB());
+		var arr:Array<Int> = [];
 		while (b.IsNonZero()) {
 			arr.push(b.PopLSB());
 		}
