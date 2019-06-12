@@ -18,7 +18,7 @@ BB.RankDistance = function(s1,s2) {
 	return util_MathUtil.abs(Types.Rank_Of(s1) - Types.Rank_Of(s2));
 };
 BB.Init = function() {
-	haxe_Log.trace("Init::BB",{ fileName : "BB.hx", lineNumber : 74, className : "BB", methodName : "Init"});
+	haxe_Log.trace("Init::BB",{ fileName : "BB.hx", lineNumber : 49, className : "BB", methodName : "Init"});
 	BB.filesBB = [];
 	BB.ranksBB = [];
 	var _g = 0;
@@ -93,6 +93,60 @@ BB.Init = function() {
 			}
 		}
 	}
+};
+BB.AttacksBB = function(sq,occ,pt) {
+	switch(pt) {
+	case 2:
+		return BB.SlidingAttack(BB.lDeltas,sq,occ);
+	case 5:
+		return BB.SlidingAttack(BB.bDeltas,sq,occ);
+	case 6:
+		return BB.SlidingAttack(BB.rDeltas,sq,occ);
+	case 13:
+		return BB.SlidingGoldenAttack(BB.bDeltas,sq,occ);
+	case 14:
+		return BB.SlidingGoldenAttack(BB.rDeltas,sq,occ);
+	default:
+		return new Bitboard();
+	}
+};
+BB.SlidingAttack = function(deltas,sq,occ) {
+	var attack = new Bitboard();
+	var _g = 0;
+	while(_g < 4) {
+		var i = _g++;
+		if(deltas[i] == 0) {
+			return attack;
+		}
+		var s = sq + deltas[i];
+		while(Types.Is_SqOK(s) && BB.SquareDistance(s,s - deltas[i]) == 1) {
+			attack.OR(BB.squareBB[s]);
+			if(occ.newAND(BB.squareBB[s]).IsNonZero()) {
+				break;
+			}
+			s += deltas[i];
+		}
+	}
+	return attack;
+};
+BB.SlidingGoldenAttack = function(deltas,sq,occ) {
+	var attack = BB.stepAttacksBB[7][sq].newAND(occ.newNOT());
+	var _g = 0;
+	while(_g < 4) {
+		var i = _g++;
+		if(deltas[i] == 0) {
+			return attack;
+		}
+		var s = sq + deltas[i];
+		while(Types.Is_SqOK(s) && BB.SquareDistance(s,s - deltas[i]) == 1) {
+			attack.OR(BB.squareBB[s]);
+			if(occ.newAND(BB.squareBB[s]).IsNonZero()) {
+				break;
+			}
+			s += deltas[i];
+		}
+	}
+	return attack;
 };
 BB.ShiftBB = function(b,deltta) {
 	if(deltta == -1) {
@@ -932,6 +986,22 @@ _$Types_Move_$Impl_$._new = function(i) {
 };
 var Types = function() { };
 Types.__name__ = true;
+Types.hasLongEffect = function(pt) {
+	switch(pt) {
+	case 2:
+		return true;
+	case 5:
+		return true;
+	case 6:
+		return true;
+	case 13:
+		return true;
+	case 14:
+		return true;
+	default:
+		return false;
+	}
+};
 Types.OppColour = function(c) {
 	return c ^ 1;
 };
@@ -1380,6 +1450,9 @@ BB.enemyField1 = [];
 BB.enemyField2 = [];
 BB.enemyField3 = [];
 BB.steps = [[0,0,0,0,0,0,0,0,0],[-1,0,0,0,0,0,0,0,0],[-1,-2,-3,-4,-5,-6,-7,-8,0],[7,-11,0,0,0,0,0,0,0],[-1,8,10,-10,-8,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,10,-8,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]];
+BB.lDeltas = [-1,0,0,0];
+BB.rDeltas = [-1,-9,1,9];
+BB.bDeltas = [-10,-8,10,8];
 Bitboard.NA = 27;
 Bitboard.NB = 54;
 Engine.global = eval("self");

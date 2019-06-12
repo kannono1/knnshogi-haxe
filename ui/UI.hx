@@ -66,7 +66,16 @@ class UI {
 			case SELECT:
 				for (sq in 0...81) {
 					pc = game.board[sq];
-					linkable = isPlayerPiece(sq, pc);
+					if (isPlayerPiece(sq, pc)) {
+						var arr:Array<Int> = game.getMovableSq(sq, pc);
+						if (arr.length > 0) {
+							linkable = true;
+						} else {
+							linkable = false;
+						}
+					} else {
+						linkable = false;
+					}
 					this.setCell(sq, game.board[sq], linkable);
 				}
 				for (i in 1...8) {

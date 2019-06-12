@@ -67,9 +67,9 @@ class Game extends Position {
 		var occ = PiecesAll();
 		var target:Bitboard = byColorBB[us].newNOT();
 		var attack:Bitboard = (Types.hasLongEffect(pt)) ? BB.AttacksBB(sq, occ, pt) : BB.stepAttacksBB[pt][sq];
-		attack.AND(target);
-		while (attack.IsNonZero()) {
-			arr.push(attack.PopLSB());
+		var b = attack.newAND(target);
+		while (b.IsNonZero()) {
+			arr.push(b.PopLSB());
 		}
 		return arr;
 	}

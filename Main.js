@@ -1311,8 +1311,8 @@ ui_Game.prototype = $extend(Position.prototype,{
 		var occ = this.PiecesAll();
 		var target = this.byColorBB[us].newNOT();
 		var attack = Types.hasLongEffect(pt) ? BB.AttacksBB(sq,occ,pt) : BB.stepAttacksBB[pt][sq];
-		attack.AND(target);
-		while(attack.IsNonZero()) arr.push(attack.PopLSB());
+		var b = attack.newAND(target);
+		while(b.IsNonZero()) arr.push(b.PopLSB());
 		return arr;
 	}
 	,getEmptySq: function(pr) {
@@ -1412,7 +1412,16 @@ ui_UI.prototype = {
 			while(_g < 81) {
 				var sq = _g++;
 				pc = this.game.board[sq];
-				linkable = this.isPlayerPiece(sq,pc);
+				if(this.isPlayerPiece(sq,pc)) {
+					var arr = this.game.getMovableSq(sq,pc);
+					if(arr.length > 0) {
+						linkable = true;
+					} else {
+						linkable = false;
+					}
+				} else {
+					linkable = false;
+				}
 				this.setCell(sq,this.game.board[sq],linkable);
 			}
 			var _g1 = 1;
@@ -1424,11 +1433,11 @@ ui_UI.prototype = {
 			break;
 		case 1:
 			pc = this.game.board[this.selectedSq];
-			var arr = this.game.getMovableSq(this.selectedSq,pc);
+			var arr1 = this.game.getMovableSq(this.selectedSq,pc);
 			var _g2 = 0;
 			while(_g2 < 81) {
 				var sq1 = _g2++;
-				linkable = arr.indexOf(sq1) > -1;
+				linkable = arr1.indexOf(sq1) > -1;
 				this.setCell(sq1,this.game.board[sq1],linkable);
 			}
 			this.setHand(0,1,this.game.hand[0][1],false);
@@ -1447,11 +1456,11 @@ ui_UI.prototype = {
 			this.setHand(1,7,this.game.hand[1][7],false);
 			break;
 		case 2:
-			var arr1 = this.game.getEmptySq(this.selectedHand);
+			var arr2 = this.game.getEmptySq(this.selectedHand);
 			var _g3 = 0;
 			while(_g3 < 81) {
 				var sq2 = _g3++;
-				linkable = arr1.indexOf(sq2) > -1;
+				linkable = arr2.indexOf(sq2) > -1;
 				this.setCell(sq2,this.game.board[sq2],linkable);
 			}
 			this.setHand(0,1,this.game.hand[0][1],false);
