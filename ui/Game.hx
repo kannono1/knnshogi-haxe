@@ -49,8 +49,10 @@ class Game extends Position {
 		trace('Game::doMove ${Types.Move_To_String(move)}');
 		moves.push(move);
 		super.doMove(move);
+		printBoard();
 		trace('hand $hand');
 		if (isEnemyTurn()) {
+			trace('Game::56 postMessage ...');
 			worker.postMessage('position $_sfen moves ' + getMovesString());
 		}
 	}

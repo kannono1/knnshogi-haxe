@@ -131,14 +131,22 @@ class Types {
 
 	public static function Rank_To_Char(r:Int, toLower:Bool = true):String {
 		if (toLower) {
-			return String.fromCharCode(('a').charCodeAt(0) + r);
+			return String.fromCharCode('a'.charCodeAt(0) + r);
 		} else {
-			return String.fromCharCode(('A').charCodeAt(0) + r);
+			return String.fromCharCode('A'.charCodeAt(0) + r);
 		}
 	}
 
 	public static function Square_To_String(s:Int):String {
 		return File_To_Char(File_Of(s)) + Rank_To_Char(Rank_Of(s));
+	}
+
+	public static function Char_To_File(n:String):Int {
+		return Std.parseInt(n) - 1;
+	}
+
+	public static function Char_To_Rank(a:String):Int {
+		return a.charCodeAt(0) - 97;
 	}
 
 	public static function Move_FromSq(m:Move):Int {
@@ -160,6 +168,8 @@ class Types {
 	public static function Move_To_String(m:Move):String {
 		if (Is_Drop(m)) {
 			return PieceToChar(Move_Dropped_Piece(m)) + "*" + Square_To_String(Move_ToSq(m));
+		} else if (Is_Promote(m)) {
+			return Square_To_String(Move_FromSq(m)) + Square_To_String(Move_ToSq(m)) + '+';
 		} else { // move
 			return Square_To_String(Move_FromSq(m)) + Square_To_String(Move_ToSq(m));
 		}
@@ -192,13 +202,23 @@ class Types {
 	}
 
 	static public function generateMoveFromString(ft:String):Move {
-		var f:Int = Std.parseInt(ft.substr(0, 1)) - 1;
-		var r:Int = ft.charCodeAt(1) - 97;
+		var f:Int = Char_To_File(ft.charAt(0));
+		var r:Int = Char_To_Rank(ft.charAt(1));
 		var from = Types.Square(f, r);
-		f = Std.parseInt(ft.substr(2, 1)) - 1;
-		r = ft.charCodeAt(3) - 97;
+		f = Char_To_File(ft.charAt(2));
+		r = Char_To_Rank(ft.charAt(3));
 		var to = Types.Square(f, r);
-		return Make_Move(from, to);
+		if (ft.indexOf('*') > 0) {
+			var pr:Int = getPieceType(ft.charAt(0));
+			f = Char_To_File(ft.charAt(2));
+			r = Char_To_Rank(ft.charAt(3));
+			to = Types.Square(f, r);
+			return Make_Move_Drop(pr, to);
+		} else if (ft.indexOf('+') > 0) {
+			return Make_Move_Promote(from, to);
+		} else {
+			return Make_Move(from, to);
+		}
 	}
 
 	public static function Is_Move_OK(m:Move):Bool {

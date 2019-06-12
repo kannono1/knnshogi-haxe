@@ -630,7 +630,7 @@ Position.prototype = {
 		this.doMoveFull(move);
 	}
 	,doMoveFull: function(move) {
-		haxe_Log.trace("Position::doMove " + Types.Move_To_String(move),{ fileName : "Position.hx", lineNumber : 51, className : "Position", methodName : "doMoveFull"});
+		haxe_Log.trace("Position::doMoveFull " + Types.Move_To_String(move),{ fileName : "Position.hx", lineNumber : 51, className : "Position", methodName : "doMoveFull"});
 		var from = Types.Move_FromSq(move);
 		var to = Types.Move_ToSq(move);
 		var us = this.sideToMove;
@@ -638,6 +638,7 @@ Position.prototype = {
 		var pc = this.MovedPieceAfter(move);
 		var pr = Types.RawTypeOf(pc);
 		var pt = Types.TypeOf_Piece(pc);
+		haxe_Log.trace("to: " + to + " from: " + from + " pc: " + pc,{ fileName : "Position.hx", lineNumber : 59, className : "Position", methodName : "doMoveFull"});
 		if(Types.Is_Drop(move)) {
 			this.SubHand(us,pr);
 			this.PutPiece(to,us,pr);
@@ -646,7 +647,7 @@ Position.prototype = {
 		}
 		var captured = Types.TypeOf_Piece(this.PieceOn(to));
 		var capturedRaw = Types.RawTypeOf(captured);
-		haxe_Log.trace("catured: " + captured + " capturedRaw: " + capturedRaw,{ fileName : "Position.hx", lineNumber : 67, className : "Position", methodName : "doMoveFull"});
+		haxe_Log.trace("catured: " + captured + " capturedRaw: " + capturedRaw,{ fileName : "Position.hx", lineNumber : 68, className : "Position", methodName : "doMoveFull"});
 		if(captured != 0) {
 			var capsq = to;
 			this.AddHand(us,capturedRaw);
@@ -661,14 +662,14 @@ Position.prototype = {
 		this.changeSideToMove();
 	}
 	,PutPiece: function(sq,c,pt) {
-		haxe_Log.trace("Position::PutPiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 83, className : "Position", methodName : "PutPiece"});
+		haxe_Log.trace("Position::PutPiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 84, className : "Position", methodName : "PutPiece"});
 		this.board[sq] = Types.Make_Piece(c,pt);
 		this.byColorBB[c].SetBit(sq);
 		this.byTypeBB[0].SetBit(sq);
 		this.byTypeBB[pt].SetBit(sq);
 	}
 	,MovePiece: function(from,to,c,pt) {
-		haxe_Log.trace("Position::MovePiece from:" + from + " to:" + to + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 91, className : "Position", methodName : "MovePiece"});
+		haxe_Log.trace("Position::MovePiece from:" + from + " to:" + to + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 92, className : "Position", methodName : "MovePiece"});
 		this.board[to] = Types.Make_Piece(c,pt);
 		this.board[from] = 0;
 		this.byColorBB[c].SetBit(to);
@@ -676,7 +677,7 @@ Position.prototype = {
 		this.byTypeBB[pt].SetBit(to);
 	}
 	,RemovePiece: function(sq,c,pt) {
-		haxe_Log.trace("Position::RemovePiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 100, className : "Position", methodName : "RemovePiece"});
+		haxe_Log.trace("Position::RemovePiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 101, className : "Position", methodName : "RemovePiece"});
 		this.board[sq] = 0;
 		this.byColorBB[c].ClrBit(sq);
 		this.byTypeBB[0].ClrBit(sq);
@@ -703,8 +704,6 @@ Position.prototype = {
 	,MovedPieceAfter: function(m) {
 		if(Types.Is_Drop(m)) {
 			return m >>> 7 & 127;
-		} else if(Types.Is_Promote(m)) {
-			return this.PieceOn(Types.Move_FromSq(m)) + 32768;
 		} else {
 			return this.PieceOn(Types.Move_FromSq(m));
 		}
@@ -724,7 +723,7 @@ Position.prototype = {
 			}
 			this.PutPiece(i,c,pt);
 		}
-		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 148, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 146, className : "Position", methodName : "setPosition"});
 		this.hand = sf.getHand();
 		var moves = sf.getMoves();
 		var _g1 = 0;
@@ -733,7 +732,7 @@ Position.prototype = {
 			var i1 = _g1++;
 			this.doMove(moves[i1]);
 		}
-		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 154, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 152, className : "Position", methodName : "setPosition"});
 	}
 	,SideToMove: function() {
 		return this.sideToMove;
@@ -803,7 +802,7 @@ Position.prototype = {
 			s += HxOverrides.substr("  " + this.board[sq8],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 172, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 170, className : "Position", methodName : "printBoard"});
 	}
 };
 var SFEN = function(sfen) {
@@ -1043,6 +1042,12 @@ Types.Rank_To_Char = function(r,toLower) {
 Types.Square_To_String = function(s) {
 	return Types.File_To_Char(Types.File_Of(s)) + Types.Rank_To_Char(Types.Rank_Of(s));
 };
+Types.Char_To_File = function(n) {
+	return Std.parseInt(n) - 1;
+};
+Types.Char_To_Rank = function(a) {
+	return HxOverrides.cca(a,0) - 97;
+};
 Types.Move_FromSq = function(m) {
 	return m >>> 7 & 127;
 };
@@ -1058,6 +1063,8 @@ Types.Move_Type = function(m) {
 Types.Move_To_String = function(m) {
 	if(Types.Is_Drop(m)) {
 		return Types.PieceToChar(Types.Move_Dropped_Piece(m)) + "*" + Types.Square_To_String(Types.Move_ToSq(m));
+	} else if(Types.Is_Promote(m)) {
+		return Types.Square_To_String(Types.Move_FromSq(m)) + Types.Square_To_String(Types.Move_ToSq(m)) + "+";
 	} else {
 		return Types.Square_To_String(Types.Move_FromSq(m)) + Types.Square_To_String(Types.Move_ToSq(m));
 	}
@@ -1087,13 +1094,23 @@ Types.Make_Move_Drop = function(pr,sq) {
 	return this1;
 };
 Types.generateMoveFromString = function(ft) {
-	var f = Std.parseInt(HxOverrides.substr(ft,0,1)) - 1;
-	var r = HxOverrides.cca(ft,1) - 97;
+	var f = Types.Char_To_File(ft.charAt(0));
+	var r = Types.Char_To_Rank(ft.charAt(1));
 	var from = Types.Square(f,r);
-	f = Std.parseInt(HxOverrides.substr(ft,2,1)) - 1;
-	r = HxOverrides.cca(ft,3) - 97;
+	f = Types.Char_To_File(ft.charAt(2));
+	r = Types.Char_To_Rank(ft.charAt(3));
 	var to = Types.Square(f,r);
-	return Types.Make_Move(from,to);
+	if(ft.indexOf("*") > 0) {
+		var pr = Types.getPieceType(ft.charAt(0));
+		f = Types.Char_To_File(ft.charAt(2));
+		r = Types.Char_To_Rank(ft.charAt(3));
+		to = Types.Square(f,r);
+		return Types.Make_Move_Drop(pr,to);
+	} else if(ft.indexOf("+") > 0) {
+		return Types.Make_Move_Promote(from,to);
+	} else {
+		return Types.Make_Move(from,to);
+	}
 };
 Types.Is_Move_OK = function(m) {
 	return Types.Move_FromSq(m) != Types.Move_ToSq(m);

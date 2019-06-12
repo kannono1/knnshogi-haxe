@@ -48,7 +48,7 @@ class Position {
 	}
 
 	private function doMoveFull(move:Move) {
-        trace('Position::doMove ${Types.Move_To_String(move)}');
+        trace('Position::doMoveFull ${Types.Move_To_String(move)}');
 		var from = Types.Move_FromSq(move);
 		var to = Types.Move_ToSq(move);
 		var us = sideToMove;
@@ -56,6 +56,7 @@ class Position {
 		var pc:Int = MovedPieceAfter(move);
 		var pr:Int = Types.RawTypeOf(pc);
 		var pt = Types.TypeOf_Piece(pc);
+		trace('to: $to from: $from pc: $pc');
 		if( Types.Is_Drop(move) ){
 			SubHand(us, pr);
 			PutPiece(to, us, pr);
@@ -124,10 +125,7 @@ class Position {
 		if( Types.Is_Drop(m) ){
 			return (m >>> 7) & 0x7F;
 		}
-		else if( Types.Is_Promote(m) ){
-			return PieceOn( Types.Move_FromSq(m) ) + Types.MOVE_PROMO;
-		}
-		else{
+		else{// この瞬間はPromoteは気にしなくて良い
 			return PieceOn( Types.Move_FromSq(m) );
 		}
 	}

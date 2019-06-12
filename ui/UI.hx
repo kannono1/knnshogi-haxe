@@ -7,6 +7,7 @@ class UI {
 	private var game:Game;
 	private var operationMode = OPERATION_MODE.SELECT;
 	private var selectedSq:Int = 0;
+	private var toSq:Int = 0;
 	private var selectedHand:Int = 0; // pr
 
 	public function new() {
@@ -15,13 +16,29 @@ class UI {
 	}
 
 	function onLoad():Void {
+		Init();
 		game.start();
+	}
+
+	private function Init(){
+		initDialog();
+	}
+
+	private function initDialog(){
+		var dialog:Dynamic = Browser.document.getElementById('dialog_promote');
+		dialog.addEventListener('cancel', function(e:Dynamic) {
+			e.preventDefault();
+		});
+		dialog.addEventListener('close', function(e:Dynamic) {
+			var promote = (dialog.returnValue == 'yes');
+			game.doPlayerMove(this.selectedSq, toSq, promote);
+			this.updateUi(OPERATION_MODE.WAIT);
+		});
 	}
 
 	private function isPromotable(sq:Int, pc:Int):Bool {
 		trace('isPromotable sq:$sq pc:$pc');
 		if (pc % 16 > Types.PIECE_PROMOTE) {
-			trace('// 成駒だったらFalse pc:$pc pc/${pc % 16}');
 			return false; // 成駒だったらFalse
 		} else if (Types.Rank_Of(sq) <= 3) {
 			return true;
@@ -39,20 +56,13 @@ class UI {
 				this.selectedSq = sq;
 				this.updateUi(OPERATION_MODE.MOVE);
 			case MOVE:
+			this.toSq = sq;
 				var from_pc = game.PieceOn(selectedSq);
-				if (isPromotable(sq, from_pc)) {
+				if (isPromotable(toSq, from_pc)) {
 					var dialog:Dynamic = Browser.document.getElementById('dialog_promote');
-					dialog.addEventListener('cancel', function(e:Dynamic) {
-						e.preventDefault();
-					});
-					dialog.addEventListener('close', function(e:Dynamic) {
-						var promote = (dialog.returnValue == 'yes');
-						game.doPlayerMove(this.selectedSq, sq, promote);
-						this.updateUi(OPERATION_MODE.WAIT);
-					});
 					dialog.showModal();
 				} else {
-					game.doPlayerMove(this.selectedSq, sq, false);
+					game.doPlayerMove(this.selectedSq, toSq, false);
 					this.updateUi(OPERATION_MODE.WAIT);
 				}
 			case PUT:
