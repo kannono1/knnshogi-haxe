@@ -130,7 +130,7 @@ BB.SlidingAttack = function(deltas,sq,occ) {
 	return attack;
 };
 BB.SlidingGoldenAttack = function(deltas,sq,occ) {
-	var attack = BB.stepAttacksBB[7][sq].newAND(occ.newNOT());
+	var attack = BB.stepAttacksBB[7][sq];
 	var _g = 0;
 	while(_g < 4) {
 		var i = _g++;
@@ -1132,16 +1132,14 @@ Types.getPieceLabel = function(pt) {
 	case 9:
 		return "と";
 	case 10:
-		return "と";
-	case 11:
 		return "杏";
-	case 12:
+	case 11:
 		return "圭";
-	case 13:
+	case 12:
 		return "全";
-	case 14:
+	case 13:
 		return "馬";
-	case 15:
+	case 14:
 		return "龍";
 	default:
 		return "　";
