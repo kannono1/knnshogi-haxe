@@ -53,20 +53,20 @@ class UI {
 		Browser.alert('${winner}の勝ちです');
 	}
 
-	private function isPlayerPiece(sq:Int, pt:Int):Bool {
-		var c = Types.getPieceColor(pt);
-		return (game.sideToMove == c && pt > 0);
+	private function isPlayerPiece(sq:Int, pc:Int):Bool {
+		var c = Types.getPieceColor(pc);
+		return (game.sideToMove == c && pc > 0);
 	}
 
 	public function updateUi(mode:OPERATION_MODE) {
 		var linkable:Bool = false;
-		var pt:Int = 0;
+		var pc:Int = 0;
 		operationMode = mode;
 		switch (this.operationMode) {
 			case SELECT:
 				for (sq in 0...81) {
-					pt = game.board[sq];
-					linkable = isPlayerPiece(sq, pt);
+					pc = game.board[sq];
+					linkable = isPlayerPiece(sq, pc);
 					this.setCell(sq, game.board[sq], linkable);
 				}
 				for (i in 1...8) {
@@ -74,8 +74,8 @@ class UI {
 					setHand(Types.WHITE, i, game.hand[Types.WHITE][i], false);
 				}
 			case MOVE:
-				pt = game.board[this.selectedSq];
-				var arr:Array<Int> = game.getMovableSq(selectedSq, pt);
+				pc = game.board[this.selectedSq];
+				var arr:Array<Int> = game.getMovableSq(selectedSq, pc);
 				for (sq in 0...81) {
 					linkable = (arr.indexOf(sq) > -1);
 					this.setCell(sq, game.board[sq], linkable);
@@ -105,9 +105,9 @@ class UI {
 		}
 	}
 
-	private function setCell(sq:Int, pt:Int, linkable:Bool) {
-		var c = Types.getPieceColor(pt);
-		var s = '' + Types.getPieceLabel(pt);
+	private function setCell(sq:Int, pc:Int, linkable:Bool) {
+		var c = Types.getPieceColor(pc);
+		var s = '' + Types.getPieceLabel(pc);
 		if (linkable) {
 			s = '<a href="javascript:Main.onClickCell(' + sq + ')">' + s + '</a>';
 		}

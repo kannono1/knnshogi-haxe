@@ -87,6 +87,23 @@ class Types {
 	public static inline var VALUE_INFINITE:Int = 30001;
 	public static inline var VALUE_NONE:Int = 30002;
 
+	public static function hasLongEffect(pt:Int):Bool {
+		switch (pt) {
+			case ROOK:
+				return true;
+			case BISHOP:
+				return true;
+			case DRAGON:
+				return true;
+			case HORSE:
+				return true;
+			case LANCE:
+				return true;
+			default:
+				return false;
+		}
+	}
+
 	public static function OppColour(c:Int):Int {
 		return c ^ 1;
 	}

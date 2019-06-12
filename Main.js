@@ -18,7 +18,7 @@ BB.RankDistance = function(s1,s2) {
 	return util_MathUtil.abs(Types.Rank_Of(s1) - Types.Rank_Of(s2));
 };
 BB.Init = function() {
-	haxe_Log.trace("Init::BB",{ fileName : "BB.hx", lineNumber : 74, className : "BB", methodName : "Init"});
+	haxe_Log.trace("Init::BB",{ fileName : "BB.hx", lineNumber : 49, className : "BB", methodName : "Init"});
 	BB.filesBB = [];
 	BB.ranksBB = [];
 	var _g = 0;
@@ -93,6 +93,60 @@ BB.Init = function() {
 			}
 		}
 	}
+};
+BB.AttacksBB = function(sq,occ,pt) {
+	switch(pt) {
+	case 2:
+		return BB.SlidingAttack(BB.lDeltas,sq,occ);
+	case 5:
+		return BB.SlidingAttack(BB.bDeltas,sq,occ);
+	case 6:
+		return BB.SlidingAttack(BB.rDeltas,sq,occ);
+	case 13:
+		return BB.SlidingGoldenAttack(BB.bDeltas,sq,occ);
+	case 14:
+		return BB.SlidingGoldenAttack(BB.rDeltas,sq,occ);
+	default:
+		return new Bitboard();
+	}
+};
+BB.SlidingAttack = function(deltas,sq,occ) {
+	var attack = new Bitboard();
+	var _g = 0;
+	while(_g < 4) {
+		var i = _g++;
+		if(deltas[i] == 0) {
+			return attack;
+		}
+		var s = sq + deltas[i];
+		while(Types.Is_SqOK(s) && BB.SquareDistance(s,s - deltas[i]) == 1) {
+			attack.OR(BB.squareBB[s]);
+			if(occ.newAND(BB.squareBB[s]).IsNonZero()) {
+				break;
+			}
+			s += deltas[i];
+		}
+	}
+	return attack;
+};
+BB.SlidingGoldenAttack = function(deltas,sq,occ) {
+	var attack = BB.stepAttacksBB[7][sq].newAND(occ.newNOT());
+	var _g = 0;
+	while(_g < 4) {
+		var i = _g++;
+		if(deltas[i] == 0) {
+			return attack;
+		}
+		var s = sq + deltas[i];
+		while(Types.Is_SqOK(s) && BB.SquareDistance(s,s - deltas[i]) == 1) {
+			attack.OR(BB.squareBB[s]);
+			if(occ.newAND(BB.squareBB[s]).IsNonZero()) {
+				break;
+			}
+			s += deltas[i];
+		}
+	}
+	return attack;
 };
 BB.ShiftBB = function(b,deltta) {
 	if(deltta == -1) {
@@ -769,6 +823,22 @@ _$Types_Move_$Impl_$._new = function(i) {
 };
 var Types = function() { };
 Types.__name__ = true;
+Types.hasLongEffect = function(pt) {
+	switch(pt) {
+	case 2:
+		return true;
+	case 5:
+		return true;
+	case 6:
+		return true;
+	case 13:
+		return true;
+	case 14:
+		return true;
+	default:
+		return false;
+	}
+};
 Types.OppColour = function(c) {
 	return c ^ 1;
 };
@@ -1188,9 +1258,9 @@ js_Browser.alert = function(v) {
 };
 var ui_Game = function(ui_) {
 	this.moves = [];
-	this._sfen = "sfen lnsgkgsnl/9/pppppppp1/9/9/8p/PPPPPPPPP/9/LNS1KGSN1 b BRGLbr 1";
+	this._sfen = "startpos";
 	this.playerColor = 0;
-	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 20, className : "ui.Game", methodName : "new"});
+	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 19, className : "ui.Game", methodName : "new"});
 	Position.call(this);
 	this.ui = ui_;
 	this.createWorker();
@@ -1200,12 +1270,12 @@ ui_Game.__name__ = true;
 ui_Game.__super__ = Position;
 ui_Game.prototype = $extend(Position.prototype,{
 	createWorker: function() {
-		haxe_Log.trace("Game::createWorker",{ fileName : "ui/Game.hx", lineNumber : 28, className : "ui.Game", methodName : "createWorker"});
+		haxe_Log.trace("Game::createWorker",{ fileName : "ui/Game.hx", lineNumber : 27, className : "ui.Game", methodName : "createWorker"});
 		this.worker = new Worker("Engine.js");
 		this.worker.onmessage = $bind(this,this.onMessage);
 	}
 	,doPlayerMove: function(from,to) {
-		haxe_Log.trace("Game::doPlayerMove from: " + from + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 34, className : "ui.Game", methodName : "doPlayerMove"});
+		haxe_Log.trace("Game::doPlayerMove from: " + from + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 33, className : "ui.Game", methodName : "doPlayerMove"});
 		var move = Types.Make_Move(from,to);
 		this.doMove(move);
 	}
@@ -1233,19 +1303,22 @@ ui_Game.prototype = $extend(Position.prototype,{
 		}
 		return s;
 	}
-	,getMovableSq: function(sq,pt) {
-		haxe_Log.trace("Game::getMovableSq sq: " + sq + " pt: " + pt,{ fileName : "ui/Game.hx", lineNumber : 63, className : "ui.Game", methodName : "getMovableSq"});
-		var attack = BB.stepAttacksBB[pt][sq];
-		var b = new Bitboard();
+	,getMovableSq: function(sq,pc) {
+		haxe_Log.trace("Game::getMovableSq sq: " + sq + " pc: " + pc,{ fileName : "ui/Game.hx", lineNumber : 63, className : "ui.Game", methodName : "getMovableSq"});
 		var arr = [];
-		b.Copy(attack);
-		while(b.IsNonZero()) arr.push(b.PopLSB());
+		var us = this.sideToMove;
+		var pt = Types.TypeOf_Piece(pc);
+		var occ = this.PiecesAll();
+		var target = this.byColorBB[us].newNOT();
+		var attack = Types.hasLongEffect(pt) ? BB.AttacksBB(sq,occ,pt) : BB.stepAttacksBB[pt][sq];
+		attack.AND(target);
+		while(attack.IsNonZero()) arr.push(attack.PopLSB());
 		return arr;
 	}
 	,getEmptySq: function(pr) {
-		haxe_Log.trace("Game::getEmptySq pr: " + pr,{ fileName : "ui/Game.hx", lineNumber : 74, className : "ui.Game", methodName : "getEmptySq"});
+		haxe_Log.trace("Game::getEmptySq pr: " + pr,{ fileName : "ui/Game.hx", lineNumber : 78, className : "ui.Game", methodName : "getEmptySq"});
 		var b = this.PiecesAll().newNOT().NORM27();
-		haxe_Log.trace(b.toStringBB(),{ fileName : "ui/Game.hx", lineNumber : 76, className : "ui.Game", methodName : "getEmptySq"});
+		haxe_Log.trace(b.toStringBB(),{ fileName : "ui/Game.hx", lineNumber : 80, className : "ui.Game", methodName : "getEmptySq"});
 		var arr = [];
 		while(b.IsNonZero()) arr.push(b.PopLSB());
 		return arr;
@@ -1254,7 +1327,7 @@ ui_Game.prototype = $extend(Position.prototype,{
 		return this.sideToMove == 1;
 	}
 	,onMessage: function(s) {
-		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 89, className : "ui.Game", methodName : "onMessage"});
+		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 93, className : "ui.Game", methodName : "onMessage"});
 		var tokens = s.data.split(" ");
 		var move = Types.generateMoveFromString(tokens[1]);
 		if(move == 0) {
@@ -1265,11 +1338,11 @@ ui_Game.prototype = $extend(Position.prototype,{
 		}
 	}
 	,start: function() {
-		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 101, className : "ui.Game", methodName : "start"});
+		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 105, className : "ui.Game", methodName : "start"});
 		this.setPosition(this._sfen);
 	}
 	,endGame: function() {
-		haxe_Log.trace("Game::End",{ fileName : "ui/Game.hx", lineNumber : 106, className : "ui.Game", methodName : "endGame"});
+		haxe_Log.trace("Game::End",{ fileName : "ui/Game.hx", lineNumber : 110, className : "ui.Game", methodName : "endGame"});
 		this.ui.onEndGame(this.sideToMove);
 	}
 	,setPosition: function(sfen) {
@@ -1321,25 +1394,25 @@ ui_UI.prototype = {
 	,onEndGame: function(winner) {
 		js_Browser.alert("" + winner + "の勝ちです");
 	}
-	,isPlayerPiece: function(sq,pt) {
-		var c = Types.getPieceColor(pt);
+	,isPlayerPiece: function(sq,pc) {
+		var c = Types.getPieceColor(pc);
 		if(this.game.sideToMove == c) {
-			return pt > 0;
+			return pc > 0;
 		} else {
 			return false;
 		}
 	}
 	,updateUi: function(mode) {
 		var linkable = false;
-		var pt = 0;
+		var pc = 0;
 		this.operationMode = mode;
 		switch(this.operationMode) {
 		case 0:
 			var _g = 0;
 			while(_g < 81) {
 				var sq = _g++;
-				pt = this.game.board[sq];
-				linkable = this.isPlayerPiece(sq,pt);
+				pc = this.game.board[sq];
+				linkable = this.isPlayerPiece(sq,pc);
 				this.setCell(sq,this.game.board[sq],linkable);
 			}
 			var _g1 = 1;
@@ -1350,8 +1423,8 @@ ui_UI.prototype = {
 			}
 			break;
 		case 1:
-			pt = this.game.board[this.selectedSq];
-			var arr = this.game.getMovableSq(this.selectedSq,pt);
+			pc = this.game.board[this.selectedSq];
+			var arr = this.game.getMovableSq(this.selectedSq,pc);
 			var _g2 = 0;
 			while(_g2 < 81) {
 				var sq1 = _g2++;
@@ -1418,9 +1491,9 @@ ui_UI.prototype = {
 			this.setHand(1,7,this.game.hand[1][7],false);
 		}
 	}
-	,setCell: function(sq,pt,linkable) {
-		var c = Types.getPieceColor(pt);
-		var s = "" + Types.getPieceLabel(pt);
+	,setCell: function(sq,pc,linkable) {
+		var c = Types.getPieceColor(pc);
+		var s = "" + Types.getPieceLabel(pc);
 		if(linkable) {
 			s = "<a href=\"javascript:Main.onClickCell(" + sq + ")\">" + s + "</a>";
 		}
@@ -1487,6 +1560,9 @@ BB.enemyField1 = [];
 BB.enemyField2 = [];
 BB.enemyField3 = [];
 BB.steps = [[0,0,0,0,0,0,0,0,0],[-1,0,0,0,0,0,0,0,0],[-1,-2,-3,-4,-5,-6,-7,-8,0],[7,-11,0,0,0,0,0,0,0],[-1,8,10,-10,-8,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,10,-8,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]];
+BB.lDeltas = [-1,0,0,0];
+BB.rDeltas = [-1,-9,1,9];
+BB.bDeltas = [-10,-8,10,8];
 Bitboard.NA = 27;
 Bitboard.NB = 54;
 SFEN.startpos = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1";

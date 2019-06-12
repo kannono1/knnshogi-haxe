@@ -29,35 +29,10 @@ class BB {
 		[0, 0, 0, 0, 0, 0, 0, 0, 0], // B+
 		[0, 0, 0, 0, 0, 0, 0, 0, 0], // R+
 	];
+	public static var lDeltas:Array<Int> = [Types.DELTA_N,                 0,                 0,                 0  ];// L
+	public static var rDeltas:Array<Int> = [Types.DELTA_N, Types.DELTA_E, Types.DELTA_S, Types.DELTA_W]; // R
+	public static var bDeltas:Array<Int> = [Types.DELTA_NE, Types.DELTA_SE, Types.DELTA_SW, Types.DELTA_NW]; // B
 
-	// static public var effect:Array<Array<Int>> = [
-	//     [],
-	//     [-1],// p
-	//     [-1, -2, -3, -4, -5, -6, -7, -8],// l
-	//     [7, -7],// n
-	//     [-1, 8, 10, -8, -10],// s
-	//     [// b
-	//         10, 20, 30, 40, 50, 60, 70, 80,
-	//          8, 16, 24, 32, 40, 48, 56, 64,
-	//         -10,-20,-30,-40,-50,-60,-70,-80,
-	//         -8,-16,-24,-32,-40,-48,-56,-64
-	//     ],
-	//     [// r
-	//         1,  2,  3,  4,  5,  6,  7,  8,
-	//         9, 18, 27, 36, 45, 54, 63, 72,
-	//         -1, -2, -3, -4, -5, -6, -7, -8,
-	//         -9,-18,-27,-36,-45,-54,-63,-72,
-	//     ],
-	//     [1, -1, 9, -9, 8, -10], // g
-	//     [1, -1, 9, -9, 8, -10, 10, -8], // k
-	// ];
-	// static public function getEffectedSq(pt:Int, from:Int):Array<Int>{
-	//     var arr = effect[pt];
-	//     for(i in 0...arr.length){
-	//         arr[i] += from;
-	//     }
-	//     return arr;
-	// }
 	public static function SquareDistance(s1:Int, s2:Int):Int {
 		return squareDistance[s1][s2];
 	}
@@ -129,6 +104,59 @@ class BB {
 				}
 			}
 		}
+	}
+
+	public static function AttacksBB(sq:Int, occ:Bitboard, pt:Int):Bitboard {
+		switch (pt) {
+			case Types.ROOK:
+				return SlidingAttack(rDeltas, sq, occ);
+			case Types.DRAGON:
+				return SlidingGoldenAttack(rDeltas, sq, occ);
+			case Types.HORSE:
+				return SlidingGoldenAttack(bDeltas, sq, occ);
+			case Types.BISHOP:
+				return SlidingAttack(bDeltas, sq, occ);
+			case Types.LANCE:
+				return SlidingAttack(lDeltas, sq, occ);
+			default:
+				return new Bitboard();
+		}
+	}
+
+	public static function SlidingAttack(deltas:Array<Int>, sq:Int, occ:Bitboard):Bitboard {
+		var attack:Bitboard = new Bitboard();
+		for (i in 0...4) { // 4方向
+			if (deltas[i] == 0) {
+				return attack;
+			}
+			var s:Int = sq + deltas[i];
+			while (Types.Is_SqOK(s) && SquareDistance(s, s - deltas[i]) == 1) { // 範囲内
+				attack.OR(squareBB[s]);
+				if (occ.newAND(squareBB[s]).IsNonZero()) { // 当たり判定
+					break;
+				}
+				s += deltas[i];
+			}
+		}
+		return attack;
+	}
+
+	public static function SlidingGoldenAttack(deltas:Array<Int>, sq:Int, occ:Bitboard):Bitboard {
+		var attack:Bitboard = stepAttacksBB[Types.GOLD][sq].newAND(occ.newNOT());
+		for (i in 0...4) {
+			if (deltas[i] == 0) {
+				return attack;
+			}
+			var s:Int = sq + deltas[i];
+			while (Types.Is_SqOK(s) && SquareDistance(s, s - deltas[i]) == 1) {
+				attack.OR(squareBB[s]);
+				if (occ.newAND(squareBB[s]).IsNonZero()) {
+					break;
+				}
+				s += deltas[i];
+			}
+		}
+		return attack;
 	}
 
 	public static function ShiftBB(b:Bitboard, deltta:Int):Bitboard {

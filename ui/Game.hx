@@ -4,14 +4,13 @@ import js.html.MessageEvent;
 import js.html.Worker;
 import util.StringUtil;
 import ui.Mode.OPERATION_MODE;
-
 import Types.Move;
 
 class Game extends Position {
 	public var playerColor:Int = 0;
 
-	// private var _sfen = 'startpos';
-	private var _sfen = 'sfen lnsgkgsnl/9/pppppppp1/9/9/8p/PPPPPPPPP/9/LNS1KGSN1 b BRGLbr 1';
+	private var _sfen = 'startpos';
+	// private var _sfen = 'sfen lnsgkgsnl/9/pppppppp1/9/9/8p/PPPPPPPPP/9/LNS1KGSN1 b BRGLbr 1';
 	private var ui:UI;
 	private var worker:Worker;
 	private var moves:Array<Move> = [];
@@ -35,6 +34,7 @@ class Game extends Position {
 		var move:Move = Types.Make_Move(from, to);
 		doMove(move);
 	}
+
 	public function doPlayerPut(pr:Int, to:Int) {
 		trace('Game::doPlayerPut pr: $pr to: $to');
 		var move:Move = Types.Make_Move_Drop(pr, to);
@@ -59,17 +59,21 @@ class Game extends Position {
 		return s;
 	}
 
-	public function getMovableSq(sq:Int, pt:Int):Array<Int> {
-		trace('Game::getMovableSq sq: $sq pt: $pt');
-		var attack:Bitboard = BB.stepAttacksBB[pt][sq];
-		var b:Bitboard = new Bitboard();
+	public function getMovableSq(sq:Int, pc:Int):Array<Int> {
+		trace('Game::getMovableSq sq: $sq pc: $pc');
 		var arr:Array<Int> = [];
-		b.Copy(attack);
-		while (b.IsNonZero()) {
-			arr.push(b.PopLSB());
+		var us = sideToMove;
+		var pt = Types.TypeOf_Piece(pc);
+		var occ = PiecesAll();
+		var target:Bitboard = byColorBB[us].newNOT();
+		var attack:Bitboard = (Types.hasLongEffect(pt)) ? BB.AttacksBB(sq, occ, pt) : BB.stepAttacksBB[pt][sq];
+		attack.AND(target);
+		while (attack.IsNonZero()) {
+			arr.push(attack.PopLSB());
 		}
 		return arr;
 	}
+
 	public function getEmptySq(pr:Int):Array<Int> {
 		trace('Game::getEmptySq pr: $pr');
 		var b:Bitboard = PiecesAll().newNOT().NORM27();
@@ -104,7 +108,7 @@ class Game extends Position {
 
 	public function endGame() {
 		trace('Game::End');
-        ui.onEndGame(sideToMove);
+		ui.onEndGame(sideToMove);
 	}
 
 	override public function setPosition(sfen:String):Void {
