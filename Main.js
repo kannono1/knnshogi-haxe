@@ -130,7 +130,7 @@ BB.SlidingAttack = function(deltas,sq,occ) {
 	return attack;
 };
 BB.SlidingGoldenAttack = function(deltas,sq,occ) {
-	var attack = BB.stepAttacksBB[7][sq];
+	var attack = BB.stepAttacksBB[8][sq].newCOPY();
 	var _g = 0;
 	while(_g < 4) {
 		var i = _g++;
@@ -1407,7 +1407,7 @@ ui_UI.prototype = {
 		haxe_Log.trace("isPromotable sq:" + sq + " pc:" + pc,{ fileName : "ui/UI.hx", lineNumber : 40, className : "ui.UI", methodName : "isPromotable"});
 		if(pc % 16 > 8) {
 			return false;
-		} else if(Types.Rank_Of(sq) <= 3) {
+		} else if(Types.Rank_Of(sq) < 3) {
 			return true;
 		} else if(Types.Rank_Of(this.selectedSq) <= 3) {
 			return true;

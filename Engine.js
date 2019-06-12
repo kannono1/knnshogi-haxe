@@ -130,7 +130,7 @@ BB.SlidingAttack = function(deltas,sq,occ) {
 	return attack;
 };
 BB.SlidingGoldenAttack = function(deltas,sq,occ) {
-	var attack = BB.stepAttacksBB[7][sq];
+	var attack = BB.stepAttacksBB[8][sq].newCOPY();
 	var _g = 0;
 	while(_g < 4) {
 		var i = _g++;

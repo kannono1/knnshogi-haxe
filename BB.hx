@@ -142,7 +142,7 @@ class BB {
 	}
 
 	public static function SlidingGoldenAttack(deltas:Array<Int>, sq:Int, occ:Bitboard):Bitboard {
-		var attack:Bitboard = stepAttacksBB[Types.GOLD][sq];
+		var attack:Bitboard = stepAttacksBB[Types.KING][sq].newCOPY();
 		for (i in 0...4) {
 			if (deltas[i] == 0) {
 				return attack;
