@@ -72,6 +72,10 @@ class Position {
 		}
 		RemovePiece(from, us, pt);
 		MovePiece(from, to, us, pt);
+		if( Types.Move_Type(move) == Types.MOVE_PROMO ) {
+			RemovePiece( to, us, pt );
+			PutPiece( to, us,  pt + Types.PIECE_PROMOTE);
+		}
 		changeSideToMove();
 	}
 

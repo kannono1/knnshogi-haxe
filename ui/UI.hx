@@ -18,6 +18,20 @@ class UI {
 		game.start();
 	}
 
+	private function isPromotable(sq:Int, pc:Int):Bool {
+		trace('isPromotable sq:$sq pc:$pc');
+		if (pc % 16 > Types.PIECE_PROMOTE) {
+			trace('// 成駒だったらFalse pc:$pc pc/${pc % 16}');
+			return false; // 成駒だったらFalse
+		} else if (Types.Rank_Of(sq) <= 3) {
+			return true;
+		} else if (Types.Rank_Of(selectedSq) <= 3) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	public function onClickCell(sq:Int) {
 		trace('on clickCell:', sq);
 		switch (this.operationMode) {
@@ -25,8 +39,22 @@ class UI {
 				this.selectedSq = sq;
 				this.updateUi(OPERATION_MODE.MOVE);
 			case MOVE:
-				game.doPlayerMove(this.selectedSq, sq);
-				this.updateUi(OPERATION_MODE.WAIT);
+				var from_pc = game.PieceOn(selectedSq);
+				if (isPromotable(sq, from_pc)) {
+					var dialog:Dynamic = Browser.document.getElementById('dialog_promote');
+					dialog.addEventListener('cancel', function(e:Dynamic) {
+						e.preventDefault();
+					});
+					dialog.addEventListener('close', function(e:Dynamic) {
+						var promote = (dialog.returnValue == 'yes');
+						game.doPlayerMove(this.selectedSq, sq, promote);
+						this.updateUi(OPERATION_MODE.WAIT);
+					});
+					dialog.showModal();
+				} else {
+					game.doPlayerMove(this.selectedSq, sq, false);
+					this.updateUi(OPERATION_MODE.WAIT);
+				}
 			case PUT:
 				game.doPlayerPut(this.selectedHand, sq);
 				this.updateUi(OPERATION_MODE.WAIT);

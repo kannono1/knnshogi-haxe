@@ -14,6 +14,7 @@ class Types {
 	static public inline var COLOR_NB:Int = 2;
 	public static inline var ALL_PIECES:Int = 0;
 	public static inline var PIECE_TYPE_NB:Int = 0;
+	public static inline var PIECE_PROMOTE:Int = 8;
 	public static inline var NO_PIECE_TYPE:Int = 0;
 	public static inline var PAWN:Int = 1;
 	public static inline var LANCE:Int = 2;

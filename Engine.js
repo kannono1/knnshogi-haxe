@@ -654,17 +654,21 @@ Position.prototype = {
 		}
 		this.RemovePiece(from,us,pt);
 		this.MovePiece(from,to,us,pt);
+		if(Types.Move_Type(move) == 32768) {
+			this.RemovePiece(to,us,pt);
+			this.PutPiece(to,us,pt + 8);
+		}
 		this.changeSideToMove();
 	}
 	,PutPiece: function(sq,c,pt) {
-		haxe_Log.trace("Position::PutPiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 79, className : "Position", methodName : "PutPiece"});
+		haxe_Log.trace("Position::PutPiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 83, className : "Position", methodName : "PutPiece"});
 		this.board[sq] = Types.Make_Piece(c,pt);
 		this.byColorBB[c].SetBit(sq);
 		this.byTypeBB[0].SetBit(sq);
 		this.byTypeBB[pt].SetBit(sq);
 	}
 	,MovePiece: function(from,to,c,pt) {
-		haxe_Log.trace("Position::MovePiece from:" + from + " to:" + to + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 87, className : "Position", methodName : "MovePiece"});
+		haxe_Log.trace("Position::MovePiece from:" + from + " to:" + to + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 91, className : "Position", methodName : "MovePiece"});
 		this.board[to] = Types.Make_Piece(c,pt);
 		this.board[from] = 0;
 		this.byColorBB[c].SetBit(to);
@@ -672,7 +676,7 @@ Position.prototype = {
 		this.byTypeBB[pt].SetBit(to);
 	}
 	,RemovePiece: function(sq,c,pt) {
-		haxe_Log.trace("Position::RemovePiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 96, className : "Position", methodName : "RemovePiece"});
+		haxe_Log.trace("Position::RemovePiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 100, className : "Position", methodName : "RemovePiece"});
 		this.board[sq] = 0;
 		this.byColorBB[c].ClrBit(sq);
 		this.byTypeBB[0].ClrBit(sq);
@@ -720,7 +724,7 @@ Position.prototype = {
 			}
 			this.PutPiece(i,c,pt);
 		}
-		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 144, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 148, className : "Position", methodName : "setPosition"});
 		this.hand = sf.getHand();
 		var moves = sf.getMoves();
 		var _g1 = 0;
@@ -729,7 +733,7 @@ Position.prototype = {
 			var i1 = _g1++;
 			this.doMove(moves[i1]);
 		}
-		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 150, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 154, className : "Position", methodName : "setPosition"});
 	}
 	,SideToMove: function() {
 		return this.sideToMove;
@@ -799,7 +803,7 @@ Position.prototype = {
 			s += HxOverrides.substr("  " + this.board[sq8],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 168, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 172, className : "Position", methodName : "printBoard"});
 	}
 };
 var SFEN = function(sfen) {
@@ -1449,7 +1453,7 @@ BB.squareBB = [];
 BB.enemyField1 = [];
 BB.enemyField2 = [];
 BB.enemyField3 = [];
-BB.steps = [[0,0,0,0,0,0,0,0,0],[-1,0,0,0,0,0,0,0,0],[-1,-2,-3,-4,-5,-6,-7,-8,0],[7,-11,0,0,0,0,0,0,0],[-1,8,10,-10,-8,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,10,-8,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[-1,8,9,-1,-10,-9,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]];
+BB.steps = [[0,0,0,0,0,0,0,0,0],[-1,0,0,0,0,0,0,0,0],[-1,-2,-3,-4,-5,-6,-7,-8,0],[7,-11,0,0,0,0,0,0,0],[-1,8,10,-10,-8,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,10,-8,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]];
 BB.lDeltas = [-1,0,0,0];
 BB.rDeltas = [-1,-9,1,9];
 BB.bDeltas = [-10,-8,10,8];
@@ -1466,6 +1470,7 @@ Types.RANK_1 = 0;
 Types.COLOR_NB = 2;
 Types.ALL_PIECES = 0;
 Types.PIECE_TYPE_NB = 0;
+Types.PIECE_PROMOTE = 8;
 Types.NO_PIECE_TYPE = 0;
 Types.PAWN = 1;
 Types.LANCE = 2;

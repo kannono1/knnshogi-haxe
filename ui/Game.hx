@@ -9,8 +9,8 @@ import Types.Move;
 class Game extends Position {
 	public var playerColor:Int = 0;
 
-	private var _sfen = 'startpos';
-	// private var _sfen = 'sfen lnsgkgsnl/9/pppppppp1/9/9/8p/PPPPPPPPP/9/LNS1KGSN1 b BRGLbr 1';
+	// private var _sfen = 'startpos';
+	private var _sfen = 'sfen lnsgkgsnl/1r5b1/ppppppppp/8P/9/9/PPPPPPPP1/1B5R1/LNSGKGSNL b - 1';
 	private var ui:UI;
 	private var worker:Worker;
 	private var moves:Array<Move> = [];
@@ -29,10 +29,14 @@ class Game extends Position {
 		worker.onmessage = onMessage;
 	}
 
-	public function doPlayerMove(from:Int, to:Int) {
-		trace('Game::doPlayerMove from: $from to: $to');
-		var move:Move = Types.Make_Move(from, to);
-		doMove(move);
+	public function doPlayerMove(from:Int, to:Int, promote:Bool) {
+		trace('Game::doPlayerMove from: $from to: $to promote: $promote');
+		if(promote){
+			doMove(Types.Make_Move_Promote(from, to));
+		}
+		else{
+			doMove(Types.Make_Move(from, to));
+		}
 	}
 
 	public function doPlayerPut(pr:Int, to:Int) {
