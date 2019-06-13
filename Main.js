@@ -20,7 +20,6 @@ BB.RankDistance = function(s1,s2) {
 BB.Init = function() {
 	haxe_Log.trace("Init::BB",{ fileName : "BB.hx", lineNumber : 49, className : "BB", methodName : "Init"});
 	if(BB.initialized) {
-		haxe_Log.trace("return",{ fileName : "BB.hx", lineNumber : 51, className : "BB", methodName : "Init"});
 		return;
 	}
 	BB.filesBB = [];
@@ -119,9 +118,6 @@ BB.Init = function() {
 				if(BB.SquareDistance(s3,to1) >= 3 && Types.RawTypeOf(pt2) != 2) {
 					continue;
 				}
-				if(c1 == 1) {
-					haxe_Log.trace("BB.Init!, c:" + c1 + ", pt:" + pt2 + ", s:" + s3 + ", pc:" + Types.Make_Piece(c1,pt2) + " ",{ fileName : "BB.hx", lineNumber : 134, className : "BB", methodName : "Init"});
-				}
 				BB.stepAttacksBB[Types.Make_Piece(c1,pt2)][s3].OR(BB.squareBB[to1]);
 			}
 		}
@@ -129,7 +125,6 @@ BB.Init = function() {
 	BB.initialized = true;
 };
 BB.getStepAttacksBB = function(pc,sq) {
-	haxe_Log.trace("getStepAttacksBB pc:" + pc + " sq:" + sq,{ fileName : "BB.hx", lineNumber : 144, className : "BB", methodName : "getStepAttacksBB"});
 	return BB.stepAttacksBB[pc][sq];
 };
 BB.AttacksBB = function(sq,occ,pt) {
@@ -677,9 +672,7 @@ Position.prototype = {
 			return BB.AttacksBB(sq,this.PiecesAll(),pt);
 		} else if(pt == 2) {
 			var rb = BB.AttacksBB(sq,this.PiecesAll(),6);
-			haxe_Log.trace("AttacksFromPTypeSQ rb",{ fileName : "Position.hx", lineNumber : 165, className : "Position", methodName : "AttacksFromPTypeSQ", customParams : [rb.toStringBB()]});
 			var b = BB.getStepAttacksBB(pc,sq).newAND(rb);
-			haxe_Log.trace("AttacksFromPTypeSQ Lb",{ fileName : "Position.hx", lineNumber : 167, className : "Position", methodName : "AttacksFromPTypeSQ", customParams : [b.toStringBB()]});
 			return b;
 		} else {
 			return BB.getStepAttacksBB(pc,sq);
@@ -750,7 +743,7 @@ Position.prototype = {
 			s += HxOverrides.substr("  " + this.board[sq8],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 186, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 184, className : "Position", methodName : "printBoard"});
 	}
 };
 var SFEN = function(sfen) {
@@ -1388,9 +1381,9 @@ ui_Game.prototype = $extend(Position.prototype,{
 		return arr;
 	}
 	,getEmptySq: function(pr) {
-		haxe_Log.trace("Game::getEmptySq pr: " + pr,{ fileName : "ui/Game.hx", lineNumber : 84, className : "ui.Game", methodName : "getEmptySq"});
+		haxe_Log.trace("Game::getEmptySq pr: " + pr,{ fileName : "ui/Game.hx", lineNumber : 82, className : "ui.Game", methodName : "getEmptySq"});
 		var b = this.PiecesAll().newNOT().NORM27();
-		haxe_Log.trace(b.toStringBB(),{ fileName : "ui/Game.hx", lineNumber : 86, className : "ui.Game", methodName : "getEmptySq"});
+		haxe_Log.trace(b.toStringBB(),{ fileName : "ui/Game.hx", lineNumber : 84, className : "ui.Game", methodName : "getEmptySq"});
 		var arr = [];
 		while(b.IsNonZero()) arr.push(b.PopLSB());
 		return arr;
@@ -1399,7 +1392,7 @@ ui_Game.prototype = $extend(Position.prototype,{
 		return this.sideToMove == 1;
 	}
 	,onMessage: function(s) {
-		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 99, className : "ui.Game", methodName : "onMessage"});
+		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 97, className : "ui.Game", methodName : "onMessage"});
 		var tokens = s.data.split(" ");
 		var move = Types.generateMoveFromString(tokens[1]);
 		if(move == 0) {
@@ -1410,11 +1403,11 @@ ui_Game.prototype = $extend(Position.prototype,{
 		}
 	}
 	,start: function() {
-		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 111, className : "ui.Game", methodName : "start"});
+		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 109, className : "ui.Game", methodName : "start"});
 		this.setPosition(this._sfen);
 	}
 	,endGame: function() {
-		haxe_Log.trace("Game::End",{ fileName : "ui/Game.hx", lineNumber : 116, className : "ui.Game", methodName : "endGame"});
+		haxe_Log.trace("Game::End",{ fileName : "ui/Game.hx", lineNumber : 114, className : "ui.Game", methodName : "endGame"});
 		this.ui.onEndGame(this.sideToMove);
 	}
 	,setPosition: function(sfen) {

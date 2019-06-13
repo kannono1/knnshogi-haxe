@@ -20,7 +20,6 @@ BB.RankDistance = function(s1,s2) {
 BB.Init = function() {
 	haxe_Log.trace("Init::BB",{ fileName : "BB.hx", lineNumber : 49, className : "BB", methodName : "Init"});
 	if(BB.initialized) {
-		haxe_Log.trace("return",{ fileName : "BB.hx", lineNumber : 51, className : "BB", methodName : "Init"});
 		return;
 	}
 	BB.filesBB = [];
@@ -119,9 +118,6 @@ BB.Init = function() {
 				if(BB.SquareDistance(s3,to1) >= 3 && Types.RawTypeOf(pt2) != 2) {
 					continue;
 				}
-				if(c1 == 1) {
-					haxe_Log.trace("BB.Init!, c:" + c1 + ", pt:" + pt2 + ", s:" + s3 + ", pc:" + Types.Make_Piece(c1,pt2) + " ",{ fileName : "BB.hx", lineNumber : 134, className : "BB", methodName : "Init"});
-				}
 				BB.stepAttacksBB[Types.Make_Piece(c1,pt2)][s3].OR(BB.squareBB[to1]);
 			}
 		}
@@ -129,7 +125,6 @@ BB.Init = function() {
 	BB.initialized = true;
 };
 BB.getStepAttacksBB = function(pc,sq) {
-	haxe_Log.trace("getStepAttacksBB pc:" + pc + " sq:" + sq,{ fileName : "BB.hx", lineNumber : 144, className : "BB", methodName : "getStepAttacksBB"});
 	return BB.stepAttacksBB[pc][sq];
 };
 BB.AttacksBB = function(sq,occ,pt) {
@@ -647,11 +642,8 @@ MoveList.prototype = {
 	}
 	,GenerateMoves: function(pos,us,target,pt) {
 		var pl = pos.PiecesColourType(us,pt).NORM27();
-		haxe_Log.trace("GenerateMoves us:" + us,{ fileName : "MoveList.hx", lineNumber : 132, className : "MoveList", methodName : "GenerateMoves", customParams : [pl.toStringBB()]});
-		var from;
+		var from = 0;
 		var pc = Types.Make_Piece(us,pt);
-		var occ = pos.PiecesAll();
-		haxe_Log.trace("GenerateMoves pt:" + pt + " pc:" + pc + " occ",{ fileName : "MoveList.hx", lineNumber : 136, className : "MoveList", methodName : "GenerateMoves", customParams : [occ.toStringBB()]});
 		while(pl.IsNonZero()) {
 			from = pl.PopLSB();
 			var b = pos.AttacksFromPTypeSQ(from,pc).newAND(target);
@@ -668,8 +660,11 @@ MoveList.prototype = {
 			}
 		}
 	}
+	,GenerateKingMoves: function(pos,us,target) {
+		this.GenerateMoves(pos,us,target,8);
+	}
 	,generatePawnMoves: function(pos,us,target) {
-		haxe_Log.trace("MoveList::GeneratePawnMoves c: " + us,{ fileName : "MoveList.hx", lineNumber : 155, className : "MoveList", methodName : "generatePawnMoves"});
+		haxe_Log.trace("MoveList::GeneratePawnMoves c: " + us,{ fileName : "MoveList.hx", lineNumber : 165, className : "MoveList", methodName : "generatePawnMoves"});
 		var up = 1;
 		var tRank8BB = BB.ranksBB[8];
 		if(us == 0) {
@@ -682,7 +677,7 @@ MoveList.prototype = {
 		this.SerializePawns(b1,up,us);
 	}
 	,GenerateAll: function(pos,us,target) {
-		haxe_Log.trace("MoveList::GenerateAll c: " + us,{ fileName : "MoveList.hx", lineNumber : 170, className : "MoveList", methodName : "GenerateAll"});
+		haxe_Log.trace("MoveList::GenerateAll c: " + us,{ fileName : "MoveList.hx", lineNumber : 180, className : "MoveList", methodName : "GenerateAll"});
 		this.generatePawnMoves(pos,us,target);
 		this.GenerateMoves(pos,us,target,2);
 		this.GenerateMoves(pos,us,target,3);
@@ -696,13 +691,14 @@ MoveList.prototype = {
 		this.GenerateMoves(pos,us,target,12);
 		this.GenerateMoves(pos,us,target,13);
 		this.GenerateMoves(pos,us,target,14);
+		this.GenerateKingMoves(pos,us,target);
 	}
 	,Generate: function(pos) {
 		var us = pos.SideToMove();
 		var pc;
-		haxe_Log.trace("MoveList::Generate c: " + us,{ fileName : "MoveList.hx", lineNumber : 189, className : "MoveList", methodName : "Generate"});
+		haxe_Log.trace("MoveList::Generate c: " + us,{ fileName : "MoveList.hx", lineNumber : 200, className : "MoveList", methodName : "Generate"});
 		var target = pos.PiecesAll().newNOT();
-		haxe_Log.trace(target.toStringBB(),{ fileName : "MoveList.hx", lineNumber : 191, className : "MoveList", methodName : "Generate"});
+		haxe_Log.trace(target.toStringBB(),{ fileName : "MoveList.hx", lineNumber : 202, className : "MoveList", methodName : "Generate"});
 		this.GenerateAll(pos,us,target);
 	}
 };
@@ -907,9 +903,7 @@ Position.prototype = {
 			return BB.AttacksBB(sq,this.PiecesAll(),pt);
 		} else if(pt == 2) {
 			var rb = BB.AttacksBB(sq,this.PiecesAll(),6);
-			haxe_Log.trace("AttacksFromPTypeSQ rb",{ fileName : "Position.hx", lineNumber : 165, className : "Position", methodName : "AttacksFromPTypeSQ", customParams : [rb.toStringBB()]});
 			var b = BB.getStepAttacksBB(pc,sq).newAND(rb);
-			haxe_Log.trace("AttacksFromPTypeSQ Lb",{ fileName : "Position.hx", lineNumber : 167, className : "Position", methodName : "AttacksFromPTypeSQ", customParams : [b.toStringBB()]});
 			return b;
 		} else {
 			return BB.getStepAttacksBB(pc,sq);
@@ -980,7 +974,7 @@ Position.prototype = {
 			s += HxOverrides.substr("  " + this.board[sq8],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 186, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 184, className : "Position", methodName : "printBoard"});
 	}
 };
 var SFEN = function(sfen) {

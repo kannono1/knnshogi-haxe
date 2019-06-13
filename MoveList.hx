@@ -129,11 +129,8 @@ class MoveList {
 
 	public function GenerateMoves(pos:Position, us:Int, target:Bitboard, pt:Int) {
 		var pl:Bitboard = pos.PiecesColourType(us, pt).NORM27();
-		trace('GenerateMoves us:$us', pl.toStringBB());
-		var from:Int; // = pl[0];
+		var from:Int = 0;
 		var pc:Int = Types.Make_Piece(us, pt);
-		var occ = pos.PiecesAll();
-		trace('GenerateMoves pt:$pt pc:$pc occ', occ.toStringBB());
 		while (pl.IsNonZero()) {
 			from = pl.PopLSB();
 			var b:Bitboard = pos.AttacksFromPTypeSQ(from, pc).newAND(target); // fromにいるpcの移動可能範囲
@@ -149,6 +146,19 @@ class MoveList {
 				Serialize(from, b);
 			}
 		}
+	}
+
+	private function GenerateKingMoves(pos:Position, us:Int, target:Bitboard) {
+		// if(
+		// 	genType == QUIET_CHECKS
+		// 	|| genType == EVASIONS
+		// ) { // K
+		// 	return;
+		// }
+		// var from:Int = pos.KingSquare( us );
+		// var b:Bitboard = pos.AttacksFromPTypeSQ( from, Types.KING ).newAND( target );
+		// Serialize( from, b );
+		GenerateMoves(pos, us, target, Types.KING);
 	}
 
 	public function generatePawnMoves(pos:Position, us:Int, target:Bitboard) {
@@ -181,6 +191,7 @@ class MoveList {
 		GenerateMoves(pos, us, target, Types.PRO_SILVER);
 		GenerateMoves(pos, us, target, Types.HORSE);
 		GenerateMoves(pos, us, target, Types.DRAGON);
+		GenerateKingMoves(pos, us, target);
 	}
 
 	public function Generate(pos:Position) {
