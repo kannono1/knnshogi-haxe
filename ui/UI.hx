@@ -3,6 +3,7 @@ package ui;
 import js.Browser;
 import ui.Mode.OPERATION_MODE;
 import Types.PR;
+import Types.PC;
 
 class UI {
 	private var game:Game;
@@ -21,11 +22,11 @@ class UI {
 		game.start();
 	}
 
-	private function Init(){
+	private function Init() {
 		initDialog();
 	}
 
-	private function initDialog(){
+	private function initDialog() {
 		var dialog:Dynamic = Browser.document.getElementById('dialog_promote');
 		dialog.addEventListener('cancel', function(e:Dynamic) {
 			e.preventDefault();
@@ -37,7 +38,7 @@ class UI {
 		});
 	}
 
-	private function isPromotable(sq:Int, pc:Int):Bool {
+	private function isPromotable(sq:Int, pc:PC):Bool {
 		trace('isPromotable sq:$sq pc:$pc');
 		if (pc % 16 > Types.PIECE_PROMOTE) {
 			return false; // 成駒だったらFalse
@@ -57,8 +58,8 @@ class UI {
 				this.selectedSq = sq;
 				this.updateUi(OPERATION_MODE.MOVE);
 			case MOVE:
-			this.toSq = sq;
-				var from_pc = game.PieceOn(selectedSq);
+				this.toSq = sq;
+				var from_pc:PC = game.PieceOn(selectedSq);
 				if (isPromotable(toSq, from_pc)) {
 					var dialog:Dynamic = Browser.document.getElementById('dialog_promote');
 					dialog.showModal();
@@ -92,19 +93,19 @@ class UI {
 		Browser.alert('${winner}の勝ちです');
 	}
 
-	private function isPlayerPiece(sq:Int, pc:Int):Bool {
+	private function isPlayerPiece(sq:Int, pc:PC):Bool {
 		var c = Types.getPieceColor(pc);
-		return (game.sideToMove == c && pc > 0);
+		return (game.sideToMove == c && Std.int(pc) > 0);
 	}
 
 	public function updateUi(mode:OPERATION_MODE) {
 		var linkable:Bool = false;
-		var pc:Int = 0;
+		var pc:PC = new PC(0);
 		operationMode = mode;
 		switch (this.operationMode) {
 			case SELECT:
 				for (sq in 0...81) {
-					pc = game.board[sq];
+					pc = game.PieceOn(sq);
 					if (isPlayerPiece(sq, pc)) {
 						var arr:Array<Int> = game.getMovableSq(sq, pc);
 						if (arr.length > 0) {
@@ -115,18 +116,18 @@ class UI {
 					} else {
 						linkable = false;
 					}
-					this.setCell(sq, game.board[sq], linkable);
+					this.setCell(sq, game.PieceOn(sq), linkable);
 				}
 				for (i in 1...8) {
 					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], (game.hand[Types.BLACK][i] > 0));
 					setHand(Types.WHITE, i, game.hand[Types.WHITE][i], false);
 				}
 			case MOVE:
-				pc = game.board[this.selectedSq];
+				pc = game.PieceOn(this.selectedSq);
 				var arr:Array<Int> = game.getMovableSq(selectedSq, pc);
 				for (sq in 0...81) {
 					linkable = (arr.indexOf(sq) > -1);
-					this.setCell(sq, game.board[sq], linkable);
+					this.setCell(sq, game.PieceOn(sq), linkable);
 				}
 				for (i in 1...8) {
 					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], false);
@@ -136,7 +137,7 @@ class UI {
 				var arr:Array<Int> = game.getEmptySq();
 				for (sq in 0...81) {
 					linkable = (arr.indexOf(sq) > -1);
-					this.setCell(sq, game.board[sq], linkable);
+					this.setCell(sq, game.PieceOn(sq), linkable);
 				}
 				for (i in 1...8) {
 					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], false);
@@ -144,7 +145,7 @@ class UI {
 				}
 			default:
 				for (sq in 0...81) {
-					this.setCell(sq, game.board[sq], false);
+					this.setCell(sq, game.PieceOn(sq), false);
 				}
 				for (i in 1...8) {
 					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], false);
@@ -153,7 +154,7 @@ class UI {
 		}
 	}
 
-	private function setCell(sq:Int, pc:Int, linkable:Bool) {
+	private function setCell(sq:Int, pc:PC, linkable:Bool) {
 		var c = Types.getPieceColor(pc);
 		var s = '' + Types.getPieceLabel(pc);
 		if (linkable) {

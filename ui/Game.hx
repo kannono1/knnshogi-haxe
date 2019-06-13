@@ -6,6 +6,7 @@ import util.StringUtil;
 import ui.Mode.OPERATION_MODE;
 import Types.Move;
 import Types.PR;
+import Types.PC;
 
 class Game extends Position {
 	public var playerColor:Int = 0;
@@ -66,7 +67,7 @@ class Game extends Position {
 		return s;
 	}
 
-	public function getMovableSq(sq:Int, pc:Int):Array<Int> {
+	public function getMovableSq(sq:Int, pc:PC):Array<Int> {
 		trace('Game::getMovableSq sq: $sq pc: $pc');
 		var arr:Array<Int> = [];
 		var us = sideToMove;

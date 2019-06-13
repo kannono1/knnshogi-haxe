@@ -2,6 +2,7 @@ package;
 
 import Types.Move;
 import Types.PR;
+import Types.PC;
 
 @:allow()
 class Position {
@@ -40,8 +41,8 @@ class Position {
 		return byColorBB[c].newAND(byTypeBB[pt]);
 	}
 
-	public function PieceOn(sq:Int):Int {
-		return board[sq];
+	public function PieceOn(sq:Int):PC {
+		return new PC(board[sq]);
 	}
 
 	private function changeSideToMove() {
@@ -58,7 +59,7 @@ class Position {
 		var to = Types.Move_ToSq(move);
 		var us = sideToMove;
 		var them:Int = Types.OppColour(us);
-		var pc:Int = MovedPieceAfter(move);
+		var pc:PC = MovedPieceAfter(move);
 		var pr:PR = Types.RawTypeOf(pc);
 		var pt = Types.TypeOf_Piece(pc);
 		trace('to: $to from: $from pc: $pc');
@@ -91,7 +92,7 @@ class Position {
 		byColorBB[c].SetBit(sq);
 		byTypeBB[Types.ALL_PIECES].SetBit(sq);
 		byTypeBB[pt].SetBit(sq);
-		if (Types.TypeOf_Piece(pt) == Types.PAWN) { // 二歩用BB更新
+		if (pt == Types.PAWN) { // 二歩用BB更新
 			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(sq)]);
 		}
 	}
@@ -103,7 +104,7 @@ class Position {
 		byColorBB[c].SetBit(to);
 		byTypeBB[Types.ALL_PIECES].SetBit(to);
 		byTypeBB[pt].SetBit(to);
-		if (Types.TypeOf_Piece(pt) == Types.PAWN) { // 二歩用BB更新
+		if (pt == Types.PAWN) { // 二歩用BB更新
 			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(to)]);
 		}
 	}
@@ -114,7 +115,7 @@ class Position {
 		byColorBB[c].ClrBit(sq);
 		byTypeBB[Types.ALL_PIECES].ClrBit(sq);
 		byTypeBB[pt].ClrBit(sq);
-		if (Types.TypeOf_Piece(pt) == Types.PAWN) { // 二歩用BB更新
+		if (pt == Types.PAWN) { // 二歩用BB更新
 			BB.pawnLineBB[c].AND(BB.filesBB[Types.File_Of(sq)].newNOT());
 		}
 	}
@@ -135,9 +136,9 @@ class Position {
 		return hand[c][pr];
 	}
 
-	public function MovedPieceAfter(m:Move):Int {
+	public function MovedPieceAfter(m:Move):PC {
 		if (Types.Is_Drop(m)) {
-			return (m >>> 7) & 0x7F;
+			return new PC((m >>> 7) & 0x7F);
 		} else { // この瞬間はPromoteは気にしなくて良い
 			return PieceOn(Types.Move_FromSq(m));
 		}
@@ -148,7 +149,7 @@ class Position {
 		sideToMove = sf.SideToMove();
 		board = sf.getBoard();
 		for (i in 0...81) {
-			var pc = board[i];
+			var pc = PieceOn(i);
 			var pt = Types.TypeOf_Piece(pc);
 			var c = Types.getPieceColor(pc);
 			if (pc == 0) {
@@ -169,7 +170,7 @@ class Position {
 		return sideToMove;
 	}
 
-	public function AttacksFromPTypeSQ(sq:Int, pc:Int):Bitboard {
+	public function AttacksFromPTypeSQ(sq:Int, pc:PC):Bitboard {
 		var pt:Int = Types.TypeOf_Piece(pc);
 		if (pt == Types.BISHOP || pt == Types.ROOK || pt == Types.HORSE || pt == Types.DRAGON) {
 			return BB.AttacksBB(sq, PiecesAll(), pt);

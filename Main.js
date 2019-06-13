@@ -502,13 +502,13 @@ var Position = function() {
 	this.hand = [];
 	this.sideToMove = 0;
 	this.board = [];
-	haxe_Log.trace("Posision::new",{ fileName : "Position.hx", lineNumber : 15, className : "Position", methodName : "new"});
+	haxe_Log.trace("Posision::new",{ fileName : "Position.hx", lineNumber : 16, className : "Position", methodName : "new"});
 	this.InitBB();
 };
 Position.__name__ = true;
 Position.prototype = {
 	InitBB: function() {
-		haxe_Log.trace("Posision::InitBB",{ fileName : "Position.hx", lineNumber : 20, className : "Position", methodName : "InitBB"});
+		haxe_Log.trace("Posision::InitBB",{ fileName : "Position.hx", lineNumber : 21, className : "Position", methodName : "InitBB"});
 		this.byTypeBB = [];
 		this.byTypeBB.push(new Bitboard());
 		this.byTypeBB.push(new Bitboard());
@@ -555,7 +555,8 @@ Position.prototype = {
 		return this.byColorBB[c].newAND(this.byTypeBB[pt]);
 	}
 	,PieceOn: function(sq) {
-		return this.board[sq];
+		var this1 = this.board[sq];
+		return this1;
 	}
 	,changeSideToMove: function() {
 		this.sideToMove = (this.sideToMove + 1) % 2;
@@ -564,7 +565,7 @@ Position.prototype = {
 		this.doMoveFull(move);
 	}
 	,doMoveFull: function(move) {
-		haxe_Log.trace("Position::doMoveFull " + Types.Move_To_String(move),{ fileName : "Position.hx", lineNumber : 56, className : "Position", methodName : "doMoveFull"});
+		haxe_Log.trace("Position::doMoveFull " + Types.Move_To_String(move),{ fileName : "Position.hx", lineNumber : 57, className : "Position", methodName : "doMoveFull"});
 		var from = Types.Move_FromSq(move);
 		var to = Types.Move_ToSq(move);
 		var us = this.sideToMove;
@@ -572,7 +573,7 @@ Position.prototype = {
 		var pc = this.MovedPieceAfter(move);
 		var pr = Types.RawTypeOf(pc);
 		var pt = Types.TypeOf_Piece(pc);
-		haxe_Log.trace("to: " + to + " from: " + from + " pc: " + pc,{ fileName : "Position.hx", lineNumber : 64, className : "Position", methodName : "doMoveFull"});
+		haxe_Log.trace("to: " + to + " from: " + from + " pc: " + pc,{ fileName : "Position.hx", lineNumber : 65, className : "Position", methodName : "doMoveFull"});
 		if(Types.Is_Drop(move)) {
 			this.SubHand(us,pr);
 			this.PutPiece(to,us,pr);
@@ -581,7 +582,7 @@ Position.prototype = {
 		}
 		var captured = Types.TypeOf_Piece(this.PieceOn(to));
 		var capturedRaw = Types.RawTypeOf(captured);
-		haxe_Log.trace("catured: " + captured + " capturedRaw: " + capturedRaw,{ fileName : "Position.hx", lineNumber : 73, className : "Position", methodName : "doMoveFull"});
+		haxe_Log.trace("catured: " + captured + " capturedRaw: " + capturedRaw,{ fileName : "Position.hx", lineNumber : 74, className : "Position", methodName : "doMoveFull"});
 		if(captured != 0) {
 			var capsq = to;
 			this.AddHand(us,capturedRaw);
@@ -596,33 +597,33 @@ Position.prototype = {
 		this.changeSideToMove();
 	}
 	,PutPiece: function(sq,c,pt) {
-		haxe_Log.trace("Position::PutPiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 89, className : "Position", methodName : "PutPiece"});
+		haxe_Log.trace("Position::PutPiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 90, className : "Position", methodName : "PutPiece"});
 		this.board[sq] = Types.Make_Piece(c,pt);
 		this.byColorBB[c].SetBit(sq);
 		this.byTypeBB[0].SetBit(sq);
 		this.byTypeBB[pt].SetBit(sq);
-		if(Types.TypeOf_Piece(pt) == 1) {
+		if(pt == 1) {
 			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(sq)]);
 		}
 	}
 	,MovePiece: function(from,to,c,pt) {
-		haxe_Log.trace("Position::MovePiece from:" + from + " to:" + to + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 100, className : "Position", methodName : "MovePiece"});
+		haxe_Log.trace("Position::MovePiece from:" + from + " to:" + to + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 101, className : "Position", methodName : "MovePiece"});
 		this.board[to] = Types.Make_Piece(c,pt);
 		this.board[from] = 0;
 		this.byColorBB[c].SetBit(to);
 		this.byTypeBB[0].SetBit(to);
 		this.byTypeBB[pt].SetBit(to);
-		if(Types.TypeOf_Piece(pt) == 1) {
+		if(pt == 1) {
 			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(to)]);
 		}
 	}
 	,RemovePiece: function(sq,c,pt) {
-		haxe_Log.trace("Position::RemovePiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 112, className : "Position", methodName : "RemovePiece"});
+		haxe_Log.trace("Position::RemovePiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 113, className : "Position", methodName : "RemovePiece"});
 		this.board[sq] = 0;
 		this.byColorBB[c].ClrBit(sq);
 		this.byTypeBB[0].ClrBit(sq);
 		this.byTypeBB[pt].ClrBit(sq);
-		if(Types.TypeOf_Piece(pt) == 1) {
+		if(pt == 1) {
 			BB.pawnLineBB[c].AND(BB.filesBB[Types.File_Of(sq)].newNOT());
 		}
 	}
@@ -646,7 +647,8 @@ Position.prototype = {
 	}
 	,MovedPieceAfter: function(m) {
 		if(Types.Is_Drop(m)) {
-			return m >>> 7 & 127;
+			var this1 = m >>> 7 & 127;
+			return this1;
 		} else {
 			return this.PieceOn(Types.Move_FromSq(m));
 		}
@@ -658,7 +660,7 @@ Position.prototype = {
 		var _g = 0;
 		while(_g < 81) {
 			var i = _g++;
-			var pc = this.board[i];
+			var pc = this.PieceOn(i);
 			var pt = Types.TypeOf_Piece(pc);
 			var c = Types.getPieceColor(pc);
 			if(pc == 0) {
@@ -666,7 +668,7 @@ Position.prototype = {
 			}
 			this.PutPiece(i,c,pt);
 		}
-		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 159, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 160, className : "Position", methodName : "setPosition"});
 		this.hand = sf.getHand();
 		var moves = sf.getMoves();
 		var _g1 = 0;
@@ -675,7 +677,7 @@ Position.prototype = {
 			var i1 = _g1++;
 			this.doMove(moves[i1]);
 		}
-		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 165, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 166, className : "Position", methodName : "setPosition"});
 	}
 	,SideToMove: function() {
 		return this.sideToMove;
@@ -757,7 +759,7 @@ Position.prototype = {
 			s += HxOverrides.substr("  " + this.board[sq8],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 196, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 197, className : "Position", methodName : "printBoard"});
 	}
 };
 var SFEN = function(sfen) {
@@ -967,14 +969,18 @@ Types.Move_ToSq = function(m) {
 	return m & 127;
 };
 Types.Move_Dropped_Piece = function(m) {
-	return m >>> 7 & 127;
+	var this1 = m >>> 7 & 127;
+	return this1;
 };
 Types.Move_Type = function(m) {
 	return m & 49152;
 };
 Types.Move_To_String = function(m) {
 	if(Types.Is_Drop(m)) {
-		return Types.PieceToChar(Types.Move_Dropped_Piece(m)) + "*" + Types.Square_To_String(Types.Move_ToSq(m));
+		var this1 = Types.Move_Dropped_Piece(m);
+		var pc = Types.PieceToChar(this1);
+		var str = Types.Square_To_String(Types.Move_ToSq(m));
+		return "" + pc + "*" + str;
 	} else if(Types.Is_Promote(m)) {
 		return Types.Square_To_String(Types.Move_FromSq(m)) + Types.Square_To_String(Types.Move_ToSq(m)) + "+";
 	} else {
@@ -1042,7 +1048,8 @@ Types.RawTypeOf = function(p) {
 	return this1;
 };
 Types.Make_Piece = function(c,pt) {
-	return c << 4 | pt;
+	var this1 = c << 4 | pt;
+	return this1;
 };
 Types.Square = function(f,r) {
 	return f * 9 + r;
@@ -1060,89 +1067,89 @@ Types.getPieceColor = function(pt) {
 Types.TypeOf_Piece = function(pc) {
 	return pc % 16;
 };
-Types.PieceToChar = function(pt) {
-	if(pt == 17) {
+Types.PieceToChar = function(pc) {
+	if(pc == 17) {
 		return "P";
 	}
-	if(pt == 18) {
+	if(pc == 18) {
 		return "L";
 	}
-	if(pt == 20) {
+	if(pc == 20) {
 		return "S";
 	}
-	if(pt == 19) {
+	if(pc == 19) {
 		return "N";
 	}
-	if(pt == 21) {
+	if(pc == 21) {
 		return "B";
 	}
-	if(pt == 22) {
+	if(pc == 22) {
 		return "R";
 	}
-	if(pt == 23) {
+	if(pc == 23) {
 		return "G";
 	}
-	if(pt == 24) {
+	if(pc == 24) {
 		return "K";
 	}
-	if(pt == 25) {
+	if(pc == 25) {
 		return "+P";
 	}
-	if(pt == 26) {
+	if(pc == 26) {
 		return "+L";
 	}
-	if(pt == 27) {
+	if(pc == 27) {
 		return "+N";
 	}
-	if(pt == 28) {
+	if(pc == 28) {
 		return "+S";
 	}
-	if(pt == 29) {
+	if(pc == 29) {
 		return "+B";
 	}
-	if(pt == 30) {
+	if(pc == 30) {
 		return "+R";
 	}
-	if(pt == 1) {
+	if(pc == 1) {
 		return "p";
 	}
-	if(pt == 2) {
+	if(pc == 2) {
 		return "l";
 	}
-	if(pt == 3) {
+	if(pc == 3) {
 		return "n";
 	}
-	if(pt == 4) {
+	if(pc == 4) {
 		return "s";
 	}
-	if(pt == 5) {
+	if(pc == 5) {
 		return "b";
 	}
-	if(pt == 6) {
+	if(pc == 6) {
 		return "r";
 	}
-	if(pt == 7) {
+	if(pc == 7) {
 		return "g";
 	}
-	if(pt == 8) {
+	if(pc == 8) {
 		return "k";
 	}
-	if(pt == 9) {
+	if(pc == 9) {
 		return "+p";
 	}
-	if(pt == 10) {
+	if(pc == 10) {
 		return "+l";
 	}
-	if(pt == 11) {
+	if(pc == 11) {
 		return "+n";
 	}
-	if(pt == 12) {
+	if(pc == 12) {
 		return "+s";
 	}
-	if(pt == 13) {
+	if(pc == 13) {
 		return "+b";
 	}
-	if(pt == 14) {
+	if(pc == 14) {
 		return "+r";
 	}
 	return "?";
@@ -1355,7 +1362,7 @@ var ui_Game = function(ui_) {
 	this.moves = [];
 	this._sfen = "sfen lnsgkgsnl/1r5b1/pppppp1pp/8P/9/9/PPPPPPP1P/1B5R1/LNSGKGSNL b - 1";
 	this.playerColor = 0;
-	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 20, className : "ui.Game", methodName : "new"});
+	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 21, className : "ui.Game", methodName : "new"});
 	Position.call(this);
 	this.ui = ui_;
 	this.createWorker();
@@ -1365,12 +1372,12 @@ ui_Game.__name__ = true;
 ui_Game.__super__ = Position;
 ui_Game.prototype = $extend(Position.prototype,{
 	createWorker: function() {
-		haxe_Log.trace("Game::createWorker",{ fileName : "ui/Game.hx", lineNumber : 28, className : "ui.Game", methodName : "createWorker"});
+		haxe_Log.trace("Game::createWorker",{ fileName : "ui/Game.hx", lineNumber : 29, className : "ui.Game", methodName : "createWorker"});
 		this.worker = new Worker("Engine.js");
 		this.worker.onmessage = $bind(this,this.onMessage);
 	}
 	,doPlayerMove: function(from,to,promote) {
-		haxe_Log.trace("Game::doPlayerMove from: " + from + " to: " + to + " promote: " + (promote == null ? "null" : "" + promote),{ fileName : "ui/Game.hx", lineNumber : 34, className : "ui.Game", methodName : "doPlayerMove"});
+		haxe_Log.trace("Game::doPlayerMove from: " + from + " to: " + to + " promote: " + (promote == null ? "null" : "" + promote),{ fileName : "ui/Game.hx", lineNumber : 35, className : "ui.Game", methodName : "doPlayerMove"});
 		if(promote) {
 			this.doMove(Types.Make_Move_Promote(from,to));
 		} else {
@@ -1378,18 +1385,18 @@ ui_Game.prototype = $extend(Position.prototype,{
 		}
 	}
 	,doPlayerPut: function(pr,to) {
-		haxe_Log.trace("Game::doPlayerPut pr: " + pr + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 44, className : "ui.Game", methodName : "doPlayerPut"});
+		haxe_Log.trace("Game::doPlayerPut pr: " + pr + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 45, className : "ui.Game", methodName : "doPlayerPut"});
 		var move = Types.Make_Move_Drop(pr,to);
 		this.doMove(move);
 	}
 	,doMove: function(move) {
-		haxe_Log.trace("Game::doMove " + Types.Move_To_String(move),{ fileName : "ui/Game.hx", lineNumber : 50, className : "ui.Game", methodName : "doMove"});
+		haxe_Log.trace("Game::doMove " + Types.Move_To_String(move),{ fileName : "ui/Game.hx", lineNumber : 51, className : "ui.Game", methodName : "doMove"});
 		this.moves.push(move);
 		Position.prototype.doMove.call(this,move);
 		this.printBoard();
-		haxe_Log.trace("hand " + Std.string(this.hand),{ fileName : "ui/Game.hx", lineNumber : 54, className : "ui.Game", methodName : "doMove"});
+		haxe_Log.trace("hand " + Std.string(this.hand),{ fileName : "ui/Game.hx", lineNumber : 55, className : "ui.Game", methodName : "doMove"});
 		if(this.isEnemyTurn()) {
-			haxe_Log.trace("Game::56 postMessage ...",{ fileName : "ui/Game.hx", lineNumber : 56, className : "ui.Game", methodName : "doMove"});
+			haxe_Log.trace("Game::56 postMessage ...",{ fileName : "ui/Game.hx", lineNumber : 57, className : "ui.Game", methodName : "doMove"});
 			this.worker.postMessage("position " + this._sfen + " moves " + this.getMovesString());
 		}
 	}
@@ -1404,7 +1411,7 @@ ui_Game.prototype = $extend(Position.prototype,{
 		return s;
 	}
 	,getMovableSq: function(sq,pc) {
-		haxe_Log.trace("Game::getMovableSq sq: " + sq + " pc: " + pc,{ fileName : "ui/Game.hx", lineNumber : 70, className : "ui.Game", methodName : "getMovableSq"});
+		haxe_Log.trace("Game::getMovableSq sq: " + sq + " pc: " + pc,{ fileName : "ui/Game.hx", lineNumber : 71, className : "ui.Game", methodName : "getMovableSq"});
 		var arr = [];
 		var us = this.sideToMove;
 		var attack = this.AttacksFromPTypeSQ(sq,pc);
@@ -1415,7 +1422,7 @@ ui_Game.prototype = $extend(Position.prototype,{
 	}
 	,getEmptySq: function() {
 		var b = this.PiecesAll().newNOT().NORM27();
-		haxe_Log.trace(b.toStringBB(),{ fileName : "ui/Game.hx", lineNumber : 84, className : "ui.Game", methodName : "getEmptySq"});
+		haxe_Log.trace(b.toStringBB(),{ fileName : "ui/Game.hx", lineNumber : 85, className : "ui.Game", methodName : "getEmptySq"});
 		var arr = [];
 		while(b.IsNonZero()) arr.push(b.PopLSB());
 		return arr;
@@ -1424,7 +1431,7 @@ ui_Game.prototype = $extend(Position.prototype,{
 		return this.sideToMove == 1;
 	}
 	,onMessage: function(s) {
-		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 97, className : "ui.Game", methodName : "onMessage"});
+		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 98, className : "ui.Game", methodName : "onMessage"});
 		var tokens = s.data.split(" ");
 		var move = Types.generateMoveFromString(tokens[1]);
 		if(move == 0) {
@@ -1435,11 +1442,11 @@ ui_Game.prototype = $extend(Position.prototype,{
 		}
 	}
 	,start: function() {
-		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 109, className : "ui.Game", methodName : "start"});
+		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 110, className : "ui.Game", methodName : "start"});
 		this.setPosition(this._sfen);
 	}
 	,endGame: function() {
-		haxe_Log.trace("Game::End",{ fileName : "ui/Game.hx", lineNumber : 114, className : "ui.Game", methodName : "endGame"});
+		haxe_Log.trace("Game::End",{ fileName : "ui/Game.hx", lineNumber : 115, className : "ui.Game", methodName : "endGame"});
 		this.ui.onEndGame(this.sideToMove);
 	}
 	,setPosition: function(sfen) {
@@ -1477,7 +1484,7 @@ ui_UI.prototype = {
 		});
 	}
 	,isPromotable: function(sq,pc) {
-		haxe_Log.trace("isPromotable sq:" + sq + " pc:" + pc,{ fileName : "ui/UI.hx", lineNumber : 41, className : "ui.UI", methodName : "isPromotable"});
+		haxe_Log.trace("isPromotable sq:" + sq + " pc:" + pc,{ fileName : "ui/UI.hx", lineNumber : 42, className : "ui.UI", methodName : "isPromotable"});
 		if(pc % 16 > 8) {
 			return false;
 		} else if(Types.Rank_Of(sq) < 3) {
@@ -1489,7 +1496,7 @@ ui_UI.prototype = {
 		}
 	}
 	,onClickCell: function(sq) {
-		haxe_Log.trace("on clickCell:",{ fileName : "ui/UI.hx", lineNumber : 54, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
+		haxe_Log.trace("on clickCell:",{ fileName : "ui/UI.hx", lineNumber : 55, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
 		switch(this.operationMode) {
 		case 0:
 			this.selectedSq = sq;
@@ -1514,14 +1521,14 @@ ui_UI.prototype = {
 		}
 	}
 	,onClickHand: function(pr) {
-		haxe_Log.trace("on clickHand:",{ fileName : "ui/UI.hx", lineNumber : 77, className : "ui.UI", methodName : "onClickHand", customParams : [pr]});
+		haxe_Log.trace("on clickHand:",{ fileName : "ui/UI.hx", lineNumber : 78, className : "ui.UI", methodName : "onClickHand", customParams : [pr]});
 		if(this.operationMode == 0) {
 			this.selectedHand = pr;
 			this.updateUi(2);
 		}
 	}
 	,onEnemyMoved: function() {
-		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 87, className : "ui.UI", methodName : "onEnemyMoved"});
+		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 88, className : "ui.UI", methodName : "onEnemyMoved"});
 		this.updateUi(0);
 	}
 	,onEndGame: function(winner) {
@@ -1530,21 +1537,22 @@ ui_UI.prototype = {
 	,isPlayerPiece: function(sq,pc) {
 		var c = Types.getPieceColor(pc);
 		if(this.game.sideToMove == c) {
-			return pc > 0;
+			return (pc | 0) > 0;
 		} else {
 			return false;
 		}
 	}
 	,updateUi: function(mode) {
 		var linkable = false;
-		var pc = 0;
+		var this1 = 0;
+		var pc = this1;
 		this.operationMode = mode;
 		switch(this.operationMode) {
 		case 0:
 			var _g = 0;
 			while(_g < 81) {
 				var sq = _g++;
-				pc = this.game.board[sq];
+				pc = this.game.PieceOn(sq);
 				if(this.isPlayerPiece(sq,pc)) {
 					var arr = this.game.getMovableSq(sq,pc);
 					if(arr.length > 0) {
@@ -1555,7 +1563,7 @@ ui_UI.prototype = {
 				} else {
 					linkable = false;
 				}
-				this.setCell(sq,this.game.board[sq],linkable);
+				this.setCell(sq,this.game.PieceOn(sq),linkable);
 			}
 			var _g1 = 1;
 			while(_g1 < 8) {
@@ -1565,13 +1573,13 @@ ui_UI.prototype = {
 			}
 			break;
 		case 1:
-			pc = this.game.board[this.selectedSq];
+			pc = this.game.PieceOn(this.selectedSq);
 			var arr1 = this.game.getMovableSq(this.selectedSq,pc);
 			var _g2 = 0;
 			while(_g2 < 81) {
 				var sq1 = _g2++;
 				linkable = arr1.indexOf(sq1) > -1;
-				this.setCell(sq1,this.game.board[sq1],linkable);
+				this.setCell(sq1,this.game.PieceOn(sq1),linkable);
 			}
 			this.setHand(0,1,this.game.hand[0][1],false);
 			this.setHand(1,1,this.game.hand[1][1],false);
@@ -1594,7 +1602,7 @@ ui_UI.prototype = {
 			while(_g3 < 81) {
 				var sq2 = _g3++;
 				linkable = arr2.indexOf(sq2) > -1;
-				this.setCell(sq2,this.game.board[sq2],linkable);
+				this.setCell(sq2,this.game.PieceOn(sq2),linkable);
 			}
 			this.setHand(0,1,this.game.hand[0][1],false);
 			this.setHand(1,1,this.game.hand[1][1],false);
@@ -1615,7 +1623,7 @@ ui_UI.prototype = {
 			var _g4 = 0;
 			while(_g4 < 81) {
 				var sq3 = _g4++;
-				this.setCell(sq3,this.game.board[sq3],false);
+				this.setCell(sq3,this.game.PieceOn(sq3),false);
 			}
 			this.setHand(0,1,this.game.hand[0][1],false);
 			this.setHand(1,1,this.game.hand[1][1],false);

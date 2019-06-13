@@ -5,16 +5,19 @@ abstract Move(Int) to Int {
 		this = i;
 	}
 }
+
 abstract PR(Int) to Int {
 	inline public function new(i:Int) {
 		this = i;
 	}
 }
+
 abstract PT(Int) to Int {
 	inline public function new(i:Int) {
 		this = i;
 	}
 }
+
 abstract PC(Int) to Int {
 	inline public function new(i:Int) {
 		this = i;
@@ -170,8 +173,8 @@ class Types {
 		return m & 0x7F;
 	}
 
-	public static function Move_Dropped_Piece(m:Move):Int {
-		return (m >>> 7) & 0x7F;
+	public static function Move_Dropped_Piece(m:Move):PR {
+		return new PR((m >>> 7) & 0x7F);
 	}
 
 	public static function Move_Type(m:Move):Int {
@@ -180,7 +183,9 @@ class Types {
 
 	public static function Move_To_String(m:Move):String {
 		if (Is_Drop(m)) {
-			return PieceToChar(Move_Dropped_Piece(m)) + "*" + Square_To_String(Move_ToSq(m));
+			var pc = PieceToChar(new PC(Move_Dropped_Piece(m)));
+			var str = Square_To_String(Move_ToSq(m));
+			return '$pc*$str';
 		} else if (Is_Promote(m)) {
 			return Square_To_String(Move_FromSq(m)) + Square_To_String(Move_ToSq(m)) + '+';
 		} else { // move
@@ -222,7 +227,7 @@ class Types {
 		r = Char_To_Rank(ft.charAt(3));
 		var to = Types.Square(f, r);
 		if (ft.indexOf('*') > 0) {
-			var pr:PR = RawTypeOf( getPieceType(ft.charAt(0)) );
+			var pr:PR = RawTypeOf(getPieceType(ft.charAt(0)));
 			f = Char_To_File(ft.charAt(2));
 			r = Char_To_Rank(ft.charAt(3));
 			to = Types.Square(f, r);
@@ -254,8 +259,8 @@ class Types {
 		return new PR(p % 8);
 	}
 
-	public static function Make_Piece(c:Int, pt:Int):Int {
-		return (c << 4) | pt;
+	public static function Make_Piece(c:Int, pt:Int):PC {
+		return new PC((c << 4) | pt);
 	}
 
 	public static function Square(f:Int, r:Int):Int {
@@ -268,93 +273,93 @@ class Types {
 		return (pt < 16) ? 0 : 1;
 	}
 
-	public static function TypeOf_Piece(pc:Int):Int {
+	public static function TypeOf_Piece(pc:PC):Int {
 		return pc % 16;
 	}
 
-	public static function PieceToChar(pt:Int):String {
-		if (pt == B_PAWN) {
+	public static function PieceToChar(pc:PC):String {
+		if (pc == B_PAWN) {
 			return "P";
 		}
-		if (pt == B_LANCE) {
+		if (pc == B_LANCE) {
 			return "L";
 		}
-		if (pt == B_SILVER) {
+		if (pc == B_SILVER) {
 			return "S";
 		}
-		if (pt == B_KNIGHT) {
+		if (pc == B_KNIGHT) {
 			return "N";
 		}
-		if (pt == B_BISHOP) {
+		if (pc == B_BISHOP) {
 			return "B";
 		}
-		if (pt == B_ROOK) {
+		if (pc == B_ROOK) {
 			return "R";
 		}
-		if (pt == B_GOLD) {
+		if (pc == B_GOLD) {
 			return "G";
 		}
-		if (pt == B_KING) {
+		if (pc == B_KING) {
 			return "K";
 		}
-		if (pt == B_PRO_PAWN) {
+		if (pc == B_PRO_PAWN) {
 			return "+P";
 		}
-		if (pt == B_PRO_LANCE) {
+		if (pc == B_PRO_LANCE) {
 			return "+L";
 		}
-		if (pt == B_PRO_KNIGHT) {
+		if (pc == B_PRO_KNIGHT) {
 			return "+N";
 		}
-		if (pt == B_PRO_SILVER) {
+		if (pc == B_PRO_SILVER) {
 			return "+S";
 		}
-		if (pt == B_HORSE) {
+		if (pc == B_HORSE) {
 			return "+B";
 		}
-		if (pt == B_DRAGON) {
+		if (pc == B_DRAGON) {
 			return "+R";
 		}
-		if (pt == W_PAWN) {
+		if (pc == W_PAWN) {
 			return "p";
 		}
-		if (pt == W_LANCE) {
+		if (pc == W_LANCE) {
 			return "l";
 		}
-		if (pt == W_KNIGHT) {
+		if (pc == W_KNIGHT) {
 			return "n";
 		}
-		if (pt == W_SILVER) {
+		if (pc == W_SILVER) {
 			return "s";
 		}
-		if (pt == W_BISHOP) {
+		if (pc == W_BISHOP) {
 			return "b";
 		}
-		if (pt == W_ROOK) {
+		if (pc == W_ROOK) {
 			return "r";
 		}
-		if (pt == W_GOLD) {
+		if (pc == W_GOLD) {
 			return "g";
 		}
-		if (pt == W_KING) {
+		if (pc == W_KING) {
 			return "k";
 		}
-		if (pt == W_PRO_PAWN) {
+		if (pc == W_PRO_PAWN) {
 			return "+p";
 		}
-		if (pt == W_PRO_LANCE) {
+		if (pc == W_PRO_LANCE) {
 			return "+l";
 		}
-		if (pt == W_PRO_KNIGHT) {
+		if (pc == W_PRO_KNIGHT) {
 			return "+n";
 		}
-		if (pt == W_PRO_SILVER) {
+		if (pc == W_PRO_SILVER) {
 			return "+s";
 		}
-		if (pt == W_HORSE) {
+		if (pc == W_HORSE) {
 			return "+b";
 		}
-		if (pt == W_DRAGON) {
+		if (pc == W_DRAGON) {
 			return "+r";
 		}
 		return "?";

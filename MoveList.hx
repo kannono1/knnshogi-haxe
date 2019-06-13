@@ -1,5 +1,7 @@
 package;
 
+import Types.PC;
+
 class MoveList {
 	public static inline var CAPTURES:Int = 0;
 	public static inline var QUIETS:Int = 1;
@@ -147,7 +149,7 @@ class MoveList {
 	public function GenerateMoves(pos:Position, us:Int, target:Bitboard, pt:Int) {
 		var pl:Bitboard = pos.PiecesColourType(us, pt).NORM27();
 		var from:Int = 0;
-		var pc:Int = Types.Make_Piece(us, pt);
+		var pc:PC = Types.Make_Piece(us, pt);
 		while (pl.IsNonZero()) {
 			from = pl.PopLSB();
 			var b:Bitboard = pos.AttacksFromPTypeSQ(from, pc).newAND(target); // fromにいるpcの移動可能範囲
