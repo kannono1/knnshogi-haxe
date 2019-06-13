@@ -10,7 +10,7 @@ class Game extends Position {
 	public var playerColor:Int = 0;
 
 	// private var _sfen = 'startpos';
-	private var _sfen = 'sfen lnsgkgsnl/1r5b1/pppppp1pp/8P/9/9/PPPPPPPP1/1B5R1/LNSGKGSNL b - 1';
+	private var _sfen = 'sfen lnsgkgsnl/1r5b1/pppppp1pp/8P/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1';
 	private var ui:UI;
 	private var worker:Worker;
 	private var moves:Array<Move> = [];

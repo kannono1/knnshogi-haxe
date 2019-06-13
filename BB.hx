@@ -11,6 +11,7 @@ class BB {
 	public static var enemyField1:Array<Bitboard> = []; // 敵陣の1段目BB[color]
 	public static var enemyField2:Array<Bitboard> = []; // 敵陣の2段目BB[color]
 	public static var enemyField3:Array<Bitboard> = []; // 敵陣の3段目BB[color]
+	public static var pawnLineBB:Array<Bitboard> = []; // 二歩チェック要。pawnがある列のBitが立つ[color]
 	private static var initialized:Bool = false;
 	static private var steps:Array<Array<Int>> = [
 		// 駒の移動。のビットシフト。飛びの効きは0。
@@ -64,6 +65,8 @@ class BB {
 		enemyField2[Types.BLACK] = ranksBB[0].newOR(ranksBB[1]);
 		enemyField3[Types.WHITE] = enemyField2[Types.WHITE].newOR(ranksBB[6]);
 		enemyField3[Types.BLACK] = enemyField2[Types.BLACK].newOR(ranksBB[2]);
+		pawnLineBB[Types.BLACK] = new Bitboard();
+		pawnLineBB[Types.WHITE] = new Bitboard();
 		for (sq in Types.SQ_A1...Types.SQ_NB) {
 			squareBB[sq] = new Bitboard();
 			squareBB[sq].SetBit(sq);

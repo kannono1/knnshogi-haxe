@@ -18,7 +18,7 @@ BB.RankDistance = function(s1,s2) {
 	return util_MathUtil.abs(Types.Rank_Of(s1) - Types.Rank_Of(s2));
 };
 BB.Init = function() {
-	haxe_Log.trace("Init::BB",{ fileName : "BB.hx", lineNumber : 49, className : "BB", methodName : "Init"});
+	haxe_Log.trace("Init::BB",{ fileName : "BB.hx", lineNumber : 50, className : "BB", methodName : "Init"});
 	if(BB.initialized) {
 		return;
 	}
@@ -38,6 +38,8 @@ BB.Init = function() {
 	BB.enemyField2[0] = BB.ranksBB[0].newOR(BB.ranksBB[1]);
 	BB.enemyField3[1] = BB.enemyField2[1].newOR(BB.ranksBB[6]);
 	BB.enemyField3[0] = BB.enemyField2[0].newOR(BB.ranksBB[2]);
+	BB.pawnLineBB[0] = new Bitboard();
+	BB.pawnLineBB[1] = new Bitboard();
 	var _g1 = 0;
 	while(_g1 < 81) {
 		var sq = _g1++;
@@ -632,6 +634,15 @@ MoveList.prototype = {
 			this.moveCount++;
 		}
 	}
+	,SerializeDrop: function(pt,b) {
+		var to;
+		b.NORM27();
+		while(b.IsNonZero()) {
+			to = b.PopLSB();
+			this.mlist[this.moveCount].move = Types.Make_Move_Drop(pt,to);
+			this.moveCount++;
+		}
+	}
 	,Serialize: function(from,b) {
 		b.NORM27();
 		while(b.IsNonZero()) {
@@ -664,7 +675,7 @@ MoveList.prototype = {
 		this.GenerateMoves(pos,us,target,8);
 	}
 	,generatePawnMoves: function(pos,us,target) {
-		haxe_Log.trace("MoveList::GeneratePawnMoves c: " + us,{ fileName : "MoveList.hx", lineNumber : 172, className : "MoveList", methodName : "generatePawnMoves"});
+		haxe_Log.trace("MoveList::GeneratePawnMoves c: " + us,{ fileName : "MoveList.hx", lineNumber : 182, className : "MoveList", methodName : "generatePawnMoves"});
 		var up = 1;
 		var tRank8BB = BB.ranksBB[8];
 		if(us == 0) {
@@ -676,8 +687,39 @@ MoveList.prototype = {
 		var b1 = BB.ShiftBB(pawnsNotOn7,up).newAND(emptySquares);
 		this.SerializePawns(b1,up,us);
 	}
+	,GenerateDopMoves: function(pos,us,target,pt,genType) {
+		if(!pos.HandExists(us,pt)) {
+			return;
+		}
+		var target2 = pos.PiecesAll().newNOT();
+		switch(pt) {
+		case 1:
+			target2.AND(BB.enemyField1[us].newNOT());
+			target2.AND(BB.pawnLineBB[us].newNOT());
+			haxe_Log.trace("GenerateDrop us:" + us + " pawnBB:" + BB.pawnLineBB[us].toStringBB(),{ fileName : "MoveList.hx", lineNumber : 205, className : "MoveList", methodName : "GenerateDopMoves"});
+			haxe_Log.trace("GenerateDrop target2:" + target2.toStringBB(),{ fileName : "MoveList.hx", lineNumber : 206, className : "MoveList", methodName : "GenerateDopMoves"});
+			break;
+		case 2:
+			target2.AND(BB.enemyField1[us].newNOT());
+			break;
+		case 3:
+			target2.AND(BB.enemyField2[us].newNOT());
+			break;
+		default:
+		}
+		this.SerializeDrop(pt,target2);
+	}
 	,GenerateAll: function(pos,us,target,genType) {
-		haxe_Log.trace("MoveList::GenerateAll c: " + us + " genType:" + genType,{ fileName : "MoveList.hx", lineNumber : 187, className : "MoveList", methodName : "GenerateAll"});
+		haxe_Log.trace("MoveList::GenerateAll c: " + us + " genType:" + genType,{ fileName : "MoveList.hx", lineNumber : 217, className : "MoveList", methodName : "GenerateAll"});
+		if(genType != 0) {
+			this.GenerateDopMoves(pos,us,target,1,genType);
+			this.GenerateDopMoves(pos,us,target,2,genType);
+			this.GenerateDopMoves(pos,us,target,3,genType);
+			this.GenerateDopMoves(pos,us,target,4,genType);
+			this.GenerateDopMoves(pos,us,target,5,genType);
+			this.GenerateDopMoves(pos,us,target,6,genType);
+			this.GenerateDopMoves(pos,us,target,7,genType);
+		}
 		this.generatePawnMoves(pos,us,target);
 		this.GenerateMoves(pos,us,target,2);
 		this.GenerateMoves(pos,us,target,3);
@@ -695,11 +737,9 @@ MoveList.prototype = {
 	}
 	,Generate: function(pos,genType) {
 		var us = pos.SideToMove();
-		var pc;
-		haxe_Log.trace("MoveList::Generate c: " + us + " genType:" + genType,{ fileName : "MoveList.hx", lineNumber : 207, className : "MoveList", methodName : "Generate"});
+		haxe_Log.trace("MoveList::Generate c: " + us + " genType:" + genType,{ fileName : "MoveList.hx", lineNumber : 245, className : "MoveList", methodName : "Generate"});
 		if(genType == 4) {
 			var target = pos.PiecesColour(us).newNOT();
-			haxe_Log.trace(target.toStringBB(),{ fileName : "MoveList.hx", lineNumber : 210, className : "MoveList", methodName : "Generate"});
 			this.GenerateAll(pos,us,target,genType);
 		}
 		if(genType == 5) {
@@ -835,9 +875,12 @@ Position.prototype = {
 		this.byColorBB[c].SetBit(sq);
 		this.byTypeBB[0].SetBit(sq);
 		this.byTypeBB[pt].SetBit(sq);
+		if(Types.TypeOf_Piece(pt) == 1) {
+			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(sq)]);
+		}
 	}
 	,MovePiece: function(from,to,c,pt) {
-		haxe_Log.trace("Position::MovePiece from:" + from + " to:" + to + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 96, className : "Position", methodName : "MovePiece"});
+		haxe_Log.trace("Position::MovePiece from:" + from + " to:" + to + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 99, className : "Position", methodName : "MovePiece"});
 		this.board[to] = Types.Make_Piece(c,pt);
 		this.board[from] = 0;
 		this.byColorBB[c].SetBit(to);
@@ -845,11 +888,14 @@ Position.prototype = {
 		this.byTypeBB[pt].SetBit(to);
 	}
 	,RemovePiece: function(sq,c,pt) {
-		haxe_Log.trace("Position::RemovePiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 105, className : "Position", methodName : "RemovePiece"});
+		haxe_Log.trace("Position::RemovePiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 108, className : "Position", methodName : "RemovePiece"});
 		this.board[sq] = 0;
 		this.byColorBB[c].ClrBit(sq);
 		this.byTypeBB[0].ClrBit(sq);
 		this.byTypeBB[pt].ClrBit(sq);
+		if(Types.TypeOf_Piece(pt) == 1) {
+			BB.pawnLineBB[c].AND(BB.filesBB[Types.File_Of(sq)].newNOT());
+		}
 	}
 	,HandExists: function(c,pr) {
 		return this.hand[c][pr] > 0;
@@ -891,7 +937,7 @@ Position.prototype = {
 			}
 			this.PutPiece(i,c,pt);
 		}
-		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 149, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 155, className : "Position", methodName : "setPosition"});
 		this.hand = sf.getHand();
 		var moves = sf.getMoves();
 		var _g1 = 0;
@@ -900,7 +946,7 @@ Position.prototype = {
 			var i1 = _g1++;
 			this.doMove(moves[i1]);
 		}
-		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 155, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 161, className : "Position", methodName : "setPosition"});
 	}
 	,SideToMove: function() {
 		return this.sideToMove;
@@ -982,7 +1028,7 @@ Position.prototype = {
 			s += HxOverrides.substr("  " + this.board[sq8],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 186, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 192, className : "Position", methodName : "printBoard"});
 	}
 };
 var SFEN = function(sfen) {
@@ -1646,6 +1692,7 @@ BB.squareBB = [];
 BB.enemyField1 = [];
 BB.enemyField2 = [];
 BB.enemyField3 = [];
+BB.pawnLineBB = [];
 BB.initialized = false;
 BB.steps = [[0,0,0,0,0,0,0,0,0],[-1,0,0,0,0,0,0,0,0],[-1,-2,-3,-4,-5,-6,-7,-8,0],[7,-11,0,0,0,0,0,0,0],[-1,8,10,-10,-8,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,10,-8,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]];
 BB.rDeltas = [-1,-9,1,9];

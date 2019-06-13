@@ -4,6 +4,15 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "all",
+            "type": "shell",
+            "command": "haxe -js Main.js -main Main; haxe -js Engine.js -main Engine",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
             "label": "main",
             "type": "shell",
             "command": "haxe -js Main.js -main Main",

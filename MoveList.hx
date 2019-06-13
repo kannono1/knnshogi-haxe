@@ -126,6 +126,16 @@ class MoveList {
 		}
 	}
 
+	public function SerializeDrop(pt:Int, b:Bitboard) {
+		var to:Int;
+		b.NORM27();
+		while (b.IsNonZero()) {
+			to = b.PopLSB();
+			mlist[moveCount].move = Types.Make_Move_Drop(pt, to);
+			moveCount++;
+		}
+	}
+
 	public function Serialize(from:Int, b:Bitboard) { // 成らない移動
 		b.NORM27();
 		while (b.IsNonZero()) {
@@ -183,8 +193,37 @@ class MoveList {
 		SerializePawns(b1, up, us);
 	}
 
+	public function GenerateDopMoves(pos:Position, us:Int, target:Bitboard, pt:Int, genType:Int) {
+		if (!pos.HandExists(us, pt)) {
+			return; // 持ち駒チェエク
+		}
+		var target2:Bitboard = pos.PiecesAll().newNOT(); // 空いてるところ
+		switch (pt) {
+			case Types.PAWN:
+				target2.AND(BB.enemyField1[us].newNOT()); // 1段目には打てない
+				target2.AND(BB.pawnLineBB[us].newNOT()); // 二歩チェック
+				trace('GenerateDrop us:$us pawnBB:${BB.pawnLineBB[us].toStringBB()}');
+				trace('GenerateDrop target2:${target2.toStringBB()}');
+			case Types.LANCE:
+				target2.AND(BB.enemyField1[us].newNOT()); // 1段目には打てない
+			case Types.KNIGHT:
+				target2.AND(BB.enemyField2[us].newNOT()); // 2段目には打てない
+			default: // 空いてるところならOK
+		}
+		SerializeDrop(pt, target2);
+	}
+
 	public function GenerateAll(pos:Position, us:Int, target:Bitboard, genType:Int) {
 		trace('MoveList::GenerateAll c: $us genType:$genType');
+		if (genType != CAPTURES) { // CAPTUREの時は打ち手を生成しない。（絶対に敵駒を取れないので）
+			GenerateDopMoves(pos, us, target, Types.PAWN, genType);
+			GenerateDopMoves(pos, us, target, Types.LANCE, genType);
+			GenerateDopMoves(pos, us, target, Types.KNIGHT, genType);
+			GenerateDopMoves(pos, us, target, Types.SILVER, genType);
+			GenerateDopMoves(pos, us, target, Types.BISHOP, genType);
+			GenerateDopMoves(pos, us, target, Types.ROOK, genType);
+			GenerateDopMoves(pos, us, target, Types.GOLD, genType);
+		}
 		generatePawnMoves(pos, us, target);
 		GenerateMoves(pos, us, target, Types.LANCE);
 		GenerateMoves(pos, us, target, Types.KNIGHT);
@@ -203,11 +242,9 @@ class MoveList {
 
 	public function Generate(pos:Position, genType:Int) {
 		var us:Int = pos.SideToMove();
-		var pc:Int;
 		trace('MoveList::Generate c: $us genType:$genType');
 		if (genType == NON_EVASIONS) {
-			var target:Bitboard = pos.PiecesColour( us ).newNOT(); // CAPTURE＋QUIETS
-			trace(target.toStringBB());
+			var target:Bitboard = pos.PiecesColour(us).newNOT(); // CAPTURE＋QUIETS
 			GenerateAll(pos, us, target, genType);
 		}
 		if (genType == LEGAL) {

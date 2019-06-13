@@ -90,6 +90,9 @@ class Position {
 		byColorBB[c].SetBit(sq);
 		byTypeBB[Types.ALL_PIECES].SetBit(sq);
 		byTypeBB[pt].SetBit(sq);
+		if (Types.TypeOf_Piece(pt) == Types.PAWN) { // 二歩用BB更新
+			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(sq)]);
+		}
 	}
 
 	public function MovePiece(from:Int, to:Int, c:Int, pt:Int) {
@@ -107,6 +110,9 @@ class Position {
 		byColorBB[c].ClrBit(sq);
 		byTypeBB[Types.ALL_PIECES].ClrBit(sq);
 		byTypeBB[pt].ClrBit(sq);
+		if (Types.TypeOf_Piece(pt) == Types.PAWN) { // 二歩用BB更新
+			BB.pawnLineBB[c].AND(BB.filesBB[Types.File_Of(sq)].newNOT());
+		}
 	}
 
 	public function HandExists(c:Int, pr:Int):Bool {
