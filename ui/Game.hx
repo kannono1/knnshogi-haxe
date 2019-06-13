@@ -5,6 +5,7 @@ import js.html.Worker;
 import util.StringUtil;
 import ui.Mode.OPERATION_MODE;
 import Types.Move;
+import Types.PR;
 
 class Game extends Position {
 	public var playerColor:Int = 0;
@@ -39,7 +40,7 @@ class Game extends Position {
 		}
 	}
 
-	public function doPlayerPut(pr:Int, to:Int) {
+	public function doPlayerPut(pr:PR, to:Int) {
 		trace('Game::doPlayerPut pr: $pr to: $to');
 		var move:Move = Types.Make_Move_Drop(pr, to);
 		doMove(move);
@@ -78,8 +79,7 @@ class Game extends Position {
 		return arr;
 	}
 
-	public function getEmptySq(pr:Int):Array<Int> {
-		trace('Game::getEmptySq pr: $pr');
+	public function getEmptySq():Array<Int> {
 		var b:Bitboard = PiecesAll().newNOT().NORM27();
 		trace(b.toStringBB());
 		var arr:Array<Int> = [];

@@ -131,7 +131,7 @@ class MoveList {
 		b.NORM27();
 		while (b.IsNonZero()) {
 			to = b.PopLSB();
-			mlist[moveCount].move = Types.Make_Move_Drop(pt, to);
+			mlist[moveCount].move = Types.Make_Move_Drop( Types.RawTypeOf(pt), to);
 			moveCount++;
 		}
 	}
@@ -194,7 +194,7 @@ class MoveList {
 	}
 
 	public function GenerateDopMoves(pos:Position, us:Int, target:Bitboard, pt:Int, genType:Int) {
-		if (!pos.HandExists(us, pt)) {
+		if (!pos.HandExists(us, Types.RawTypeOf( pt) ) ){
 			return; // 持ち駒チェエク
 		}
 		var target2:Bitboard = pos.PiecesAll().newNOT(); // 空いてるところ

@@ -5,6 +5,21 @@ abstract Move(Int) to Int {
 		this = i;
 	}
 }
+abstract PR(Int) to Int {
+	inline public function new(i:Int) {
+		this = i;
+	}
+}
+abstract PT(Int) to Int {
+	inline public function new(i:Int) {
+		this = i;
+	}
+}
+abstract PC(Int) to Int {
+	inline public function new(i:Int) {
+		this = i;
+	}
+}
 
 class Types {
 	static public inline var BLACK:Int = 0;
@@ -195,7 +210,7 @@ class Types {
 		return new Move(to | (from << 7) | MOVE_PROMO);
 	}
 
-	public static function Make_Move_Drop(pr:Int, sq:Int):Move {
+	public static function Make_Move_Drop(pr:PR, sq:Int):Move {
 		return new Move(sq | (pr << 7) | MOVE_DROP);
 	}
 
@@ -207,7 +222,7 @@ class Types {
 		r = Char_To_Rank(ft.charAt(3));
 		var to = Types.Square(f, r);
 		if (ft.indexOf('*') > 0) {
-			var pr:Int = getPieceType(ft.charAt(0));
+			var pr:PR = RawTypeOf( getPieceType(ft.charAt(0)) );
 			f = Char_To_File(ft.charAt(2));
 			r = Char_To_Rank(ft.charAt(3));
 			to = Types.Square(f, r);
@@ -235,8 +250,8 @@ class Types {
 		return String.fromCharCode(97 + Rank_Of(s));
 	}
 
-	public static function RawTypeOf(p:Int):Int {
-		return p % 8;
+	public static function RawTypeOf(p:Int):PR {
+		return new PR(p % 8);
 	}
 
 	public static function Make_Piece(c:Int, pt:Int):Int {

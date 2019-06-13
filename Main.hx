@@ -1,6 +1,7 @@
 package;
 
 import ui.UI;
+import Types.PR;
 
 @:expose
 class Main {
@@ -15,7 +16,7 @@ class Main {
 	static public function onClickCell(sq:Int) {
 		gui.onClickCell(sq);
 	}
-	static public function onClickHand(pr:Int) {
+	static public function onClickHand(pr:PR) {
 		gui.onClickHand(pr);
 	}
 }

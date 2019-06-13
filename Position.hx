@@ -1,6 +1,7 @@
 package;
 
 import Types.Move;
+import Types.PR;
 
 @:allow()
 class Position {
@@ -58,7 +59,7 @@ class Position {
 		var us = sideToMove;
 		var them:Int = Types.OppColour(us);
 		var pc:Int = MovedPieceAfter(move);
-		var pr:Int = Types.RawTypeOf(pc);
+		var pr:PR = Types.RawTypeOf(pc);
 		var pt = Types.TypeOf_Piece(pc);
 		trace('to: $to from: $from pc: $pc');
 		if (Types.Is_Drop(move)) {
@@ -68,7 +69,7 @@ class Position {
 			return;
 		}
 		var captured:Int = Types.TypeOf_Piece(PieceOn(to));
-		var capturedRaw:Int = Types.RawTypeOf(captured);
+		var capturedRaw:PR = Types.RawTypeOf(captured);
 		trace('catured: $captured capturedRaw: $capturedRaw');
 		if (captured != 0) {
 			var capsq:Int = to;
@@ -118,19 +119,19 @@ class Position {
 		}
 	}
 
-	public function HandExists(c:Int, pr:Int):Bool {
+	public function HandExists(c:Int, pr:PR):Bool {
 		return hand[c][pr] > 0;
 	}
 
-	public function AddHand(c:Int, pr:Int, n:Int = 1) {
+	public function AddHand(c:Int, pr:PR, n:Int = 1) {
 		hand[c][pr] += n;
 	}
 
-	public function SubHand(c:Int, pr:Int, n:Int = 1) {
+	public function SubHand(c:Int, pr:PR, n:Int = 1) {
 		hand[c][pr] -= n;
 	}
 
-	public function HandCount(c:Int, pr:Int):Int {
+	public function HandCount(c:Int, pr:PR):Int {
 		return hand[c][pr];
 	}
 

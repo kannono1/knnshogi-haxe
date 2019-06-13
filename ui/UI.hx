@@ -2,13 +2,14 @@ package ui;
 
 import js.Browser;
 import ui.Mode.OPERATION_MODE;
+import Types.PR;
 
 class UI {
 	private var game:Game;
 	private var operationMode = OPERATION_MODE.SELECT;
 	private var selectedSq:Int = 0;
 	private var toSq:Int = 0;
-	private var selectedHand:Int = 0; // pr
+	private var selectedHand:PR = new PR(0); // pr
 
 	public function new() {
 		Browser.window.onload = onLoad;
@@ -72,7 +73,7 @@ class UI {
 		}
 	}
 
-	public function onClickHand(pr:Int) {
+	public function onClickHand(pr:PR) {
 		trace('on clickHand:', pr);
 		switch (this.operationMode) {
 			case SELECT:
@@ -132,7 +133,7 @@ class UI {
 					setHand(Types.WHITE, i, game.hand[Types.WHITE][i], false);
 				}
 			case PUT:
-				var arr:Array<Int> = game.getEmptySq(selectedHand);
+				var arr:Array<Int> = game.getEmptySq();
 				for (sq in 0...81) {
 					linkable = (arr.indexOf(sq) > -1);
 					this.setCell(sq, game.board[sq], linkable);
