@@ -10,7 +10,7 @@ class Game extends Position {
 	public var playerColor:Int = 0;
 
 	// private var _sfen = 'startpos';
-	private var _sfen = 'sfen lnsgkgsnl/1r5b1/ppppppppp/8P/9/9/PPPPPPPP1/1B5R1/LNSGKGSNL b - 1';
+	private var _sfen = 'sfen lnsgkgsnl/1r5b1/pppppp1pp/8P/9/9/PPPPPPPP1/1B5R1/LNSGKGSNL b - 1';
 	private var ui:UI;
 	private var worker:Worker;
 	private var moves:Array<Move> = [];
@@ -69,10 +69,8 @@ class Game extends Position {
 		trace('Game::getMovableSq sq: $sq pc: $pc');
 		var arr:Array<Int> = [];
 		var us = sideToMove;
-		var pt = Types.TypeOf_Piece(pc);
-		var occ = PiecesAll();
+		var attack:Bitboard = AttacksFromPTypeSQ(sq, pc);//(Types.hasLongEffect(pt)) ? BB.AttacksBB(sq, occ, pt) : BB.stepAttacksBB[pt][sq];
 		var target:Bitboard = byColorBB[us].newNOT();
-		var attack:Bitboard = (Types.hasLongEffect(pt)) ? BB.AttacksBB(sq, occ, pt) : BB.stepAttacksBB[pt][sq];
 		var b = attack.newAND(target);
 		while (b.IsNonZero()) {
 			arr.push(b.PopLSB());

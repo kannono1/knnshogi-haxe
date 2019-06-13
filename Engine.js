@@ -19,6 +19,10 @@ BB.RankDistance = function(s1,s2) {
 };
 BB.Init = function() {
 	haxe_Log.trace("Init::BB",{ fileName : "BB.hx", lineNumber : 49, className : "BB", methodName : "Init"});
+	if(BB.initialized) {
+		haxe_Log.trace("return",{ fileName : "BB.hx", lineNumber : 51, className : "BB", methodName : "Init"});
+		return;
+	}
 	BB.filesBB = [];
 	BB.ranksBB = [];
 	var _g = 0;
@@ -61,43 +65,77 @@ BB.Init = function() {
 			BB.stepAttacksBB[pt][s11] = new Bitboard();
 		}
 	}
-	var _g4 = 0;
-	while(_g4 < 1) {
-		var c = _g4++;
-		var _g41 = 1;
-		while(_g41 < 14) {
-			var pt1 = _g41++;
+	var c = 0;
+	var _g4 = 1;
+	while(_g4 < 14) {
+		var pt1 = _g4++;
+		var _g41 = 0;
+		while(_g41 < 81) {
+			var s = _g41++;
 			var _g42 = 0;
-			while(_g42 < 81) {
-				var s = _g42++;
-				var _g43 = 0;
-				while(_g43 < 9) {
-					var k = _g43++;
-					if(BB.steps[pt1][k] == 0) {
-						continue;
-					}
-					var to = s;
-					if(c == 0) {
-						to += BB.steps[pt1][k];
-					} else {
-						to -= BB.steps[pt1][k];
-					}
-					if(Types.Is_SqOK(to) == false) {
-						continue;
-					}
-					if(BB.SquareDistance(s,to) >= 3 && Types.RawTypeOf(pt1) != 2) {
-						continue;
-					}
-					BB.stepAttacksBB[Types.Make_Piece(c,pt1)][s].OR(BB.squareBB[to]);
+			while(_g42 < 9) {
+				var k = _g42++;
+				if(BB.steps[pt1][k] == 0) {
+					continue;
 				}
+				var to = s;
+				if(c == 0) {
+					to += BB.steps[pt1][k];
+				} else {
+					to -= BB.steps[pt1][k];
+				}
+				if(Types.Is_SqOK(to) == false) {
+					continue;
+				}
+				if(BB.SquareDistance(s,to) >= 3 && Types.RawTypeOf(pt1) != 2) {
+					continue;
+				}
+				BB.stepAttacksBB[Types.Make_Piece(c,pt1)][s].OR(BB.squareBB[to]);
 			}
 		}
 	}
+	var c1 = 1;
+	var _g5 = 1;
+	while(_g5 < 14) {
+		var pt2 = _g5++;
+		var _g51 = 0;
+		while(_g51 < 81) {
+			var s3 = _g51++;
+			var _g52 = 0;
+			while(_g52 < 9) {
+				var k1 = _g52++;
+				if(BB.steps[pt2][k1] == 0) {
+					continue;
+				}
+				var to1 = s3;
+				if(c1 == 0) {
+					to1 += BB.steps[pt2][k1];
+				} else {
+					to1 -= BB.steps[pt2][k1];
+				}
+				if(Types.Is_SqOK(to1) == false) {
+					continue;
+				}
+				if(BB.SquareDistance(s3,to1) >= 3 && Types.RawTypeOf(pt2) != 2) {
+					continue;
+				}
+				if(c1 == 1) {
+					haxe_Log.trace("BB.Init!, c:" + c1 + ", pt:" + pt2 + ", s:" + s3 + ", pc:" + Types.Make_Piece(c1,pt2) + " ",{ fileName : "BB.hx", lineNumber : 134, className : "BB", methodName : "Init"});
+				}
+				BB.stepAttacksBB[Types.Make_Piece(c1,pt2)][s3].OR(BB.squareBB[to1]);
+			}
+		}
+	}
+	BB.initialized = true;
+};
+BB.getStepAttacksBB = function(pc,sq) {
+	haxe_Log.trace("getStepAttacksBB pc:" + pc + " sq:" + sq,{ fileName : "BB.hx", lineNumber : 144, className : "BB", methodName : "getStepAttacksBB"});
+	return BB.stepAttacksBB[pc][sq];
 };
 BB.AttacksBB = function(sq,occ,pt) {
 	switch(pt) {
 	case 2:
-		return BB.SlidingAttack(BB.lDeltas,sq,occ);
+		return BB.SlidingAttack(BB.rDeltas,sq,occ);
 	case 5:
 		return BB.SlidingAttack(BB.bDeltas,sq,occ);
 	case 6:
@@ -501,6 +539,89 @@ MoveList.prototype = {
 		this.curIndex = 0;
 		this.moveCount = 0;
 	}
+	,SerializeBR: function(from,b,us) {
+		if(BB.squareBB[from].newAND(BB.enemyField3[us]).IsNonZero()) {
+			b.NORM27();
+			while(b.IsNonZero()) {
+				var tmp = b.PopLSB();
+				this.mlist[this.moveCount].move = Types.Make_Move_Promote(from,tmp);
+				this.moveCount++;
+			}
+			return;
+		}
+		var pb = b.newAND(BB.enemyField3[us]);
+		var nb = b.newAND(BB.enemyField3[us].newNOT());
+		var to;
+		pb.NORM27();
+		while(pb.IsNonZero()) {
+			to = pb.PopLSB();
+			this.mlist[this.moveCount].move = Types.Make_Move_Promote(from,to);
+			this.moveCount++;
+		}
+		nb.NORM27();
+		while(nb.IsNonZero()) {
+			to = nb.PopLSB();
+			this.mlist[this.moveCount].move = Types.Make_Move(from,to);
+			this.moveCount++;
+		}
+	}
+	,SerializeS: function(from,b,us) {
+		var pb1 = new Bitboard();
+		var to;
+		if(BB.squareBB[from].newAND(BB.enemyField3[us]).IsNonZero()) {
+			pb1.Copy(b);
+			pb1.NORM27();
+			while(pb1.IsNonZero()) {
+				to = pb1.PopLSB();
+				this.mlist[this.moveCount].move = Types.Make_Move_Promote(from,to);
+				this.moveCount++;
+			}
+		}
+		var pb2 = b.newAND(BB.enemyField3[us]);
+		pb2.AND(pb1.newNOT());
+		pb2.NORM27();
+		while(pb2.IsNonZero()) {
+			to = pb2.PopLSB();
+			this.mlist[this.moveCount].move = Types.Make_Move_Promote(from,to);
+			this.moveCount++;
+		}
+		b.NORM27();
+		while(b.IsNonZero()) {
+			to = b.PopLSB();
+			this.mlist[this.moveCount].move = Types.Make_Move(from,to);
+			this.moveCount++;
+		}
+	}
+	,SerializeN: function(from,b,us) {
+		var pb = b.newAND(BB.enemyField3[us]).NORM27();
+		var nb = b.newAND(BB.enemyField2[us].newNOT()).NORM27();
+		var to;
+		while(pb.IsNonZero()) {
+			to = pb.PopLSB();
+			this.mlist[this.moveCount].move = Types.Make_Move_Promote(from,to);
+			this.moveCount++;
+		}
+		while(nb.IsNonZero()) {
+			to = nb.PopLSB();
+			this.mlist[this.moveCount].move = Types.Make_Move(from,to);
+			this.moveCount++;
+		}
+	}
+	,SerializeL: function(from,b,us) {
+		var pb = b.newAND(BB.enemyField3[us]).NORM27();
+		var nb = b.newAND(BB.enemyField2[us].newNOT()).NORM27();
+		var to;
+		while(pb.IsNonZero()) {
+			to = pb.PopLSB();
+			this.mlist[this.moveCount].move = Types.Make_Move_Promote(from,to);
+			this.moveCount++;
+		}
+		while(nb.IsNonZero()) {
+			to = nb.PopLSB();
+			this.mlist[this.moveCount].move = Types.Make_Move(from,to);
+			this.moveCount++;
+		}
+	}
 	,SerializePawns: function(b,delta,us) {
 		var pb = b.newAND(BB.enemyField3[us]).NORM27();
 		var nb = b.newAND(BB.enemyField3[us].newNOT()).NORM27();
@@ -516,8 +637,39 @@ MoveList.prototype = {
 			this.moveCount++;
 		}
 	}
+	,Serialize: function(from,b) {
+		b.NORM27();
+		while(b.IsNonZero()) {
+			var tmp = b.PopLSB();
+			this.mlist[this.moveCount].move = Types.Make_Move(from,tmp);
+			this.moveCount++;
+		}
+	}
+	,GenerateMoves: function(pos,us,target,pt) {
+		var pl = pos.PiecesColourType(us,pt).NORM27();
+		haxe_Log.trace("GenerateMoves us:" + us,{ fileName : "MoveList.hx", lineNumber : 132, className : "MoveList", methodName : "GenerateMoves", customParams : [pl.toStringBB()]});
+		var from;
+		var pc = Types.Make_Piece(us,pt);
+		var occ = pos.PiecesAll();
+		haxe_Log.trace("GenerateMoves pt:" + pt + " pc:" + pc + " occ",{ fileName : "MoveList.hx", lineNumber : 136, className : "MoveList", methodName : "GenerateMoves", customParams : [occ.toStringBB()]});
+		while(pl.IsNonZero()) {
+			from = pl.PopLSB();
+			var b = pos.AttacksFromPTypeSQ(from,pc).newAND(target);
+			if(pt == 5 || pt == 6) {
+				this.SerializeBR(from,b,us);
+			} else if(pt == 4) {
+				this.SerializeS(from,b,us);
+			} else if(pt == 3) {
+				this.SerializeN(from,b,us);
+			} else if(pt == 2) {
+				this.SerializeL(from,b,us);
+			} else {
+				this.Serialize(from,b);
+			}
+		}
+	}
 	,generatePawnMoves: function(pos,us,target) {
-		haxe_Log.trace("MoveList::GeneratePawnMoves c: " + us,{ fileName : "MoveList.hx", lineNumber : 37, className : "MoveList", methodName : "generatePawnMoves"});
+		haxe_Log.trace("MoveList::GeneratePawnMoves c: " + us,{ fileName : "MoveList.hx", lineNumber : 155, className : "MoveList", methodName : "generatePawnMoves"});
 		var up = 1;
 		var tRank8BB = BB.ranksBB[8];
 		if(us == 0) {
@@ -530,15 +682,27 @@ MoveList.prototype = {
 		this.SerializePawns(b1,up,us);
 	}
 	,GenerateAll: function(pos,us,target) {
-		haxe_Log.trace("MoveList::GenerateAll c: " + us,{ fileName : "MoveList.hx", lineNumber : 52, className : "MoveList", methodName : "GenerateAll"});
+		haxe_Log.trace("MoveList::GenerateAll c: " + us,{ fileName : "MoveList.hx", lineNumber : 170, className : "MoveList", methodName : "GenerateAll"});
 		this.generatePawnMoves(pos,us,target);
+		this.GenerateMoves(pos,us,target,2);
+		this.GenerateMoves(pos,us,target,3);
+		this.GenerateMoves(pos,us,target,4);
+		this.GenerateMoves(pos,us,target,5);
+		this.GenerateMoves(pos,us,target,6);
+		this.GenerateMoves(pos,us,target,7);
+		this.GenerateMoves(pos,us,target,9);
+		this.GenerateMoves(pos,us,target,10);
+		this.GenerateMoves(pos,us,target,11);
+		this.GenerateMoves(pos,us,target,12);
+		this.GenerateMoves(pos,us,target,13);
+		this.GenerateMoves(pos,us,target,14);
 	}
 	,Generate: function(pos) {
 		var us = pos.SideToMove();
 		var pc;
-		haxe_Log.trace("MoveList::Generate c: " + us,{ fileName : "MoveList.hx", lineNumber : 59, className : "MoveList", methodName : "Generate"});
+		haxe_Log.trace("MoveList::Generate c: " + us,{ fileName : "MoveList.hx", lineNumber : 189, className : "MoveList", methodName : "Generate"});
 		var target = pos.PiecesAll().newNOT();
-		haxe_Log.trace(target.toStringBB(),{ fileName : "MoveList.hx", lineNumber : 61, className : "MoveList", methodName : "Generate"});
+		haxe_Log.trace(target.toStringBB(),{ fileName : "MoveList.hx", lineNumber : 191, className : "MoveList", methodName : "Generate"});
 		this.GenerateAll(pos,us,target);
 	}
 };
@@ -723,7 +887,7 @@ Position.prototype = {
 			}
 			this.PutPiece(i,c,pt);
 		}
-		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 146, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 145, className : "Position", methodName : "setPosition"});
 		this.hand = sf.getHand();
 		var moves = sf.getMoves();
 		var _g1 = 0;
@@ -732,10 +896,24 @@ Position.prototype = {
 			var i1 = _g1++;
 			this.doMove(moves[i1]);
 		}
-		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 152, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 151, className : "Position", methodName : "setPosition"});
 	}
 	,SideToMove: function() {
 		return this.sideToMove;
+	}
+	,AttacksFromPTypeSQ: function(sq,pc) {
+		var pt = Types.TypeOf_Piece(pc);
+		if(pt == 5 || pt == 6 || pt == 13 || pt == 14) {
+			return BB.AttacksBB(sq,this.PiecesAll(),pt);
+		} else if(pt == 2) {
+			var rb = BB.AttacksBB(sq,this.PiecesAll(),6);
+			haxe_Log.trace("AttacksFromPTypeSQ rb",{ fileName : "Position.hx", lineNumber : 165, className : "Position", methodName : "AttacksFromPTypeSQ", customParams : [rb.toStringBB()]});
+			var b = BB.getStepAttacksBB(pc,sq).newAND(rb);
+			haxe_Log.trace("AttacksFromPTypeSQ Lb",{ fileName : "Position.hx", lineNumber : 167, className : "Position", methodName : "AttacksFromPTypeSQ", customParams : [b.toStringBB()]});
+			return b;
+		} else {
+			return BB.getStepAttacksBB(pc,sq);
+		}
 	}
 	,printBoard: function() {
 		var s = "";
@@ -802,7 +980,7 @@ Position.prototype = {
 			s += HxOverrides.substr("  " + this.board[sq8],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 170, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 186, className : "Position", methodName : "printBoard"});
 	}
 };
 var SFEN = function(sfen) {
@@ -991,8 +1169,6 @@ var Types = function() { };
 Types.__name__ = true;
 Types.hasLongEffect = function(pt) {
 	switch(pt) {
-	case 2:
-		return true;
 	case 5:
 		return true;
 	case 6:
@@ -1468,8 +1644,8 @@ BB.squareBB = [];
 BB.enemyField1 = [];
 BB.enemyField2 = [];
 BB.enemyField3 = [];
+BB.initialized = false;
 BB.steps = [[0,0,0,0,0,0,0,0,0],[-1,0,0,0,0,0,0,0,0],[-1,-2,-3,-4,-5,-6,-7,-8,0],[7,-11,0,0,0,0,0,0,0],[-1,8,10,-10,-8,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,10,-8,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]];
-BB.lDeltas = [-1,0,0,0];
 BB.rDeltas = [-1,-9,1,9];
 BB.bDeltas = [-10,-8,10,8];
 Bitboard.NA = 27;

@@ -48,7 +48,7 @@ class Position {
 	}
 
 	private function doMoveFull(move:Move) {
-        trace('Position::doMoveFull ${Types.Move_To_String(move)}');
+		trace('Position::doMoveFull ${Types.Move_To_String(move)}');
 		var from = Types.Move_FromSq(move);
 		var to = Types.Move_ToSq(move);
 		var us = sideToMove;
@@ -57,7 +57,7 @@ class Position {
 		var pr:Int = Types.RawTypeOf(pc);
 		var pt = Types.TypeOf_Piece(pc);
 		trace('to: $to from: $from pc: $pc');
-		if( Types.Is_Drop(move) ){
+		if (Types.Is_Drop(move)) {
 			SubHand(us, pr);
 			PutPiece(to, us, pr);
 			changeSideToMove();
@@ -73,9 +73,9 @@ class Position {
 		}
 		RemovePiece(from, us, pt);
 		MovePiece(from, to, us, pt);
-		if( Types.Move_Type(move) == Types.MOVE_PROMO ) {
-			RemovePiece( to, us, pt );
-			PutPiece( to, us,  pt + Types.PIECE_PROMOTE);
+		if (Types.Move_Type(move) == Types.MOVE_PROMO) {
+			RemovePiece(to, us, pt);
+			PutPiece(to, us, pt + Types.PIECE_PROMOTE);
 		}
 		changeSideToMove();
 	}
@@ -122,11 +122,10 @@ class Position {
 	}
 
 	public function MovedPieceAfter(m:Move):Int {
-		if( Types.Is_Drop(m) ){
+		if (Types.Is_Drop(m)) {
 			return (m >>> 7) & 0x7F;
-		}
-		else{// この瞬間はPromoteは気にしなくて良い
-			return PieceOn( Types.Move_FromSq(m) );
+		} else { // この瞬間はPromoteは気にしなくて良い
+			return PieceOn(Types.Move_FromSq(m));
 		}
 	}
 
@@ -154,6 +153,21 @@ class Position {
 
 	public function SideToMove():Int {
 		return sideToMove;
+	}
+
+	public function AttacksFromPTypeSQ(sq:Int, pc:Int):Bitboard {
+		var pt:Int = Types.TypeOf_Piece(pc);
+		if (pt == Types.BISHOP || pt == Types.ROOK || pt == Types.HORSE || pt == Types.DRAGON) {
+			return BB.AttacksBB(sq, PiecesAll(), pt);
+		}
+		else if (pt == Types.LANCE) {
+			var rb = BB.AttacksBB(sq, PiecesAll(), Types.ROOK);
+			var b = BB.getStepAttacksBB(pc, sq).newAND(rb);
+			return b;
+		}
+		else {
+			return BB.getStepAttacksBB(pc, sq); // P N S G K
+		}
 	}
 
 	public function printBoard() {

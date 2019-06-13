@@ -6,11 +6,12 @@ class BB {
 	public static var filesBB:Array<Bitboard>;
 	public static var ranksBB:Array<Bitboard>;
 	public static var squareDistance:Array<Array<Int>> = [];
-	public static var stepAttacksBB:Array<Array<Bitboard>> = []; // [pc][sq] = BB
+	private static var stepAttacksBB:Array<Array<Bitboard>> = []; // [pc][sq] = BB
 	public static var squareBB:Array<Bitboard> = [];
 	public static var enemyField1:Array<Bitboard> = []; // 敵陣の1段目BB[color]
 	public static var enemyField2:Array<Bitboard> = []; // 敵陣の2段目BB[color]
 	public static var enemyField3:Array<Bitboard> = []; // 敵陣の3段目BB[color]
+	private static var initialized:Bool = false;
 	static private var steps:Array<Array<Int>> = [
 		// 駒の移動。のビットシフト。飛びの効きは0。
 		[0, 0, 0, 0, 0, 0, 0, 0, 0], // 上下左右斜め＋終端の0＝９個
@@ -29,7 +30,6 @@ class BB {
 		[0, 0, 0, 0, 0, 0, 0, 0, 0], // B+
 		[0, 0, 0, 0, 0, 0, 0, 0, 0], // R+
 	];
-	public static var lDeltas:Array<Int> = [Types.DELTA_N,                 0,                 0,                 0  ];// L
 	public static var rDeltas:Array<Int> = [Types.DELTA_N, Types.DELTA_E, Types.DELTA_S, Types.DELTA_W]; // R
 	public static var bDeltas:Array<Int> = [Types.DELTA_NE, Types.DELTA_SE, Types.DELTA_SW, Types.DELTA_NW]; // B
 
@@ -47,6 +47,9 @@ class BB {
 
 	static public function Init() {
 		trace('Init::BB');
+		if (initialized) {
+			return;
+		}
 		filesBB = [];
 		ranksBB = [];
 		for (i in 0...9) {
@@ -80,30 +83,58 @@ class BB {
 				stepAttacksBB[pt][s1] = new Bitboard();
 			}
 		}
-		for (c in Types.BLACK...Types.WHITE) {
-			for (pt in Types.PAWN...Types.DRAGON) {
-				for (s in Types.SQ_A1...Types.SQ_NB) {
-					for (k in 0...9) { // 9=eps[0].length
-						if (steps[pt][k] == 0) {
-							continue;
-						}
-						var to:Int = s;
-						if (c == Types.BLACK) {
-							to += steps[pt][k];
-						} else {
-							to -= steps[pt][k];
-						}
-						if (Types.Is_SqOK(to) == false) {
-							continue;
-						}
-						if (SquareDistance(s, to) >= 3 && Types.RawTypeOf(pt) != Types.LANCE) {
-							continue; // 3=駒の隣接チェック(香の時は行わない)
-						}
-						stepAttacksBB[Types.Make_Piece(c, pt)][s].OR(squareBB[to]);
+		var c = Types.BLACK; // JSだとLoopを分割しないとスルーされるかも
+		for (pt in Types.PAWN...Types.DRAGON) {
+			for (s in Types.SQ_A1...Types.SQ_NB) {
+				for (k in 0...9) { // 9=eps[0].length
+					if (steps[pt][k] == 0) {
+						continue;
 					}
+					var to:Int = s;
+					if (c == Types.BLACK) {
+						to += steps[pt][k];
+					} else {
+						to -= steps[pt][k];
+					}
+					if (Types.Is_SqOK(to) == false) {
+						continue;
+					}
+					if (SquareDistance(s, to) >= 3 && Types.RawTypeOf(pt) != Types.LANCE) {
+						continue; // 3=駒の隣接チェック(香の時は行わない)
+					}
+					// trace('BB.Init, c:$c, pt:$pt, s:$s, pc:${Types.Make_Piece(c, pt) } ');
+					stepAttacksBB[Types.Make_Piece(c, pt)][s].OR(squareBB[to]);
 				}
 			}
 		}
+		var c = Types.WHITE;
+		for (pt in Types.PAWN...Types.DRAGON) {
+			for (s in Types.SQ_A1...Types.SQ_NB) {
+				for (k in 0...9) { // 9=eps[0].length
+					if (steps[pt][k] == 0) {
+						continue;
+					}
+					var to:Int = s;
+					if (c == Types.BLACK) {
+						to += steps[pt][k];
+					} else {
+						to -= steps[pt][k];
+					}
+					if (Types.Is_SqOK(to) == false) {
+						continue;
+					}
+					if (SquareDistance(s, to) >= 3 && Types.RawTypeOf(pt) != Types.LANCE) {
+						continue; // 3=駒の隣接チェック(香の時は行わない)
+					}
+					stepAttacksBB[Types.Make_Piece(c, pt)][s].OR(squareBB[to]);
+				}
+			}
+		}
+		initialized = true;
+	}
+
+	public static function getStepAttacksBB(pc:Int, sq:Int):Bitboard {
+		return stepAttacksBB[pc][sq];
 	}
 
 	public static function AttacksBB(sq:Int, occ:Bitboard, pt:Int):Bitboard {
@@ -117,7 +148,7 @@ class BB {
 			case Types.BISHOP:
 				return SlidingAttack(bDeltas, sq, occ);
 			case Types.LANCE:
-				return SlidingAttack(lDeltas, sq, occ);
+				return SlidingAttack(rDeltas, sq, occ);
 			default:
 				return new Bitboard();
 		}

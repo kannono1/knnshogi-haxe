@@ -98,8 +98,6 @@ class Types {
 				return true;
 			case HORSE:
 				return true;
-			case LANCE:
-				return true;
 			default:
 				return false;
 		}
