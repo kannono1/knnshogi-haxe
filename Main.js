@@ -612,9 +612,12 @@ Position.prototype = {
 		this.byColorBB[c].SetBit(to);
 		this.byTypeBB[0].SetBit(to);
 		this.byTypeBB[pt].SetBit(to);
+		if(Types.TypeOf_Piece(pt) == 1) {
+			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(to)]);
+		}
 	}
 	,RemovePiece: function(sq,c,pt) {
-		haxe_Log.trace("Position::RemovePiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 108, className : "Position", methodName : "RemovePiece"});
+		haxe_Log.trace("Position::RemovePiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 111, className : "Position", methodName : "RemovePiece"});
 		this.board[sq] = 0;
 		this.byColorBB[c].ClrBit(sq);
 		this.byTypeBB[0].ClrBit(sq);
@@ -663,7 +666,7 @@ Position.prototype = {
 			}
 			this.PutPiece(i,c,pt);
 		}
-		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 155, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 158, className : "Position", methodName : "setPosition"});
 		this.hand = sf.getHand();
 		var moves = sf.getMoves();
 		var _g1 = 0;
@@ -672,7 +675,7 @@ Position.prototype = {
 			var i1 = _g1++;
 			this.doMove(moves[i1]);
 		}
-		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 161, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 164, className : "Position", methodName : "setPosition"});
 	}
 	,SideToMove: function() {
 		return this.sideToMove;
@@ -754,7 +757,7 @@ Position.prototype = {
 			s += HxOverrides.substr("  " + this.board[sq8],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 192, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 195, className : "Position", methodName : "printBoard"});
 	}
 };
 var SFEN = function(sfen) {
@@ -1331,7 +1334,7 @@ js_Browser.alert = function(v) {
 };
 var ui_Game = function(ui_) {
 	this.moves = [];
-	this._sfen = "sfen lnsgkgsnl/1r5b1/pppppp1pp/8P/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1";
+	this._sfen = "sfen lnsgkgsnl/1r5b1/pppppp1pp/8P/9/9/PPPPPPP1P/1B5R1/LNSGKGSNL b - 1";
 	this.playerColor = 0;
 	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 19, className : "ui.Game", methodName : "new"});
 	Position.call(this);

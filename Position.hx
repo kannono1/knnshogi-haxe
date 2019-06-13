@@ -102,6 +102,9 @@ class Position {
 		byColorBB[c].SetBit(to);
 		byTypeBB[Types.ALL_PIECES].SetBit(to);
 		byTypeBB[pt].SetBit(to);
+		if (Types.TypeOf_Piece(pt) == Types.PAWN) { // 二歩用BB更新
+			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(to)]);
+		}
 	}
 
 	private function RemovePiece(sq:Int, c:Int, pt:Int) {
