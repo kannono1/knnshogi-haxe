@@ -22,7 +22,7 @@ class Search {
 		numRootMoves = 0;
 		rootPos = pos;
 		var moves = new MoveList();
-		moves.Generate(rootPos);
+		moves.Generate(rootPos, MoveList.LEGAL);
 		for (i in 0...moves.moveCount) {
 			rootMoves[numRootMoves].SetMove(moves.mlist[i].move);
 			numRootMoves++;

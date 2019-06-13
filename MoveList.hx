@@ -1,6 +1,13 @@
 package;
 
 class MoveList {
+	public static inline var CAPTURES:Int = 0;
+	public static inline var QUIETS:Int = 1;
+	public static inline var QUIET_CHECKS:Int = 2;
+	public static inline var EVASIONS:Int = 3;
+	public static inline var NON_EVASIONS:Int = 4;
+	public static inline var LEGAL:Int = 5;
+
 	public var mlist:Array<MoveExt> = [];
 	public var curIndex:Int = 0;
 	public var moveCount:Int = 0;
@@ -176,8 +183,8 @@ class MoveList {
 		SerializePawns(b1, up, us);
 	}
 
-	public function GenerateAll(pos:Position, us:Int, target:Bitboard) {
-		trace('MoveList::GenerateAll c: $us');
+	public function GenerateAll(pos:Position, us:Int, target:Bitboard, genType:Int) {
+		trace('MoveList::GenerateAll c: $us genType:$genType');
 		generatePawnMoves(pos, us, target);
 		GenerateMoves(pos, us, target, Types.LANCE);
 		GenerateMoves(pos, us, target, Types.KNIGHT);
@@ -194,12 +201,17 @@ class MoveList {
 		GenerateKingMoves(pos, us, target);
 	}
 
-	public function Generate(pos:Position) {
+	public function Generate(pos:Position, genType:Int) {
 		var us:Int = pos.SideToMove();
 		var pc:Int;
-		trace('MoveList::Generate c: $us');
-		var target:Bitboard = pos.PiecesAll().newNOT();
-		trace(target.toStringBB());
-		GenerateAll(pos, us, target);
+		trace('MoveList::Generate c: $us genType:$genType');
+		if (genType == NON_EVASIONS) {
+			var target:Bitboard = pos.PiecesColour( us ).newNOT(); // CAPTURE＋QUIETS
+			trace(target.toStringBB());
+			GenerateAll(pos, us, target, genType);
+		}
+		if (genType == LEGAL) {
+			Generate(pos, NON_EVASIONS);
+		}
 	}
 }

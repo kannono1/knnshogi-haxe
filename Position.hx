@@ -31,6 +31,10 @@ class Position {
 		return byTypeBB[Types.ALL_PIECES];
 	}
 
+	public function PiecesColour(c:Int):Bitboard {
+		return byColorBB[c];
+	}
+
 	public function PiecesColourType(c:Int, pt:Int):Bitboard {
 		return byColorBB[c].newAND(byTypeBB[pt]);
 	}
@@ -159,13 +163,11 @@ class Position {
 		var pt:Int = Types.TypeOf_Piece(pc);
 		if (pt == Types.BISHOP || pt == Types.ROOK || pt == Types.HORSE || pt == Types.DRAGON) {
 			return BB.AttacksBB(sq, PiecesAll(), pt);
-		}
-		else if (pt == Types.LANCE) {
+		} else if (pt == Types.LANCE) {
 			var rb = BB.AttacksBB(sq, PiecesAll(), Types.ROOK);
 			var b = BB.getStepAttacksBB(pc, sq).newAND(rb);
 			return b;
-		}
-		else {
+		} else {
 			return BB.getStepAttacksBB(pc, sq); // P N S G K
 		}
 	}
