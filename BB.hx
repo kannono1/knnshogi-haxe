@@ -1,6 +1,7 @@
 package;
 
 import util.MathUtil;
+import Types.PT;
 
 class BB {
 	public static var filesBB:Array<Bitboard>;
@@ -80,14 +81,17 @@ class BB {
 				// }
 			}
 		}
-		for (pt in Types.NO_PIECE...Types.PIECE_NB) {
+		var pt:PT = new PT(0);
+		for (p in Types.NO_PIECE...Types.PIECE_NB) {
+			pt = new PT(p);
 			stepAttacksBB[pt] = [];
 			for (s1 in Types.SQ_A1...Types.SQ_NB) {
 				stepAttacksBB[pt][s1] = new Bitboard();
 			}
 		}
 		var c = Types.BLACK; // JSだとLoopを分割しないとスルーされるかも
-		for (pt in Types.PAWN...Types.DRAGON) {
+		for (p in Types.PAWN...Types.DRAGON) {
+			pt = new PT(p);
 			for (s in Types.SQ_A1...Types.SQ_NB) {
 				for (k in 0...9) { // 9=eps[0].length
 					if (steps[pt][k] == 0) {
@@ -102,7 +106,7 @@ class BB {
 					if (Types.Is_SqOK(to) == false) {
 						continue;
 					}
-					if (SquareDistance(s, to) >= 3 && Types.RawTypeOf(pt) != Types.LANCE) {
+					if (SquareDistance(s, to) >= 3 && new PT(Types.RawTypeOf(pt)) != Types.LANCE) {
 						continue; // 3=駒の隣接チェック(香の時は行わない)
 					}
 					// trace('BB.Init, c:$c, pt:$pt, s:$s, pc:${Types.Make_Piece(c, pt) } ');
@@ -111,7 +115,8 @@ class BB {
 			}
 		}
 		var c = Types.WHITE;
-		for (pt in Types.PAWN...Types.DRAGON) {
+		for (p in Types.PAWN...Types.DRAGON) {
+			pt = new PT(p);
 			for (s in Types.SQ_A1...Types.SQ_NB) {
 				for (k in 0...9) { // 9=eps[0].length
 					if (steps[pt][k] == 0) {
@@ -126,7 +131,7 @@ class BB {
 					if (Types.Is_SqOK(to) == false) {
 						continue;
 					}
-					if (SquareDistance(s, to) >= 3 && Types.RawTypeOf(pt) != Types.LANCE) {
+					if (SquareDistance(s, to) >= 3 && new PT(Types.RawTypeOf(pt)) != Types.LANCE) {
 						continue; // 3=駒の隣接チェック(香の時は行わない)
 					}
 					stepAttacksBB[Types.Make_Piece(c, pt)][s].OR(squareBB[to]);
@@ -140,7 +145,7 @@ class BB {
 		return stepAttacksBB[pc][sq];
 	}
 
-	public static function AttacksBB(sq:Int, occ:Bitboard, pt:Int):Bitboard {
+	public static function AttacksBB(sq:Int, occ:Bitboard, pt:PT):Bitboard {
 		switch (pt) {
 			case Types.ROOK:
 				return SlidingAttack(rDeltas, sq, occ);

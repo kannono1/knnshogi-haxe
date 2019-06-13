@@ -1,8 +1,9 @@
 package;
 
 import Types.Move;
-import Types.PR;
 import Types.PC;
+import Types.PR;
+import Types.PT;
 
 @:allow()
 class Position {
@@ -37,7 +38,7 @@ class Position {
 		return byColorBB[c];
 	}
 
-	public function PiecesColourType(c:Int, pt:Int):Bitboard {
+	public function PiecesColourType(c:Int, pt:PT):Bitboard {
 		return byColorBB[c].newAND(byTypeBB[pt]);
 	}
 
@@ -65,11 +66,11 @@ class Position {
 		trace('to: $to from: $from pc: $pc');
 		if (Types.Is_Drop(move)) {
 			SubHand(us, pr);
-			PutPiece(to, us, pr);
+			PutPiece(to, us, pt);
 			changeSideToMove();
 			return;
 		}
-		var captured:Int = Types.TypeOf_Piece(PieceOn(to));
+		var captured:PT = Types.TypeOf_Piece(PieceOn(to));
 		var capturedRaw:PR = Types.RawTypeOf(captured);
 		trace('catured: $captured capturedRaw: $capturedRaw');
 		if (captured != 0) {
@@ -81,12 +82,12 @@ class Position {
 		MovePiece(from, to, us, pt);
 		if (Types.Move_Type(move) == Types.MOVE_PROMO) {
 			RemovePiece(to, us, pt);
-			PutPiece(to, us, pt + Types.PIECE_PROMOTE);
+			PutPiece(to, us, new PT(pt + Types.PIECE_PROMOTE) );
 		}
 		changeSideToMove();
 	}
 
-	public function PutPiece(sq:Int, c:Int, pt:Int) {
+	public function PutPiece(sq:Int, c:Int, pt:PT) {
 		trace('Position::PutPiece sq:$sq c:$c pt:$pt');
 		board[sq] = Types.Make_Piece(c, pt);
 		byColorBB[c].SetBit(sq);
@@ -97,7 +98,7 @@ class Position {
 		}
 	}
 
-	public function MovePiece(from:Int, to:Int, c:Int, pt:Int) {
+	public function MovePiece(from:Int, to:Int, c:Int, pt:PT) {
 		trace('Position::MovePiece from:$from to:$to c:$c pt:$pt');
 		board[to] = Types.Make_Piece(c, pt);
 		board[from] = 0;
@@ -109,7 +110,7 @@ class Position {
 		}
 	}
 
-	private function RemovePiece(sq:Int, c:Int, pt:Int) {
+	private function RemovePiece(sq:Int, c:Int, pt:PT) {
 		trace('Position::RemovePiece sq:$sq c:$c pt:$pt');
 		board[sq] = 0;
 		byColorBB[c].ClrBit(sq);
@@ -171,7 +172,7 @@ class Position {
 	}
 
 	public function AttacksFromPTypeSQ(sq:Int, pc:PC):Bitboard {
-		var pt:Int = Types.TypeOf_Piece(pc);
+		var pt:PT = Types.TypeOf_Piece(pc);
 		if (pt == Types.BISHOP || pt == Types.ROOK || pt == Types.HORSE || pt == Types.DRAGON) {
 			return BB.AttacksBB(sq, PiecesAll(), pt);
 		} else if (pt == Types.LANCE) {

@@ -33,52 +33,51 @@ class Types {
 	public static inline var ALL_PIECES:Int = 0;
 	public static inline var PIECE_TYPE_NB:Int = 0;
 	public static inline var PIECE_PROMOTE:Int = 8;
-	public static inline var NO_PIECE_TYPE:Int = 0;
-	public static inline var PAWN:Int = 1;
-	public static inline var LANCE:Int = 2;
-	public static inline var KNIGHT:Int = 3;
-	public static inline var SILVER:Int = 4;
-	public static inline var BISHOP:Int = 5;
-	public static inline var ROOK:Int = 6;
-	public static inline var GOLD:Int = 7;
-	public static inline var KING:Int = 8;
-	public static inline var PRO_PAWN:Int = 9;
-	public static inline var PRO_LANCE:Int = 10;
-	public static inline var PRO_KNIGHT:Int = 11;
-	public static inline var PRO_SILVER:Int = 12;
-	public static inline var HORSE:Int = 13;
-	public static inline var DRAGON:Int = 14;
-	public static inline var NO_PIECE:Int = 0;
-	public static inline var W_PAWN:Int = 1;
-	public static inline var W_LANCE:Int = 2;
-	public static inline var W_KNIGHT:Int = 3;
-	public static inline var W_SILVER:Int = 4;
-	public static inline var W_BISHOP:Int = 5;
-	public static inline var W_ROOK:Int = 6;
-	public static inline var W_GOLD:Int = 7;
-	public static inline var W_KING:Int = 8;
-	public static inline var W_PRO_PAWN:Int = 9;
-	public static inline var W_PRO_LANCE:Int = 10;
-	public static inline var W_PRO_KNIGHT:Int = 11;
-	public static inline var W_PRO_SILVER:Int = 12;
-	public static inline var W_HORSE:Int = 13;
-	public static inline var W_DRAGON:Int = 14;
-	public static inline var PIECE_WHITE:Int = 16;
-	public static inline var B_PAWN:Int = 17; // W_PARN + PIECE_WHITE
-	public static inline var B_LANCE:Int = 18;
-	public static inline var B_KNIGHT:Int = 19;
-	public static inline var B_SILVER:Int = 20;
-	public static inline var B_BISHOP:Int = 21;
-	public static inline var B_ROOK:Int = 22;
-	public static inline var B_GOLD:Int = 23;
-	public static inline var B_KING:Int = 24;
-	public static inline var B_PRO_PAWN:Int = 25;
-	public static inline var B_PRO_LANCE:Int = 26;
-	public static inline var B_PRO_KNIGHT:Int = 27;
-	public static inline var B_PRO_SILVER:Int = 28;
-	public static inline var B_HORSE:Int = 29;
-	public static inline var B_DRAGON:Int = 30;
-	public static inline var PIECE_NB:Int = 31;
+	public static inline var NO_PIECE_TYPE:PT = new PT(0);
+	public static inline var PAWN:PT = new PT(1);
+	public static inline var LANCE:PT = new PT(2);
+	public static inline var KNIGHT:PT = new PT(3);
+	public static inline var SILVER:PT = new PT(4);
+	public static inline var BISHOP:PT = new PT(5);
+	public static inline var ROOK:PT = new PT(6);
+	public static inline var GOLD:PT = new PT(7);
+	public static inline var KING:PT = new PT(8);
+	public static inline var PRO_PAWN:PT = new PT(9);
+	public static inline var PRO_LANCE:PT = new PT(10);
+	public static inline var PRO_KNIGHT:PT = new PT(11);
+	public static inline var PRO_SILVER:PT = new PT(12);
+	public static inline var HORSE:PT = new PT(13);
+	public static inline var DRAGON:PT = new PT(14);
+	public static inline var NO_PIECE:PC = new PC(0);
+	public static inline var B_PAWN  :PC = new PC(1);
+	public static inline var B_LANCE :PC = new PC(2);
+	public static inline var B_KNIGHT:PC = new PC(3);
+	public static inline var B_SILVER:PC = new PC(4);
+	public static inline var B_BISHOP:PC = new PC(5);
+	public static inline var B_ROOK:PC = new PC(6);
+	public static inline var B_GOLD:PC = new PC(7);
+	public static inline var B_KING:PC = new PC(8);
+	public static inline var B_PRO_PAWN  :PC = new PC(9);
+	public static inline var B_PRO_LANCE :PC = new PC(10);
+	public static inline var B_PRO_KNIGHT:PC = new PC(11);
+	public static inline var B_PRO_SILVER:PC = new PC(12);
+	public static inline var B_HORSE :PC = new PC(13);
+	public static inline var B_DRAGON:PC = new PC(14);
+	public static inline var W_PAWN:PC = new PC(17);
+	public static inline var W_LANCE:PC = new PC(18);
+	public static inline var W_KNIGHT:PC = new PC(19);
+	public static inline var W_SILVER:PC = new PC(20);
+	public static inline var W_BISHOP:PC = new PC(21);
+	public static inline var W_ROOK:PC = new PC(22);
+	public static inline var W_GOLD:PC = new PC(23);
+	public static inline var W_KING:PC = new PC(24);
+	public static inline var W_PRO_PAWN  :PC = new PC(25);
+	public static inline var W_PRO_LANCE :PC = new PC(26);
+	public static inline var W_PRO_KNIGHT:PC = new PC(27);
+	public static inline var W_PRO_SILVER:PC = new PC(28);
+	public static inline var W_HORSE :PC = new PC(29);
+	public static inline var W_DRAGON:PC = new PC(30);
+	public static inline var PIECE_NB:PC = new PC(31);
 	public static inline var SQ_A1:Int = 0;
 	public static inline var SQ_HB:Int = 80;
 	public static inline var SQ_NB:Int = 81;
@@ -106,7 +105,7 @@ class Types {
 	public static inline var VALUE_INFINITE:Int = 30001;
 	public static inline var VALUE_NONE:Int = 30002;
 
-	public static function hasLongEffect(pt:Int):Bool {
+	public static function hasLongEffect(pt:PT):Bool {
 		switch (pt) {
 			case ROOK:
 				return true;
@@ -227,7 +226,7 @@ class Types {
 		r = Char_To_Rank(ft.charAt(3));
 		var to = Types.Square(f, r);
 		if (ft.indexOf('*') > 0) {
-			var pr:PR = RawTypeOf(getPieceType(ft.charAt(0)));
+			var pr:PR = RawTypeOf(getPieceFromLabel(ft.charAt(0)));
 			f = Char_To_File(ft.charAt(2));
 			r = Char_To_Rank(ft.charAt(3));
 			to = Types.Square(f, r);
@@ -259,7 +258,7 @@ class Types {
 		return new PR(p % 8);
 	}
 
-	public static function Make_Piece(c:Int, pt:Int):PC {
+	public static function Make_Piece(c:Int, pt:PT):PC {
 		return new PC((c << 4) | pt);
 	}
 
@@ -267,14 +266,14 @@ class Types {
 		return (f * RANK_NB) + r;
 	}
 
-	static public function getPieceColor(pt:Int):Int {
-		if (pt == 0)
+	static public function getPieceColor(pc:PC):Int {
+		if (pc == NO_PIECE)
 			return -1;
-		return (pt < 16) ? 0 : 1;
+		return (Std.int(pc) < 16) ? 0 : 1;
 	}
 
-	public static function TypeOf_Piece(pc:PC):Int {
-		return pc % 16;
+	public static function TypeOf_Piece(pc:PC):PT {
+		return new PT(pc % 16);
 	}
 
 	public static function PieceToChar(pc:PC):String {
@@ -365,47 +364,47 @@ class Types {
 		return "?";
 	}
 
-	static public function getPieceType(token:String):Int {
+	static public function getPieceFromLabel(token:String):PC {
 		switch (token) {
 			case 'P':
-				return 1;
+				return B_PAWN;
 			case 'L':
-				return 2;
+				return B_LANCE;
 			case 'N':
-				return 3;
+				return B_KNIGHT;
 			case 'S':
-				return 4;
+				return B_SILVER;
 			case 'B':
-				return 5;
+				return B_BISHOP;
 			case 'R':
-				return 6;
+				return B_ROOK;
 			case 'G':
-				return 7;
+				return B_GOLD;
 			case 'K':
-				return 8;
+				return B_KING;
 			case 'p':
-				return 17;
+				return W_PAWN;
 			case 'l':
-				return 18;
+				return W_LANCE;
 			case 'n':
-				return 19;
+				return W_KNIGHT;
 			case 's':
-				return 20;
+				return W_SILVER;
 			case 'b':
-				return 21;
+				return W_BISHOP;
 			case 'r':
-				return 22;
+				return W_ROOK;
 			case 'g':
-				return 23;
+				return W_GOLD;
 			case 'k':
-				return 24;
+				return W_KING;
 			default:
-				return 0;
+				return NO_PIECE;
 		}
 	}
 
-	static public function getPieceLabel(pt:Int):String {
-		switch (pt % 16) {
+	static public function getPieceLabel(pt:PT):String {
+		switch (Std.int(pt) % 16) {
 			case 0:
 				return '　';
 			case 1:

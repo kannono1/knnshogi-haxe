@@ -1,6 +1,7 @@
 package;
 
 import Types.PC;
+import Types.PT;
 
 class MoveList {
 	public static inline var CAPTURES:Int = 0;
@@ -128,7 +129,7 @@ class MoveList {
 		}
 	}
 
-	public function SerializeDrop(pt:Int, b:Bitboard) {
+	public function SerializeDrop(pt:PT, b:Bitboard) {
 		var to:Int;
 		b.NORM27();
 		while (b.IsNonZero()) {
@@ -146,7 +147,7 @@ class MoveList {
 		}
 	}
 
-	public function GenerateMoves(pos:Position, us:Int, target:Bitboard, pt:Int) {
+	public function GenerateMoves(pos:Position, us:Int, target:Bitboard, pt:PT) {
 		var pl:Bitboard = pos.PiecesColourType(us, pt).NORM27();
 		var from:Int = 0;
 		var pc:PC = Types.Make_Piece(us, pt);
@@ -195,7 +196,7 @@ class MoveList {
 		SerializePawns(b1, up, us);
 	}
 
-	public function GenerateDopMoves(pos:Position, us:Int, target:Bitboard, pt:Int, genType:Int) {
+	public function GenerateDopMoves(pos:Position, us:Int, target:Bitboard, pt:PT, genType:Int) {
 		if (!pos.HandExists(us, Types.RawTypeOf( pt) ) ){
 			return; // 持ち駒チェエク
 		}

@@ -1,5 +1,6 @@
 package;
 
+import Types.PC;
 import util.MathUtil;
 import util.StringUtil;
 import Types.Move;
@@ -66,10 +67,10 @@ class SFEN {
 				r++;
 			} else {
 				sq = f * 9 + r;
-				var pt = Types.getPieceType(token);
+				var pc = Types.getPieceFromLabel(token);
 				if (promote)
-					pt += 8;
-				this.board[sq] = pt;
+					pc = new PC(pc +8);
+				this.board[sq] = pc;
 				f--;
 				promote = false;
 			}
@@ -88,7 +89,7 @@ class SFEN {
 		    }
 		    else {
 		        ct = MathUtil.max(ct, 1);
-		        var pc = Types.getPieceType(token);
+		        var pc = Types.getPieceFromLabel(token);
                 hand[Types.getPieceColor(pc)][Types.RawTypeOf(pc)] = ct;
 		        ct = 0;
 		    }

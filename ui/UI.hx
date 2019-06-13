@@ -2,8 +2,9 @@ package ui;
 
 import js.Browser;
 import ui.Mode.OPERATION_MODE;
-import Types.PR;
 import Types.PC;
+import Types.PR;
+import Types.PT;
 
 class UI {
 	private var game:Game;
@@ -156,7 +157,7 @@ class UI {
 
 	private function setCell(sq:Int, pc:PC, linkable:Bool) {
 		var c = Types.getPieceColor(pc);
-		var s = '' + Types.getPieceLabel(pc);
+		var s = '' + Types.getPieceLabel(Types.TypeOf_Piece(pc));
 		if (linkable) {
 			s = '<a href="javascript:Main.onClickCell(' + sq + ')">' + s + '</a>';
 		}
@@ -173,7 +174,7 @@ class UI {
 		var cell = Browser.document.getElementById('hand_${c}_${i}');
 		var s = '　';
 		if (n > 0) {
-			s = '${Types.getPieceLabel(i)}$n';
+			s = '${Types.getPieceLabel(new PT(i))}$n';
 		}
 		if (linkable) {
 			s = '<a href="javascript:Main.onClickHand($i)">$s</a>';
