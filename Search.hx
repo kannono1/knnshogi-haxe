@@ -71,7 +71,7 @@ class Search {
 						}
 					}
 					delta += Std.int(delta / 2);
-			break; ///
+					break; ///
 				}
 				StableSort(rootMoves, 0, MathUtil.min(numRootMoves - 1, pvIdx + 1));
 			}
@@ -80,9 +80,7 @@ class Search {
 	}
 
 	private static function StableSort(moves:Array<SearchRootMove>, begin:Int, end:Int) {
-		trace('StableSoart start begin:$begin end:$end');
 		if (begin == end) {
-			trace('StableSoart return');
 			return;
 		}
 		var swapped:Bool = false;
@@ -92,7 +90,6 @@ class Search {
 			swapped = false;
 			var i = end;
 			while (i > j) {
-				trace(i, j, moves[i - 1].score, ' < ', moves[i].score);
 				if (moves[i - 1].score < moves[i].score) {
 					swapped = true;
 					var tmp:SearchRootMove = moves[i - 1];
@@ -100,12 +97,10 @@ class Search {
 					moves[i] = tmp;
 					m = moves[i].pv[0];
 					s = moves[i].score;
-					trace('StableSoart swap ${Types.Move_To_StringLong(m)} $s');
 				}
 				i--;
 			}
 			if (!swapped) {
-				trace('StableSoart break i:$i j:$j');
 				break;
 			}
 		}
@@ -117,17 +112,24 @@ class Search {
 		var mp:MovePicker = new MovePicker();
 		var move:Move = new Move(0);
 		var rootNode:Bool = true;
-		var bestValue:Int = Evaluate.DoEvaluate(pos, false);
+		var bestValue = 0;
 		var value = 0;
+		var eval = 0;
+		eval = Evaluate.DoEvaluate(pos, false); // 局面の静的評価値
+		bestValue = eval;
 		mp.InitA(pos);
 		while ((move = mp.NextMove()) != Types.MOVE_NONE) {
 			trace('Search mvoe==${Types.Move_To_String(move)}');
+			pos.doMove(move);
 			bestValue = Evaluate.DoEvaluate(pos, false);
 			value = bestValue;
+			pos.undoMove(move);
 			if (rootNode) { // Qsearchが終わってpvの更新が行われる？
+				trace(' Qsearchが終わってpvの更新が行われる？ bestValue:$bestValue');
 				var rm:SearchRootMove; // root move
 				for (k in 0...numRootMoves) {
 					if (rootMoves[k].Equals(move)) { // MPのmoveからrootMovesのmoveを引く
+						trace('// MPのmoveからrootMovesのmoveを引く');
 						rm = rootMoves[k];
 						if (pvMove || value > alpha) {
 							rm.score = value;
@@ -142,7 +144,6 @@ class Search {
 					}
 				}
 			}
-			break; ///
 		}
 		trace('Search bestValue:$bestValue');
 		return bestValue;

@@ -12,6 +12,7 @@ class Position {
 	public var hand:Array<Array<Int>> = [];
 	public var byTypeBB:Array<Bitboard> = [];
 	public var byColorBB:Array<Bitboard> = [];
+	private var st:StateInfo;
 
 	public function new() {
 		trace('Posision::new');
@@ -28,6 +29,7 @@ class Position {
 		for (i in 0...Types.COLOR_NB) {
 			byColorBB.push(new Bitboard());
 		}
+		st = new StateInfo();
 	}
 
 	public function PiecesAll():Bitboard {
@@ -50,7 +52,7 @@ class Position {
 		sideToMove = (sideToMove + 1) % 2;
 	}
 
-	private function doMove(move:Move) {
+	public function doMove(move:Move) {
 		doMoveFull(move);
 	}
 
@@ -84,7 +86,40 @@ class Position {
 			RemovePiece(to, us, pt);
 			PutPiece(to, us, new PT(pt + Types.PIECE_PROMOTE) );
 		}
+		st.capturedType = captured;
 		changeSideToMove();
+	}
+
+	public function undoMove(move:Move) {
+		trace('Position::undoMove');
+		changeSideToMove(); //sideToMove =Types.OppColour(sideToMove);
+		var us:Int = sideToMove;
+		var them:Int = Types.OppColour(us);
+		var to:Int = Types.Move_ToSq(move);
+		var pc:PC = MovedPieceAfter(move);
+		var pr:PR = Types.RawTypeOf(pc);
+		var pt:PT = Types.TypeOf_Piece( PieceOn(to) );
+		if( Types.Is_Drop(move) ){
+			AddHand(us, pr);
+			RemovePiece(to, us, pt);
+		}
+		else{
+			var from:Int = Types.Move_FromSq(move);
+			var captured:PT = st.capturedType;
+			var capturedRaw:PR = Types.RawTypeOf(captured);
+			if( Types.Move_Type(move) == Types.MOVE_PROMO ) {
+				var promotion:PT = pt;
+				pt = new PT(pt - Types.PIECE_PROMOTE);
+				RemovePiece( to, us, promotion );
+				PutPiece( to, us, pt );
+			}
+		 	MovePiece( to, from, us, pt ); 
+			if( captured != 0 ) {
+				var capsq:Int = to;
+				SubHand(us, capturedRaw);
+				PutPiece( capsq, them, captured ); 
+			}
+		}
 	}
 
 	public function PutPiece(sq:Int, c:Int, pt:PT) {

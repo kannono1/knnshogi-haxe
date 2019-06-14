@@ -16,6 +16,7 @@ class MovePicker {
 	public function InitA(p:Position) {
 		trace('MovePicker::InitA');
 		pos = p;
+		GenerateNext();// ittan
 	}
 
 	public function GenerateNext() {
@@ -29,19 +30,15 @@ class MovePicker {
 
 	public function NextMove():Move {
 		trace('MovePicker::NextMove cur:$cur moveCount:${moves.moveCount}');
-		while (cur == end) {
-			// Logger.d('MovePicker::NextMove cur=end??', cur);
-			GenerateNext();
-			break; ///
-		}
 		if (moves.moveCount < cur) {
 			trace('MovePicker return MOVE_NONE');
 			return Types.MOVE_NONE;
+		} else {
+			var move:Move = new Move(0);
+			move = moves.mlist[cur].move;
+			cur++;
+			trace('MovePicker return ${Types.Move_To_String(move)}');
+			return move;
 		}
-		var move:Move = new Move(0);
-		move = moves.mlist[cur].move;
-		cur++;
-		trace('MovePicker return ${Types.Move_To_String(move)}');
-		return move;
 	}
 }

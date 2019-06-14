@@ -798,6 +798,7 @@ MovePicker.prototype = {
 	InitA: function(p) {
 		haxe_Log.trace("MovePicker::InitA",{ fileName : "MovePicker.hx", lineNumber : 17, className : "MovePicker", methodName : "InitA"});
 		this.pos = p;
+		this.GenerateNext();
 	}
 	,GenerateNext: function() {
 		this.cur = 0;
@@ -805,24 +806,21 @@ MovePicker.prototype = {
 		this.moves.Generate(this.pos,5);
 		this.end = this.moves.moveCount;
 		this.stage++;
-		haxe_Log.trace("MovePicker::GenerateNext stage=",{ fileName : "MovePicker.hx", lineNumber : 27, className : "MovePicker", methodName : "GenerateNext", customParams : [this.stage]});
+		haxe_Log.trace("MovePicker::GenerateNext stage=",{ fileName : "MovePicker.hx", lineNumber : 28, className : "MovePicker", methodName : "GenerateNext", customParams : [this.stage]});
 	}
 	,NextMove: function() {
-		haxe_Log.trace("MovePicker::NextMove cur:" + this.cur + " moveCount:" + this.moves.moveCount,{ fileName : "MovePicker.hx", lineNumber : 31, className : "MovePicker", methodName : "NextMove"});
-		while(this.cur == this.end) {
-			this.GenerateNext();
-			break;
-		}
+		haxe_Log.trace("MovePicker::NextMove cur:" + this.cur + " moveCount:" + this.moves.moveCount,{ fileName : "MovePicker.hx", lineNumber : 32, className : "MovePicker", methodName : "NextMove"});
 		if(this.moves.moveCount < this.cur) {
-			haxe_Log.trace("MovePicker return MOVE_NONE",{ fileName : "MovePicker.hx", lineNumber : 38, className : "MovePicker", methodName : "NextMove"});
+			haxe_Log.trace("MovePicker return MOVE_NONE",{ fileName : "MovePicker.hx", lineNumber : 34, className : "MovePicker", methodName : "NextMove"});
 			return 0;
+		} else {
+			var this1 = 0;
+			var move = this1;
+			move = this.moves.mlist[this.cur].move;
+			this.cur++;
+			haxe_Log.trace("MovePicker return " + Types.Move_To_String(move),{ fileName : "MovePicker.hx", lineNumber : 40, className : "MovePicker", methodName : "NextMove"});
+			return move;
 		}
-		var this1 = 0;
-		var move = this1;
-		move = this.moves.mlist[this.cur].move;
-		this.cur++;
-		haxe_Log.trace("MovePicker return " + Types.Move_To_String(move),{ fileName : "MovePicker.hx", lineNumber : 44, className : "MovePicker", methodName : "NextMove"});
-		return move;
 	}
 };
 var Position = function() {
@@ -831,13 +829,13 @@ var Position = function() {
 	this.hand = [];
 	this.sideToMove = 0;
 	this.board = [];
-	haxe_Log.trace("Posision::new",{ fileName : "Position.hx", lineNumber : 17, className : "Position", methodName : "new"});
+	haxe_Log.trace("Posision::new",{ fileName : "Position.hx", lineNumber : 18, className : "Position", methodName : "new"});
 	this.InitBB();
 };
 Position.__name__ = true;
 Position.prototype = {
 	InitBB: function() {
-		haxe_Log.trace("Posision::InitBB",{ fileName : "Position.hx", lineNumber : 22, className : "Position", methodName : "InitBB"});
+		haxe_Log.trace("Posision::InitBB",{ fileName : "Position.hx", lineNumber : 23, className : "Position", methodName : "InitBB"});
 		this.byTypeBB = [];
 		var _g = 0;
 		var _g1 = 31;
@@ -848,6 +846,7 @@ Position.prototype = {
 		this.byColorBB = [];
 		this.byColorBB.push(new Bitboard());
 		this.byColorBB.push(new Bitboard());
+		this.st = new StateInfo();
 	}
 	,PiecesAll: function() {
 		return this.byTypeBB[0];
@@ -869,7 +868,7 @@ Position.prototype = {
 		this.doMoveFull(move);
 	}
 	,doMoveFull: function(move) {
-		haxe_Log.trace("Position::doMoveFull " + Types.Move_To_String(move),{ fileName : "Position.hx", lineNumber : 58, className : "Position", methodName : "doMoveFull"});
+		haxe_Log.trace("Position::doMoveFull " + Types.Move_To_String(move),{ fileName : "Position.hx", lineNumber : 60, className : "Position", methodName : "doMoveFull"});
 		var from = Types.Move_FromSq(move);
 		var to = Types.Move_ToSq(move);
 		var us = this.sideToMove;
@@ -877,7 +876,7 @@ Position.prototype = {
 		var pc = this.MovedPieceAfter(move);
 		var pr = Types.RawTypeOf(pc);
 		var pt = Types.TypeOf_Piece(pc);
-		haxe_Log.trace("to: " + to + " from: " + from + " pc: " + pc,{ fileName : "Position.hx", lineNumber : 66, className : "Position", methodName : "doMoveFull"});
+		haxe_Log.trace("to: " + to + " from: " + from + " pc: " + pc,{ fileName : "Position.hx", lineNumber : 68, className : "Position", methodName : "doMoveFull"});
 		if(Types.Is_Drop(move)) {
 			this.SubHand(us,pr);
 			this.PutPiece(to,us,pt);
@@ -886,7 +885,7 @@ Position.prototype = {
 		}
 		var captured = Types.TypeOf_Piece(this.PieceOn(to));
 		var capturedRaw = Types.RawTypeOf(captured);
-		haxe_Log.trace("catured: " + captured + " capturedRaw: " + capturedRaw,{ fileName : "Position.hx", lineNumber : 75, className : "Position", methodName : "doMoveFull"});
+		haxe_Log.trace("catured: " + captured + " capturedRaw: " + capturedRaw,{ fileName : "Position.hx", lineNumber : 77, className : "Position", methodName : "doMoveFull"});
 		if(captured != 0) {
 			var capsq = to;
 			this.AddHand(us,capturedRaw);
@@ -899,10 +898,42 @@ Position.prototype = {
 			var this1 = pt + 8;
 			this.PutPiece(to,us,this1);
 		}
+		this.st.capturedType = captured;
 		this.changeSideToMove();
 	}
+	,undoMove: function(move) {
+		haxe_Log.trace("Position::undoMove",{ fileName : "Position.hx", lineNumber : 94, className : "Position", methodName : "undoMove"});
+		this.changeSideToMove();
+		var us = this.sideToMove;
+		var them = Types.OppColour(us);
+		var to = Types.Move_ToSq(move);
+		var pc = this.MovedPieceAfter(move);
+		var pr = Types.RawTypeOf(pc);
+		var pt = Types.TypeOf_Piece(this.PieceOn(to));
+		if(Types.Is_Drop(move)) {
+			this.AddHand(us,pr);
+			this.RemovePiece(to,us,pt);
+		} else {
+			var from = Types.Move_FromSq(move);
+			var captured = this.st.capturedType;
+			var capturedRaw = Types.RawTypeOf(captured);
+			if(Types.Move_Type(move) == 32768) {
+				var promotion = pt;
+				var this1 = pt - 8;
+				pt = this1;
+				this.RemovePiece(to,us,promotion);
+				this.PutPiece(to,us,pt);
+			}
+			this.MovePiece(to,from,us,pt);
+			if(captured != 0) {
+				var capsq = to;
+				this.SubHand(us,capturedRaw);
+				this.PutPiece(capsq,them,captured);
+			}
+		}
+	}
 	,PutPiece: function(sq,c,pt) {
-		haxe_Log.trace("Position::PutPiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 91, className : "Position", methodName : "PutPiece"});
+		haxe_Log.trace("Position::PutPiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 126, className : "Position", methodName : "PutPiece"});
 		this.board[sq] = Types.Make_Piece(c,pt);
 		this.byColorBB[c].SetBit(sq);
 		this.byTypeBB[0].SetBit(sq);
@@ -912,7 +943,7 @@ Position.prototype = {
 		}
 	}
 	,MovePiece: function(from,to,c,pt) {
-		haxe_Log.trace("Position::MovePiece from:" + from + " to:" + to + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 102, className : "Position", methodName : "MovePiece"});
+		haxe_Log.trace("Position::MovePiece from:" + from + " to:" + to + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 137, className : "Position", methodName : "MovePiece"});
 		this.board[to] = Types.Make_Piece(c,pt);
 		this.board[from] = 0;
 		this.byColorBB[c].SetBit(to);
@@ -923,7 +954,7 @@ Position.prototype = {
 		}
 	}
 	,RemovePiece: function(sq,c,pt) {
-		haxe_Log.trace("Position::RemovePiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 114, className : "Position", methodName : "RemovePiece"});
+		haxe_Log.trace("Position::RemovePiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 149, className : "Position", methodName : "RemovePiece"});
 		this.board[sq] = 0;
 		this.byColorBB[c].ClrBit(sq);
 		this.byTypeBB[0].ClrBit(sq);
@@ -973,7 +1004,7 @@ Position.prototype = {
 			}
 			this.PutPiece(i,c,pt);
 		}
-		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 161, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 196, className : "Position", methodName : "setPosition"});
 		this.hand = sf.getHand();
 		var moves = sf.getMoves();
 		var _g1 = 0;
@@ -982,7 +1013,7 @@ Position.prototype = {
 			var i1 = _g1++;
 			this.doMove(moves[i1]);
 		}
-		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 167, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 202, className : "Position", methodName : "setPosition"});
 	}
 	,SideToMove: function() {
 		return this.sideToMove;
@@ -1064,7 +1095,7 @@ Position.prototype = {
 			s += HxOverrides.substr("  " + this.board[sq8],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 198, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 233, className : "Position", methodName : "printBoard"});
 	}
 };
 var SFEN = function(sfen) {
@@ -1242,9 +1273,7 @@ Search.IDLoop = function(pos) {
 	haxe_Log.trace("Search::IDLoop end",{ fileName : "Search.hx", lineNumber : 79, className : "Search", methodName : "IDLoop"});
 };
 Search.StableSort = function(moves,begin,end) {
-	haxe_Log.trace("StableSoart start begin:" + begin + " end:" + end,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "StableSort"});
 	if(begin == end) {
-		haxe_Log.trace("StableSoart return",{ fileName : "Search.hx", lineNumber : 85, className : "Search", methodName : "StableSort"});
 		return;
 	}
 	var swapped = false;
@@ -1258,7 +1287,6 @@ Search.StableSort = function(moves,begin,end) {
 		swapped = false;
 		var i = end;
 		while(i > j) {
-			haxe_Log.trace(i,{ fileName : "Search.hx", lineNumber : 95, className : "Search", methodName : "StableSort", customParams : [j,moves[i - 1].score," < ",moves[i].score]});
 			if(moves[i - 1].score < moves[i].score) {
 				swapped = true;
 				var tmp = moves[i - 1];
@@ -1266,41 +1294,46 @@ Search.StableSort = function(moves,begin,end) {
 				moves[i] = tmp;
 				m = moves[i].pv[0];
 				s = moves[i].score;
-				haxe_Log.trace("StableSoart swap " + Types.Move_To_StringLong(m) + " " + s,{ fileName : "Search.hx", lineNumber : 103, className : "Search", methodName : "StableSort"});
 			}
 			--i;
 		}
 		if(!swapped) {
-			haxe_Log.trace("StableSoart break i:" + i + " j:" + j,{ fileName : "Search.hx", lineNumber : 108, className : "Search", methodName : "StableSort"});
 			break;
 		}
 	}
 };
 Search.Search = function(pos,alpha,beta) {
-	haxe_Log.trace("Search::Search",{ fileName : "Search.hx", lineNumber : 115, className : "Search", methodName : "Search"});
+	haxe_Log.trace("Search::Search",{ fileName : "Search.hx", lineNumber : 110, className : "Search", methodName : "Search"});
 	var pvMove = true;
 	var mp = new MovePicker();
 	var this1 = 0;
 	var move = this1;
 	var rootNode = true;
-	var bestValue = Evaluate.DoEvaluate(pos,false);
+	var bestValue = 0;
 	var value = 0;
+	var $eval = 0;
+	$eval = Evaluate.DoEvaluate(pos,false);
+	bestValue = $eval;
 	mp.InitA(pos);
 	while(true) {
 		move = mp.NextMove();
 		if(!(move != 0)) {
 			break;
 		}
-		haxe_Log.trace("Search mvoe==" + Types.Move_To_String(move),{ fileName : "Search.hx", lineNumber : 124, className : "Search", methodName : "Search"});
+		haxe_Log.trace("Search mvoe==" + Types.Move_To_String(move),{ fileName : "Search.hx", lineNumber : 122, className : "Search", methodName : "Search"});
+		pos.doMove(move);
 		bestValue = Evaluate.DoEvaluate(pos,false);
 		value = bestValue;
+		pos.undoMove(move);
 		if(rootNode) {
+			haxe_Log.trace(" Qsearchが終わってpvの更新が行われる？ bestValue:" + bestValue,{ fileName : "Search.hx", lineNumber : 128, className : "Search", methodName : "Search"});
 			var rm;
 			var _g = 0;
 			var _g1 = Search.numRootMoves;
 			while(_g < _g1) {
 				var k = _g++;
 				if(Search.rootMoves[k].Equals(move)) {
+					haxe_Log.trace("// MPのmoveからrootMovesのmoveを引く",{ fileName : "Search.hx", lineNumber : 132, className : "Search", methodName : "Search"});
 					rm = Search.rootMoves[k];
 					if(pvMove || value > alpha) {
 						rm.score = value;
@@ -1311,9 +1344,8 @@ Search.Search = function(pos,alpha,beta) {
 				}
 			}
 		}
-		break;
 	}
-	haxe_Log.trace("Search bestValue:" + bestValue,{ fileName : "Search.hx", lineNumber : 147, className : "Search", methodName : "Search"});
+	haxe_Log.trace("Search bestValue:" + bestValue,{ fileName : "Search.hx", lineNumber : 148, className : "Search", methodName : "Search"});
 	return bestValue;
 };
 var SearchRootMove = function() {
@@ -1337,6 +1369,11 @@ SearchRootMove.prototype = {
 		return this.pv[0] == m;
 	}
 };
+var StateInfo = function() {
+	this.capturedType = 0;
+	haxe_Log.trace("new StateInfo",{ fileName : "StateInfo.hx", lineNumber : 9, className : "StateInfo", methodName : "new"});
+};
+StateInfo.__name__ = true;
 var Std = function() { };
 Std.__name__ = true;
 Std.string = function(s) {

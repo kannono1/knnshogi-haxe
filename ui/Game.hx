@@ -46,7 +46,7 @@ class Game extends Position {
 		doMove(move);
 	}
 
-	override private function doMove(move:Move) {
+	override public function doMove(move:Move) {
 		trace('Game::doMove ${Types.Move_To_String(move)}');
 		moves.push(move);
 		super.doMove(move);
