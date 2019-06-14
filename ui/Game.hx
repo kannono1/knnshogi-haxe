@@ -32,7 +32,6 @@ class Game extends Position {
 	}
 
 	public function doPlayerMove(from:Int, to:Int, promote:Bool) {
-		trace('Game::doPlayerMove from: $from to: $to promote: $promote');
 		if(promote){
 			doMove(Types.Make_Move_Promote(from, to));
 		}
@@ -68,7 +67,6 @@ class Game extends Position {
 	}
 
 	public function getMovableSq(sq:Int, pc:PC):Array<Int> {
-		trace('Game::getMovableSq sq: $sq pc: $pc');
 		var arr:Array<Int> = [];
 		var us = sideToMove;
 		var attack:Bitboard = AttacksFromPTypeSQ(sq, pc);//(Types.hasLongEffect(pt)) ? BB.AttacksBB(sq, occ, pt) : BB.stepAttacksBB[pt][sq];

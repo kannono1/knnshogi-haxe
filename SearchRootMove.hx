@@ -22,4 +22,7 @@ class SearchRootMove {
 		pv[0] = m;
 		numMoves = 1;
 	}
+	public function Equals( m:Move ) : Bool {
+		return ( pv[0] == m );
+	}
 }

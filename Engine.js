@@ -498,23 +498,36 @@ Engine.main = function() {
 };
 Engine.Init = function() {
 	BB.Init();
+	Evaluate.Init();
 	Search.Init();
 };
 Engine.onMessage = function(m) {
 	var msg = m.data;
 	var res = "";
-	haxe_Log.trace("Endine get data = " + msg,{ fileName : "Engine.hx", lineNumber : 30, className : "Engine", methodName : "onMessage"});
+	haxe_Log.trace("Endine get data = " + msg,{ fileName : "Engine.hx", lineNumber : 31, className : "Engine", methodName : "onMessage"});
 	if(msg.indexOf("position ") == 0) {
-		Engine.pos.setPosition(HxOverrides.substr(msg,9,null));
-		Engine.pos.printBoard();
-		haxe_Log.trace("pos.c: " + Engine.pos.SideToMove(),{ fileName : "Engine.hx", lineNumber : 34, className : "Engine", methodName : "onMessage"});
-		Search.Reset(Engine.pos);
-		Search.Think();
-		var moveResult = Search.rootMoves[0].pv[0];
-		res = "bestmove " + Types.Move_To_String(moveResult);
-		haxe_Log.trace(res,{ fileName : "Engine.hx", lineNumber : 39, className : "Engine", methodName : "onMessage"});
-		Engine.global.postMessage(res);
+		res = Engine.doThink(msg);
 	}
+	Engine.global.postMessage(res);
+};
+Engine.doThink = function(msg) {
+	Engine.pos.setPosition(HxOverrides.substr(msg,9,null));
+	Engine.pos.printBoard();
+	haxe_Log.trace("Engine::doThink pos.c: " + Engine.pos.SideToMove(),{ fileName : "Engine.hx", lineNumber : 41, className : "Engine", methodName : "doThink"});
+	Search.Reset(Engine.pos);
+	Search.Think();
+	var moveResult = Search.rootMoves[0].pv[0];
+	var res = "bestmove " + Types.Move_To_String(moveResult);
+	haxe_Log.trace(res,{ fileName : "Engine.hx", lineNumber : 46, className : "Engine", methodName : "doThink"});
+	return res;
+};
+var Evaluate = function() { };
+Evaluate.__name__ = true;
+Evaluate.Init = function() {
+	haxe_Log.trace("Evaluate::Init ",{ fileName : "Evaluate.hx", lineNumber : 6, className : "Evaluate", methodName : "Init"});
+};
+Evaluate.DoEvaluate = function(pos,doTrace) {
+	return Math.random() * 100 | 0;
 };
 var HxOverrides = function() { };
 HxOverrides.__name__ = true;
@@ -775,24 +788,40 @@ MoveList.prototype = {
 };
 var MovePicker = function() {
 	this.stage = 0;
+	this.end = 0;
 	this.cur = 0;
 	this.moves = new MoveList();
-	haxe_Log.trace("MovePicker::new",{ fileName : "MovePicker.hx", lineNumber : 10, className : "MovePicker", methodName : "new"});
+	haxe_Log.trace("MovePicker::new",{ fileName : "MovePicker.hx", lineNumber : 13, className : "MovePicker", methodName : "new"});
 };
 MovePicker.__name__ = true;
 MovePicker.prototype = {
 	InitA: function(p) {
-		haxe_Log.trace("MovePicker::InitA",{ fileName : "MovePicker.hx", lineNumber : 14, className : "MovePicker", methodName : "InitA"});
+		haxe_Log.trace("MovePicker::InitA",{ fileName : "MovePicker.hx", lineNumber : 17, className : "MovePicker", methodName : "InitA"});
 		this.pos = p;
 	}
 	,GenerateNext: function() {
 		this.cur = 0;
 		this.moves.Reset();
+		this.moves.Generate(this.pos,5);
+		this.end = this.moves.moveCount;
 		this.stage++;
-		haxe_Log.trace("MovePicker::GenerateNext stage=",{ fileName : "MovePicker.hx", lineNumber : 22, className : "MovePicker", methodName : "GenerateNext", customParams : [this.stage]});
+		haxe_Log.trace("MovePicker::GenerateNext stage=",{ fileName : "MovePicker.hx", lineNumber : 27, className : "MovePicker", methodName : "GenerateNext", customParams : [this.stage]});
 	}
 	,NextMove: function() {
-		var move = 0;
+		haxe_Log.trace("MovePicker::NextMove cur:" + this.cur + " moveCount:" + this.moves.moveCount,{ fileName : "MovePicker.hx", lineNumber : 31, className : "MovePicker", methodName : "NextMove"});
+		while(this.cur == this.end) {
+			this.GenerateNext();
+			break;
+		}
+		if(this.moves.moveCount < this.cur) {
+			haxe_Log.trace("MovePicker return MOVE_NONE",{ fileName : "MovePicker.hx", lineNumber : 38, className : "MovePicker", methodName : "NextMove"});
+			return 0;
+		}
+		var this1 = 0;
+		var move = this1;
+		move = this.moves.mlist[this.cur].move;
+		this.cur++;
+		haxe_Log.trace("MovePicker return " + Types.Move_To_String(move),{ fileName : "MovePicker.hx", lineNumber : 44, className : "MovePicker", methodName : "NextMove"});
 		return move;
 	}
 };
@@ -1143,7 +1172,7 @@ var Search = function() {
 };
 Search.__name__ = true;
 Search.Init = function() {
-	haxe_Log.trace("Search::Init",{ fileName : "Search.hx", lineNumber : 11, className : "Search", methodName : "Init"});
+	haxe_Log.trace("Search::Init",{ fileName : "Search.hx", lineNumber : 17, className : "Search", methodName : "Init"});
 	var _g = 0;
 	while(_g < 600) {
 		var i = _g++;
@@ -1151,7 +1180,7 @@ Search.Init = function() {
 	}
 };
 Search.Reset = function(pos) {
-	haxe_Log.trace("Search::Reset",{ fileName : "Search.hx", lineNumber : 18, className : "Search", methodName : "Reset"});
+	haxe_Log.trace("Search::Reset",{ fileName : "Search.hx", lineNumber : 24, className : "Search", methodName : "Reset"});
 	var _g = 0;
 	while(_g < 600) {
 		var i = _g++;
@@ -1170,15 +1199,122 @@ Search.Reset = function(pos) {
 	}
 };
 Search.Think = function() {
-	haxe_Log.trace("Search::Think",{ fileName : "Search.hx", lineNumber : 33, className : "Search", methodName : "Think"});
+	haxe_Log.trace("Search::Think",{ fileName : "Search.hx", lineNumber : 39, className : "Search", methodName : "Think"});
+	Search.maxPly = 0;
+	Search.rootColor = Search.rootPos.SideToMove();
+	Evaluate.evalRootColour = Search.rootColor;
+	Search.IDLoop(Search.rootPos);
 };
-Search.Search = function(pos) {
-	haxe_Log.trace("Search::Search",{ fileName : "Search.hx", lineNumber : 37, className : "Search", methodName : "Search"});
+Search.IDLoop = function(pos) {
+	haxe_Log.trace("====================",{ fileName : "Search.hx", lineNumber : 47, className : "Search", methodName : "IDLoop"});
+	haxe_Log.trace("Search::IDLoop start",{ fileName : "Search.hx", lineNumber : 48, className : "Search", methodName : "IDLoop"});
+	var depth = 0;
+	var bestValue = -30001;
+	var alpha = -30001;
+	var beta = -30001;
+	var delta = 30001;
+	while(++depth <= 1) {
+		haxe_Log.trace("depth==" + depth,{ fileName : "Search.hx", lineNumber : 55, className : "Search", methodName : "IDLoop"});
+		var _g = 0;
+		var _g1 = Search.pvSize;
+		while(_g < _g1) {
+			var pvIdx = _g++;
+			while(true) {
+				bestValue = Search.Search(pos,alpha,beta);
+				Search.StableSort(Search.rootMoves,pvIdx,Search.numRootMoves - 1);
+				haxe_Log.trace("IDLoop bestValue:" + bestValue,{ fileName : "Search.hx", lineNumber : 60, className : "Search", methodName : "IDLoop"});
+				if(bestValue <= alpha) {
+					alpha = util_MathUtil.max(bestValue - delta,-30001);
+					haxe_Log.trace("bestValue <= alpha: " + alpha,{ fileName : "Search.hx", lineNumber : 63, className : "Search", methodName : "IDLoop"});
+				} else if(bestValue >= beta) {
+					beta = util_MathUtil.min(bestValue + delta,30001);
+					haxe_Log.trace("bestValue >= beta: " + beta,{ fileName : "Search.hx", lineNumber : 67, className : "Search", methodName : "IDLoop"});
+				} else {
+					haxe_Log.trace("BREAK;;",{ fileName : "Search.hx", lineNumber : 69, className : "Search", methodName : "IDLoop"});
+					break;
+				}
+				delta += delta / 2 | 0;
+				break;
+			}
+			Search.StableSort(Search.rootMoves,0,util_MathUtil.min(Search.numRootMoves - 1,pvIdx + 1));
+		}
+	}
+	haxe_Log.trace("Search::IDLoop end",{ fileName : "Search.hx", lineNumber : 79, className : "Search", methodName : "IDLoop"});
+};
+Search.StableSort = function(moves,begin,end) {
+	haxe_Log.trace("StableSoart start begin:" + begin + " end:" + end,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "StableSort"});
+	if(begin == end) {
+		haxe_Log.trace("StableSoart return",{ fileName : "Search.hx", lineNumber : 85, className : "Search", methodName : "StableSort"});
+		return;
+	}
+	var swapped = false;
+	var this1 = 0;
+	var m = this1;
+	var s = 0;
+	var _g = begin;
+	var _g1 = end;
+	while(_g < _g1) {
+		var j = _g++;
+		swapped = false;
+		var i = end;
+		while(i > j) {
+			haxe_Log.trace(i,{ fileName : "Search.hx", lineNumber : 95, className : "Search", methodName : "StableSort", customParams : [j,moves[i - 1].score," < ",moves[i].score]});
+			if(moves[i - 1].score < moves[i].score) {
+				swapped = true;
+				var tmp = moves[i - 1];
+				moves[i - 1] = moves[i];
+				moves[i] = tmp;
+				m = moves[i].pv[0];
+				s = moves[i].score;
+				haxe_Log.trace("StableSoart swap " + Types.Move_To_StringLong(m) + " " + s,{ fileName : "Search.hx", lineNumber : 103, className : "Search", methodName : "StableSort"});
+			}
+			--i;
+		}
+		if(!swapped) {
+			haxe_Log.trace("StableSoart break i:" + i + " j:" + j,{ fileName : "Search.hx", lineNumber : 108, className : "Search", methodName : "StableSort"});
+			break;
+		}
+	}
+};
+Search.Search = function(pos,alpha,beta) {
+	haxe_Log.trace("Search::Search",{ fileName : "Search.hx", lineNumber : 115, className : "Search", methodName : "Search"});
+	var pvMove = true;
 	var mp = new MovePicker();
-	var move = 0;
+	var this1 = 0;
+	var move = this1;
+	var rootNode = true;
+	var bestValue = Evaluate.DoEvaluate(pos,false);
+	var value = 0;
 	mp.InitA(pos);
-	move = mp.NextMove();
-	return move;
+	while(true) {
+		move = mp.NextMove();
+		if(!(move != 0)) {
+			break;
+		}
+		haxe_Log.trace("Search mvoe==" + Types.Move_To_String(move),{ fileName : "Search.hx", lineNumber : 124, className : "Search", methodName : "Search"});
+		bestValue = Evaluate.DoEvaluate(pos,false);
+		value = bestValue;
+		if(rootNode) {
+			var rm;
+			var _g = 0;
+			var _g1 = Search.numRootMoves;
+			while(_g < _g1) {
+				var k = _g++;
+				if(Search.rootMoves[k].Equals(move)) {
+					rm = Search.rootMoves[k];
+					if(pvMove || value > alpha) {
+						rm.score = value;
+					} else {
+						rm.score = -30001;
+					}
+					break;
+				}
+			}
+		}
+		break;
+	}
+	haxe_Log.trace("Search bestValue:" + bestValue,{ fileName : "Search.hx", lineNumber : 147, className : "Search", methodName : "Search"});
+	return bestValue;
 };
 var SearchRootMove = function() {
 	this.pv = [];
@@ -1196,6 +1332,9 @@ SearchRootMove.prototype = {
 		this.prevScore = -30001;
 		this.pv[0] = m;
 		this.numMoves = 1;
+	}
+	,Equals: function(m) {
+		return this.pv[0] == m;
 	}
 };
 var Std = function() { };
@@ -1706,6 +1845,13 @@ util_MathUtil.max = function(a,b) {
 		return b;
 	}
 };
+util_MathUtil.min = function(a,b) {
+	if(a < b) {
+		return a;
+	} else {
+		return b;
+	}
+};
 var util_StringUtil = function() { };
 util_StringUtil.__name__ = true;
 util_StringUtil.isNumberString = function(s) {
@@ -1733,6 +1879,7 @@ BB.bDeltas = [-10,-8,10,8];
 Bitboard.NA = 27;
 Bitboard.NB = 54;
 Engine.global = eval("self");
+Evaluate.evalRootColour = 0;
 MoveList.CAPTURES = 0;
 MoveList.QUIETS = 1;
 MoveList.QUIET_CHECKS = 2;
@@ -1742,6 +1889,9 @@ MoveList.LEGAL = 5;
 SFEN.startpos = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1";
 Search.rootMoves = [];
 Search.numRootMoves = 0;
+Search.rootColor = 0;
+Search.maxPly = 0;
+Search.pvSize = 1;
 Types.BLACK = 0;
 Types.WHITE = 1;
 Types.FILE_A = 0;
@@ -1801,6 +1951,7 @@ Types.SQ_NB = 81;
 Types.FILE_NB = 9;
 Types.RANK_NB = 9;
 Types.MAX_MOVES = 600;
+Types.MAX_PLY = 1;
 Types.DELTA_N = -1;
 Types.DELTA_E = -9;
 Types.DELTA_S = 1;

@@ -1,0 +1,10 @@
+@charset "UTF-8";
+
+body{
+    background-color: lightgray;
+}
+
+table tr td{
+    border-collapse: collapse;
+    border: 1px solid #333;
+}

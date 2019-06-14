@@ -19,8 +19,9 @@ class Engine {
 		global.onmessage = onMessage;
 	}
 
-	static private function Init(){
+	static private function Init() {
 		BB.Init();
+		Evaluate.Init();
 		Search.Init();
 	}
 
@@ -29,15 +30,20 @@ class Engine {
 		var res:String = '';
 		trace('Endine get data = ${msg}');
 		if (msg.indexOf('position ') == 0) {
-			pos.setPosition(msg.substr(9));
-			pos.printBoard();
-			trace('pos.c: ${pos.SideToMove()}');
-			Search.Reset(pos);
-			Search.Think();
-			var moveResult:Move = Search.rootMoves[0].pv[0];
-			res = 'bestmove ${Types.Move_To_String( moveResult )}';
-			trace(res);
-			global.postMessage(res);
+			res = doThink(msg);
 		}
+		global.postMessage(res);
+	}
+
+	static private function doThink(msg:String):String {
+		pos.setPosition(msg.substr(9));
+		pos.printBoard();
+		trace('Engine::doThink pos.c: ${pos.SideToMove()}');
+		Search.Reset(pos);
+		Search.Think();
+		var moveResult:Move = Search.rootMoves[0].pv[0];
+		var res = 'bestmove ${Types.Move_To_String(moveResult)}';
+		trace(res);
+		return res;
 	}
 }
