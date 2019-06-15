@@ -688,6 +688,7 @@ Position.prototype = {
 		}
 	}
 	,setPosition: function(sfen) {
+		this.InitBB();
 		var sf = new SFEN(sfen);
 		this.sideToMove = sf.SideToMove();
 		this.board = sf.getBoard();
@@ -702,7 +703,7 @@ Position.prototype = {
 			}
 			this.PutPiece(i,c,pt);
 		}
-		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 196, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 197, className : "Position", methodName : "setPosition"});
 		this.hand = sf.getHand();
 		var moves = sf.getMoves();
 		var _g1 = 0;
@@ -711,7 +712,7 @@ Position.prototype = {
 			var i1 = _g1++;
 			this.doMove(moves[i1]);
 		}
-		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 202, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 203, className : "Position", methodName : "setPosition"});
 	}
 	,SideToMove: function() {
 		return this.sideToMove;
@@ -793,7 +794,7 @@ Position.prototype = {
 			s += HxOverrides.substr("  " + this.board[sq8],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 233, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 234, className : "Position", methodName : "printBoard"});
 	}
 };
 var SFEN = function(sfen) {
@@ -1401,7 +1402,7 @@ js_Browser.alert = function(v) {
 };
 var ui_Game = function(ui_) {
 	this.moves = [];
-	this._sfen = "sfen lnsgkgsnl/1r5b1/pppppp1pp/8P/9/9/PPPPPPP1P/1B5R1/LNSGKGSNL b - 1";
+	this._sfen = "startpos";
 	this.playerColor = 0;
 	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 21, className : "ui.Game", methodName : "new"});
 	Position.call(this);

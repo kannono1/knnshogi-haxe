@@ -52,21 +52,16 @@ class Search {
 		var beta:Int = -Types.VALUE_INFINITE;
 		var delta:Int = Types.VALUE_INFINITE;
 		while (++depth <= Types.MAX_PLY) { // depth loop
-			trace('depth==$depth');
 			for (pvIdx in 0...pvSize) { // for Multu pv
-				while (true) {
+				while (true) {// 
 					bestValue = Search(pos, alpha, beta);
 					StableSort(rootMoves, pvIdx, numRootMoves - 1);
-					trace('IDLoop bestValue:$bestValue');
 					if (bestValue <= alpha) {
 						alpha = MathUtil.max(bestValue - delta, -Types.VALUE_INFINITE);
-						trace('bestValue <= alpha: $alpha');
 					} else {
 						if (bestValue >= beta) {
 							beta = MathUtil.min(bestValue + delta, Types.VALUE_INFINITE);
-							trace('bestValue >= beta: $beta');
 						} else {
-							trace('BREAK;;');
 							break;
 						}
 					}
@@ -124,19 +119,14 @@ class Search {
 			bestValue = Evaluate.DoEvaluate(pos, false);
 			value = bestValue;
 			pos.undoMove(move);
-			if (rootNode) { // Qsearchが終わってpvの更新が行われる？
-				trace(' Qsearchが終わってpvの更新が行われる？ bestValue:$bestValue');
+			if (rootNode) { 
+				// rootMovesのスコアの更新 //
 				var rm:SearchRootMove; // root move
 				for (k in 0...numRootMoves) {
 					if (rootMoves[k].Equals(move)) { // MPのmoveからrootMovesのmoveを引く
-						trace('// MPのmoveからrootMovesのmoveを引く');
 						rm = rootMoves[k];
 						if (pvMove || value > alpha) {
 							rm.score = value;
-							// 	rm.ExtractPVFromTT( pos, TT );
-							//  	if( !pvMove ) {
-							//   		bestMoveChanges++;
-							// 	}
 						} else {
 							rm.score = -Types.VALUE_INFINITE;
 						}

@@ -181,6 +181,7 @@ class Position {
 	}
 
 	public function setPosition(sfen) {
+		InitBB();
 		var sf:SFEN = new SFEN(sfen);
 		sideToMove = sf.SideToMove();
 		board = sf.getBoard();

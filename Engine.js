@@ -990,6 +990,7 @@ Position.prototype = {
 		}
 	}
 	,setPosition: function(sfen) {
+		this.InitBB();
 		var sf = new SFEN(sfen);
 		this.sideToMove = sf.SideToMove();
 		this.board = sf.getBoard();
@@ -1004,7 +1005,7 @@ Position.prototype = {
 			}
 			this.PutPiece(i,c,pt);
 		}
-		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 196, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 197, className : "Position", methodName : "setPosition"});
 		this.hand = sf.getHand();
 		var moves = sf.getMoves();
 		var _g1 = 0;
@@ -1013,7 +1014,7 @@ Position.prototype = {
 			var i1 = _g1++;
 			this.doMove(moves[i1]);
 		}
-		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 202, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 203, className : "Position", methodName : "setPosition"});
 	}
 	,SideToMove: function() {
 		return this.sideToMove;
@@ -1095,7 +1096,7 @@ Position.prototype = {
 			s += HxOverrides.substr("  " + this.board[sq8],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 233, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 234, className : "Position", methodName : "printBoard"});
 	}
 };
 var SFEN = function(sfen) {
@@ -1245,7 +1246,6 @@ Search.IDLoop = function(pos) {
 	var beta = -30001;
 	var delta = 30001;
 	while(++depth <= 1) {
-		haxe_Log.trace("depth==" + depth,{ fileName : "Search.hx", lineNumber : 55, className : "Search", methodName : "IDLoop"});
 		var _g = 0;
 		var _g1 = Search.pvSize;
 		while(_g < _g1) {
@@ -1253,15 +1253,11 @@ Search.IDLoop = function(pos) {
 			while(true) {
 				bestValue = Search.Search(pos,alpha,beta);
 				Search.StableSort(Search.rootMoves,pvIdx,Search.numRootMoves - 1);
-				haxe_Log.trace("IDLoop bestValue:" + bestValue,{ fileName : "Search.hx", lineNumber : 60, className : "Search", methodName : "IDLoop"});
 				if(bestValue <= alpha) {
 					alpha = util_MathUtil.max(bestValue - delta,-30001);
-					haxe_Log.trace("bestValue <= alpha: " + alpha,{ fileName : "Search.hx", lineNumber : 63, className : "Search", methodName : "IDLoop"});
 				} else if(bestValue >= beta) {
 					beta = util_MathUtil.min(bestValue + delta,30001);
-					haxe_Log.trace("bestValue >= beta: " + beta,{ fileName : "Search.hx", lineNumber : 67, className : "Search", methodName : "IDLoop"});
 				} else {
-					haxe_Log.trace("BREAK;;",{ fileName : "Search.hx", lineNumber : 69, className : "Search", methodName : "IDLoop"});
 					break;
 				}
 				delta += delta / 2 | 0;
@@ -1270,7 +1266,7 @@ Search.IDLoop = function(pos) {
 			Search.StableSort(Search.rootMoves,0,util_MathUtil.min(Search.numRootMoves - 1,pvIdx + 1));
 		}
 	}
-	haxe_Log.trace("Search::IDLoop end",{ fileName : "Search.hx", lineNumber : 79, className : "Search", methodName : "IDLoop"});
+	haxe_Log.trace("Search::IDLoop end",{ fileName : "Search.hx", lineNumber : 74, className : "Search", methodName : "IDLoop"});
 };
 Search.StableSort = function(moves,begin,end) {
 	if(begin == end) {
@@ -1303,7 +1299,7 @@ Search.StableSort = function(moves,begin,end) {
 	}
 };
 Search.Search = function(pos,alpha,beta) {
-	haxe_Log.trace("Search::Search",{ fileName : "Search.hx", lineNumber : 110, className : "Search", methodName : "Search"});
+	haxe_Log.trace("Search::Search",{ fileName : "Search.hx", lineNumber : 105, className : "Search", methodName : "Search"});
 	var pvMove = true;
 	var mp = new MovePicker();
 	var this1 = 0;
@@ -1320,20 +1316,18 @@ Search.Search = function(pos,alpha,beta) {
 		if(!(move != 0)) {
 			break;
 		}
-		haxe_Log.trace("Search mvoe==" + Types.Move_To_String(move),{ fileName : "Search.hx", lineNumber : 122, className : "Search", methodName : "Search"});
+		haxe_Log.trace("Search mvoe==" + Types.Move_To_String(move),{ fileName : "Search.hx", lineNumber : 117, className : "Search", methodName : "Search"});
 		pos.doMove(move);
 		bestValue = Evaluate.DoEvaluate(pos,false);
 		value = bestValue;
 		pos.undoMove(move);
 		if(rootNode) {
-			haxe_Log.trace(" Qsearchが終わってpvの更新が行われる？ bestValue:" + bestValue,{ fileName : "Search.hx", lineNumber : 128, className : "Search", methodName : "Search"});
 			var rm;
 			var _g = 0;
 			var _g1 = Search.numRootMoves;
 			while(_g < _g1) {
 				var k = _g++;
 				if(Search.rootMoves[k].Equals(move)) {
-					haxe_Log.trace("// MPのmoveからrootMovesのmoveを引く",{ fileName : "Search.hx", lineNumber : 132, className : "Search", methodName : "Search"});
 					rm = Search.rootMoves[k];
 					if(pvMove || value > alpha) {
 						rm.score = value;
@@ -1345,7 +1339,7 @@ Search.Search = function(pos,alpha,beta) {
 			}
 		}
 	}
-	haxe_Log.trace("Search bestValue:" + bestValue,{ fileName : "Search.hx", lineNumber : 148, className : "Search", methodName : "Search"});
+	haxe_Log.trace("Search bestValue:" + bestValue,{ fileName : "Search.hx", lineNumber : 138, className : "Search", methodName : "Search"});
 	return bestValue;
 };
 var SearchRootMove = function() {
