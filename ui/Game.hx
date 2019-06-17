@@ -9,9 +9,10 @@ import Types.PR;
 import Types.PC;
 
 class Game extends Position {
-	public var playerColor:Int = 0;
+	public var playerColor:Int = Types.BLACK;
 
-	private var _sfen = 'startpos';
+	// private var _sfen = 'startpos';
+	private var _sfen = 'sfen lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL w - 1';
 	// private var _sfen = 'sfen lnsgkgsnl/1r5b1/pppppp1pp/8P/9/9/PPPPPPP1P/1B5R1/LNSGKGSNL b - 1';
 	private var ui:UI;
 	private var worker:Worker;
@@ -32,10 +33,9 @@ class Game extends Position {
 	}
 
 	public function doPlayerMove(from:Int, to:Int, promote:Bool) {
-		if(promote){
+		if (promote) {
 			doMove(Types.Make_Move_Promote(from, to));
-		}
-		else{
+		} else {
 			doMove(Types.Make_Move(from, to));
 		}
 	}
@@ -53,7 +53,14 @@ class Game extends Position {
 		printBoard();
 		trace('hand $hand');
 		if (isEnemyTurn()) {
-			trace('Game::56 postMessage ...');
+			startThink();
+		}
+	}
+
+	private function startThink() {
+		if (moves.length == 0) {
+			worker.postMessage('position $_sfen');
+		} else {
 			worker.postMessage('position $_sfen moves ' + getMovesString());
 		}
 	}
@@ -69,7 +76,7 @@ class Game extends Position {
 	public function getMovableSq(sq:Int, pc:PC):Array<Int> {
 		var arr:Array<Int> = [];
 		var us = sideToMove;
-		var attack:Bitboard = AttacksFromPTypeSQ(sq, pc);//(Types.hasLongEffect(pt)) ? BB.AttacksBB(sq, occ, pt) : BB.stepAttacksBB[pt][sq];
+		var attack:Bitboard = AttacksFromPTypeSQ(sq, pc); // (Types.hasLongEffect(pt)) ? BB.AttacksBB(sq, occ, pt) : BB.stepAttacksBB[pt][sq];
 		var target:Bitboard = byColorBB[us].newNOT();
 		var b = attack.newAND(target);
 		while (b.IsNonZero()) {
@@ -89,7 +96,7 @@ class Game extends Position {
 	}
 
 	private function isEnemyTurn():Bool {
-		return (sideToMove == 1);
+		return (sideToMove != playerColor);
 	}
 
 	private function onMessage(s:MessageEvent) {
@@ -116,6 +123,11 @@ class Game extends Position {
 
 	override public function setPosition(sfen:String):Void {
 		super.setPosition(sfen);
-		ui.updateUi(OPERATION_MODE.SELECT);
+		if (isEnemyTurn()) {
+			ui.updateUi(OPERATION_MODE.WAIT);
+			startThink();
+		} else {
+			ui.updateUi(OPERATION_MODE.SELECT);
+		}
 	}
 }
