@@ -1682,7 +1682,7 @@ js_Browser.alert = function(v) {
 };
 var ui_Game = function(ui_) {
 	this.moves = [];
-	this._sfen = "sfen lnsgkgsnl/1r5b1/ppppLpppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL w - 1";
+	this._sfen = "sfen lnsg1gsnl/1r3k1b1/pppppp+Bpp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL w - 1";
 	this.playerColor = 0;
 	haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 22, className : "ui.Game", methodName : "new"});
 	Position.call(this);

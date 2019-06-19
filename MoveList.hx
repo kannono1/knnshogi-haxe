@@ -274,6 +274,9 @@ class MoveList {
 				) { // 飛び駒のとき // ksqとchecksqをつなぐQueenの効き - 王手をかけている駒位置
         			sliderAttacks.OR( BB.lineBB[checksq][ksq].newXOR( BB.squareBB[checksq] ) );
     			}
+      			if( pt == Types.HORSE || pt == Types.DRAGON){
+					  sliderAttacks.OR( BB.getStepAttacksBB(Types.B_KING, checksq) );
+				  }
 			} 
 			while( b.IsNonZero() );
 			trace('SLIDERBB', sliderAttacks.toStringBB());

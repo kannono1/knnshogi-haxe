@@ -859,19 +859,22 @@ MoveList.prototype = {
 				if(pt == 5 || pt == 6 || pt == 13 || pt == 14 || pt == 2) {
 					sliderAttacks.OR(BB.lineBB[checksq][ksq].newXOR(BB.squareBB[checksq]));
 				}
+				if(pt == 13 || pt == 14) {
+					sliderAttacks.OR(BB.getStepAttacksBB(8,checksq));
+				}
 				if(!b.IsNonZero()) {
 					break;
 				}
 			}
-			haxe_Log.trace("SLIDERBB",{ fileName : "MoveList.hx", lineNumber : 279, className : "MoveList", methodName : "Generate", customParams : [sliderAttacks.toStringBB()]});
+			haxe_Log.trace("SLIDERBB",{ fileName : "MoveList.hx", lineNumber : 275, className : "MoveList", methodName : "Generate", customParams : [sliderAttacks.toStringBB()]});
 			b = new Bitboard();
 			b.Copy(pos.AttacksFromPTypeSQ(ksq,8));
 			b.AND(pos.PiecesColour(us).newNOT());
 			b.AND(sliderAttacks.newNOT());
-			haxe_Log.trace("KingBB",{ fileName : "MoveList.hx", lineNumber : 285, className : "MoveList", methodName : "Generate", customParams : [b.toStringBB()]});
+			haxe_Log.trace("KingBB",{ fileName : "MoveList.hx", lineNumber : 281, className : "MoveList", methodName : "Generate", customParams : [b.toStringBB()]});
 			this.Serialize(ksq,b);
-			haxe_Log.trace("chekersCnt:" + checkersCnt,{ fileName : "MoveList.hx", lineNumber : 287, className : "MoveList", methodName : "Generate"});
-			haxe_Log.trace("movecount:" + this.moveCount,{ fileName : "MoveList.hx", lineNumber : 288, className : "MoveList", methodName : "Generate"});
+			haxe_Log.trace("chekersCnt:" + checkersCnt,{ fileName : "MoveList.hx", lineNumber : 283, className : "MoveList", methodName : "Generate"});
+			haxe_Log.trace("movecount:" + this.moveCount,{ fileName : "MoveList.hx", lineNumber : 284, className : "MoveList", methodName : "Generate"});
 			if(checkersCnt > 1) {
 				return;
 			}
