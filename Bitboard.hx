@@ -107,6 +107,20 @@ class Bitboard {
 		return newBB;
 	}
 
+	public function XOR(other:Bitboard) {
+		lower ^= other.lower;
+		middle ^= other.middle;
+		upper ^= other.upper;
+		needCount = true;
+	}
+
+	public function newXOR(other:Bitboard):Bitboard {
+		var newBB:Bitboard = new Bitboard();
+		newBB.Copy(this);
+		newBB.XOR(other);
+		return newBB;
+	}
+
 	public function PopLSB():Int {
 		var index:Int = -1;
 		if (lower != 0) {

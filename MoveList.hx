@@ -134,7 +134,7 @@ class MoveList {
 		b.NORM27();
 		while (b.IsNonZero()) {
 			to = b.PopLSB();
-			mlist[moveCount].move = Types.Make_Move_Drop( Types.RawTypeOf(pt), to);
+			mlist[moveCount].move = Types.Make_Move_Drop(Types.RawTypeOf(pt), to);
 			moveCount++;
 		}
 	}
@@ -197,7 +197,7 @@ class MoveList {
 	}
 
 	public function GenerateDopMoves(pos:Position, us:Int, target:Bitboard, pt:PT, genType:Int) {
-		if (!pos.HandExists(us, Types.RawTypeOf( pt) ) ){
+		if (!pos.HandExists(us, Types.RawTypeOf(pt))) {
 			return; // 持ち駒チェエク
 		}
 		var target2:Bitboard = pos.PiecesAll().newNOT(); // 空いてるところ
@@ -245,13 +245,59 @@ class MoveList {
 
 	public function Generate(pos:Position, genType:Int) {
 		var us:Int = pos.SideToMove();
+		var pt:PT = new PT(0);
+		var pc:PC = new PC(0);
 		trace('MoveList::Generate c: $us genType:$genType');
 		if (genType == NON_EVASIONS) {
 			var target:Bitboard = pos.PiecesColour(us).newNOT(); // CAPTURE＋QUIETS
 			GenerateAll(pos, us, target, genType);
 		}
-		if (genType == LEGAL) {
-			Generate(pos, NON_EVASIONS);
+		if (genType == EVASIONS) { // 3 王の移動先をMovesに入れてから相駒をGenerateする
+			var checkersCnt:Int = 0;
+			var ksq:Int = pos.KingSquare(us);
+			var checksq:Int = 0; // 王手をかけている駒位置
+			trace('ksq:$ksq');
+			var sliderAttacks:Bitboard = new Bitboard();// 敵駒の効き
+			var b = new Bitboard();
+			b.Copy( pos.Checkers() );// 王手している駒
+			do {
+    			checkersCnt++;
+      			checksq = b.PopLSB();
+				pc = pos.PieceOn(checksq);
+				pt = Types.TypeOf_Piece( pc );
+      			if( 
+					  pt == Types.BISHOP
+					  || pt == Types.ROOK
+					  || pt == Types.HORSE
+					  || pt == Types.DRAGON
+					  || pt == Types.LANCE
+				) { // 飛び駒のとき // ksqとchecksqをつなぐQueenの効き - 王手をかけている駒位置
+        			sliderAttacks.OR( BB.lineBB[checksq][ksq].newXOR( BB.squareBB[checksq] ) );
+    			}
+			} 
+			while( b.IsNonZero() );
+			trace('SLIDERBB', sliderAttacks.toStringBB());
+
+			b = new Bitboard();
+			b.Copy(pos.AttacksFromPTypeSQ(ksq, Types.B_KING)); // 自王の移動範囲
+			b.AND( pos.PiecesColour(us).newNOT() );// 敵の駒
+  			b.AND( sliderAttacks.newNOT() );// 敵の効きが無い場所
+			trace('KingBB', b.toStringBB());
+			Serialize( ksq, b );
+			trace('chekersCnt:$checkersCnt');
+			trace('movecount:$moveCount');
+			if( checkersCnt > 1 ) {// 両王手であるなら、王の移動のみが回避手となる。ゆえにこれで指し手生成は終了。
+				return;
+			}
+			// var target:Bitboard = pos.PiecesColour(us).newNOT();
+			// GenerateAll(pos, us, target, genType);
+		}
+		if (genType == LEGAL) { // 5 LEAGALのときはGenTypeを更新して再度Generateを実行する
+			if (pos.Checkers().IsNonZero()) {
+				Generate(pos, EVASIONS);
+			} else {
+				Generate(pos, NON_EVASIONS);
+			}
 		}
 	}
 }

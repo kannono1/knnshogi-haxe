@@ -18,7 +18,7 @@ BB.RankDistance = function(s1,s2) {
 	return util_MathUtil.abs(Types.Rank_Of(s1) - Types.Rank_Of(s2));
 };
 BB.Init = function() {
-	haxe_Log.trace("Init::BB",{ fileName : "BB.hx", lineNumber : 51, className : "BB", methodName : "Init"});
+	haxe_Log.trace("Init::BB",{ fileName : "BB.hx", lineNumber : 54, className : "BB", methodName : "Init"});
 	if(BB.initialized) {
 		return;
 	}
@@ -51,7 +51,7 @@ BB.Init = function() {
 		var s1 = _g2++;
 		BB.squareDistance[s1] = [];
 		var _g21 = 0;
-		while(_g21 < 81) {
+		while(_g21 < 80) {
 			var s2 = _g21++;
 			BB.squareDistance[s1][s2] = util_MathUtil.max(BB.FileDistance(s1,s2),BB.RankDistance(s1,s2));
 		}
@@ -71,23 +71,62 @@ BB.Init = function() {
 			BB.stepAttacksBB[pt][s11] = new Bitboard();
 		}
 	}
-	var c = 0;
-	var _g5 = 1;
-	var _g6 = 14;
+	var s = 0;
+	var _g5 = 0;
+	var _g6 = 15;
 	while(_g5 < _g6) {
-		var p1 = _g5++;
+		var pt1 = _g5++;
+		BB.pseudoAttacks[pt1] = [];
+	}
+	var _g7 = 0;
+	while(_g7 < 81) {
+		var s3 = _g7++;
+		var a = BB.AttacksBB(s3,new Bitboard(),5);
+		BB.pseudoAttacks[5][s3] = BB.AttacksBB(s3,new Bitboard(),5);
+		BB.pseudoAttacks[6][s3] = BB.AttacksBB(s3,new Bitboard(),6);
+		BB.pseudoAttacks[13][s3] = BB.AttacksBB(s3,new Bitboard(),13);
+		BB.pseudoAttacks[14][s3] = BB.AttacksBB(s3,new Bitboard(),14);
+		BB.pseudoQueenAttacks[s3] = new Bitboard();
+		BB.pseudoQueenAttacks[s3].OR(BB.pseudoAttacks[5][s3]);
+		BB.pseudoQueenAttacks[s3].OR(BB.pseudoAttacks[6][s3]);
+	}
+	var _g8 = 0;
+	while(_g8 < 81) {
+		var s12 = _g8++;
+		BB.lineBB[s12] = [];
+		var _g81 = 0;
+		while(_g81 < 81) {
+			var s21 = _g81++;
+			BB.lineBB[s12][s21] = new Bitboard();
+			if(BB.pseudoQueenAttacks[s12].newAND(BB.squareBB[s21]).IsNonZero()) {
+				pt = 6;
+				if(BB.pseudoAttacks[5][s12].newAND(BB.squareBB[s21]).IsNonZero()) {
+					pt = 5;
+				}
+				BB.lineBB[s12][s21].Copy(BB.pseudoAttacks[pt][s12]);
+				BB.lineBB[s12][s21].AND(BB.pseudoAttacks[pt][s21]);
+				BB.lineBB[s12][s21].OR(BB.squareBB[s12]);
+				BB.lineBB[s12][s21].OR(BB.squareBB[s21]);
+			}
+		}
+	}
+	var c = 0;
+	var _g9 = 1;
+	var _g10 = 14;
+	while(_g9 < _g10) {
+		var p1 = _g9++;
 		var this3 = p1;
 		pt = this3;
-		var _g51 = 0;
-		while(_g51 < 81) {
-			var s = _g51++;
-			var _g52 = 0;
-			while(_g52 < 9) {
-				var k = _g52++;
+		var _g91 = 0;
+		while(_g91 < 81) {
+			var s4 = _g91++;
+			var _g92 = 0;
+			while(_g92 < 9) {
+				var k = _g92++;
 				if(BB.steps[pt][k] == 0) {
 					continue;
 				}
-				var to = s;
+				var to = s4;
 				if(c == 0) {
 					to += BB.steps[pt][k];
 				} else {
@@ -97,7 +136,7 @@ BB.Init = function() {
 					continue;
 				}
 				var tmp;
-				if(BB.SquareDistance(s,to) >= 3) {
+				if(BB.SquareDistance(s4,to) >= 3) {
 					var this4 = Types.RawTypeOf(pt);
 					tmp = this4 != 2;
 				} else {
@@ -106,27 +145,27 @@ BB.Init = function() {
 				if(tmp) {
 					continue;
 				}
-				BB.stepAttacksBB[Types.Make_Piece(c,pt)][s].OR(BB.squareBB[to]);
+				BB.stepAttacksBB[Types.Make_Piece(c,pt)][s4].OR(BB.squareBB[to]);
 			}
 		}
 	}
 	var c1 = 1;
-	var _g7 = 1;
-	var _g8 = 14;
-	while(_g7 < _g8) {
-		var p2 = _g7++;
+	var _g11 = 1;
+	var _g12 = 14;
+	while(_g11 < _g12) {
+		var p2 = _g11++;
 		var this5 = p2;
 		pt = this5;
-		var _g71 = 0;
-		while(_g71 < 81) {
-			var s3 = _g71++;
-			var _g72 = 0;
-			while(_g72 < 9) {
-				var k1 = _g72++;
+		var _g111 = 0;
+		while(_g111 < 81) {
+			var s5 = _g111++;
+			var _g112 = 0;
+			while(_g112 < 9) {
+				var k1 = _g112++;
 				if(BB.steps[pt][k1] == 0) {
 					continue;
 				}
-				var to1 = s3;
+				var to1 = s5;
 				if(c1 == 0) {
 					to1 += BB.steps[pt][k1];
 				} else {
@@ -136,7 +175,7 @@ BB.Init = function() {
 					continue;
 				}
 				var tmp1;
-				if(BB.SquareDistance(s3,to1) >= 3) {
+				if(BB.SquareDistance(s5,to1) >= 3) {
 					var this6 = Types.RawTypeOf(pt);
 					tmp1 = this6 != 2;
 				} else {
@@ -145,7 +184,7 @@ BB.Init = function() {
 				if(tmp1) {
 					continue;
 				}
-				BB.stepAttacksBB[Types.Make_Piece(c1,pt)][s3].OR(BB.squareBB[to1]);
+				BB.stepAttacksBB[Types.Make_Piece(c1,pt)][s5].OR(BB.squareBB[to1]);
 			}
 		}
 	}
@@ -335,6 +374,18 @@ Bitboard.prototype = {
 		var newBB = new Bitboard();
 		newBB.Copy(this);
 		newBB.OR(other);
+		return newBB;
+	}
+	,XOR: function(other) {
+		this.lower ^= other.lower;
+		this.middle ^= other.middle;
+		this.upper ^= other.upper;
+		this.needCount = true;
+	}
+	,newXOR: function(other) {
+		var newBB = new Bitboard();
+		newBB.Copy(this);
+		newBB.XOR(other);
 		return newBB;
 	}
 	,PopLSB: function() {
@@ -783,50 +834,102 @@ MoveList.prototype = {
 	}
 	,Generate: function(pos,genType) {
 		var us = pos.SideToMove();
-		haxe_Log.trace("MoveList::Generate c: " + us + " genType:" + genType,{ fileName : "MoveList.hx", lineNumber : 248, className : "MoveList", methodName : "Generate"});
+		var this1 = 0;
+		var pt = this1;
+		var this2 = 0;
+		var pc = this2;
+		haxe_Log.trace("MoveList::Generate c: " + us + " genType:" + genType,{ fileName : "MoveList.hx", lineNumber : 250, className : "MoveList", methodName : "Generate"});
 		if(genType == 4) {
 			var target = pos.PiecesColour(us).newNOT();
 			this.GenerateAll(pos,us,target,genType);
 		}
+		if(genType == 3) {
+			var checkersCnt = 0;
+			var ksq = pos.KingSquare(us);
+			var checksq = 0;
+			haxe_Log.trace("ksq:" + ksq,{ fileName : "MoveList.hx", lineNumber : 259, className : "MoveList", methodName : "Generate"});
+			var sliderAttacks = new Bitboard();
+			var b = new Bitboard();
+			b.Copy(pos.Checkers());
+			while(true) {
+				++checkersCnt;
+				checksq = b.PopLSB();
+				pc = pos.PieceOn(checksq);
+				pt = Types.TypeOf_Piece(pc);
+				if(pt == 5 || pt == 6 || pt == 13 || pt == 14 || pt == 2) {
+					sliderAttacks.OR(BB.lineBB[checksq][ksq].newXOR(BB.squareBB[checksq]));
+				}
+				if(!b.IsNonZero()) {
+					break;
+				}
+			}
+			haxe_Log.trace("SLIDERBB",{ fileName : "MoveList.hx", lineNumber : 279, className : "MoveList", methodName : "Generate", customParams : [sliderAttacks.toStringBB()]});
+			b = new Bitboard();
+			b.Copy(pos.AttacksFromPTypeSQ(ksq,8));
+			b.AND(pos.PiecesColour(us).newNOT());
+			b.AND(sliderAttacks.newNOT());
+			haxe_Log.trace("KingBB",{ fileName : "MoveList.hx", lineNumber : 285, className : "MoveList", methodName : "Generate", customParams : [b.toStringBB()]});
+			this.Serialize(ksq,b);
+			haxe_Log.trace("chekersCnt:" + checkersCnt,{ fileName : "MoveList.hx", lineNumber : 287, className : "MoveList", methodName : "Generate"});
+			haxe_Log.trace("movecount:" + this.moveCount,{ fileName : "MoveList.hx", lineNumber : 288, className : "MoveList", methodName : "Generate"});
+			if(checkersCnt > 1) {
+				return;
+			}
+		}
 		if(genType == 5) {
-			this.Generate(pos,4);
+			if(pos.Checkers().IsNonZero()) {
+				this.Generate(pos,3);
+			} else {
+				this.Generate(pos,4);
+			}
 		}
 	}
 };
 var MovePicker = function() {
+	this.generated = false;
 	this.stage = 0;
 	this.end = 0;
 	this.cur = 0;
 	this.moves = new MoveList();
-	haxe_Log.trace("MovePicker::new",{ fileName : "MovePicker.hx", lineNumber : 13, className : "MovePicker", methodName : "new"});
+	haxe_Log.trace("MovePicker::new",{ fileName : "MovePicker.hx", lineNumber : 34, className : "MovePicker", methodName : "new"});
 };
 MovePicker.__name__ = true;
 MovePicker.prototype = {
 	InitA: function(p) {
-		haxe_Log.trace("MovePicker::InitA",{ fileName : "MovePicker.hx", lineNumber : 17, className : "MovePicker", methodName : "InitA"});
+		haxe_Log.trace("MovePicker::InitA",{ fileName : "MovePicker.hx", lineNumber : 38, className : "MovePicker", methodName : "InitA"});
 		this.pos = p;
-		haxe_Log.trace("st.checkersBB",{ fileName : "MovePicker.hx", lineNumber : 19, className : "MovePicker", methodName : "InitA", customParams : [this.pos.Checkers().toStringBB()]});
-		this.GenerateNext();
+		this.moves.Reset();
+		this.cur = 0;
+		this.end = 0;
+		if(p.Checkers().IsNonZero()) {
+			this.stage = 6;
+		} else {
+			this.stage = 0;
+		}
+		haxe_Log.trace("stage == " + this.stage,{ fileName : "MovePicker.hx", lineNumber : 48, className : "MovePicker", methodName : "InitA"});
 	}
 	,GenerateNext: function() {
 		this.cur = 0;
-		this.moves.Reset();
 		this.moves.Generate(this.pos,5);
 		this.end = this.moves.moveCount;
 		this.stage++;
-		haxe_Log.trace("MovePicker::GenerateNext stage=",{ fileName : "MovePicker.hx", lineNumber : 29, className : "MovePicker", methodName : "GenerateNext", customParams : [this.stage]});
+		haxe_Log.trace("MovePicker::GenerateNext stage=",{ fileName : "MovePicker.hx", lineNumber : 57, className : "MovePicker", methodName : "GenerateNext", customParams : [this.stage]});
 	}
 	,NextMove: function() {
-		haxe_Log.trace("MovePicker::NextMove cur:" + this.cur + " moveCount:" + this.moves.moveCount,{ fileName : "MovePicker.hx", lineNumber : 33, className : "MovePicker", methodName : "NextMove"});
-		if(this.moves.moveCount < this.cur) {
-			haxe_Log.trace("MovePicker return MOVE_NONE",{ fileName : "MovePicker.hx", lineNumber : 35, className : "MovePicker", methodName : "NextMove"});
+		haxe_Log.trace("MovePicker::NextMove cur:" + this.cur + " end:" + this.end + " moveCount:" + this.moves.moveCount,{ fileName : "MovePicker.hx", lineNumber : 61, className : "MovePicker", methodName : "NextMove"});
+		if(this.generated) {
+			this.GenerateNext();
+			this.generated = true;
+		}
+		if(this.cur > 1) {
+			haxe_Log.trace("MovePicker return MOVE_NONE",{ fileName : "MovePicker.hx", lineNumber : 68, className : "MovePicker", methodName : "NextMove"});
 			return 0;
 		} else {
 			var this1 = 0;
 			var move = this1;
 			move = this.moves.mlist[this.cur].move;
 			this.cur++;
-			haxe_Log.trace("MovePicker return " + Types.Move_To_String(move),{ fileName : "MovePicker.hx", lineNumber : 41, className : "MovePicker", methodName : "NextMove"});
+			haxe_Log.trace("MovePicker return " + Types.Move_To_String(move),{ fileName : "MovePicker.hx", lineNumber : 74, className : "MovePicker", methodName : "NextMove"});
 			return move;
 		}
 	}
@@ -1031,26 +1134,17 @@ Position.prototype = {
 		this.byColorBB[c].SetBit(sq);
 		this.byTypeBB[0].SetBit(sq);
 		this.byTypeBB[pt].SetBit(sq);
-		haxe_Log.trace("Position::PutPiece piece count c:" + c + " AAA = " + this.pieceCount[c][0],{ fileName : "Position.hx", lineNumber : 166, className : "Position", methodName : "PutPiece"});
-		haxe_Log.trace(this.pieceCount,{ fileName : "Position.hx", lineNumber : 167, className : "Position", methodName : "PutPiece"});
-		haxe_Log.trace(this.pieceCount[0],{ fileName : "Position.hx", lineNumber : 168, className : "Position", methodName : "PutPiece"});
-		haxe_Log.trace(this.pieceCount[1],{ fileName : "Position.hx", lineNumber : 169, className : "Position", methodName : "PutPiece"});
 		var tmp = this.pieceCount[c];
 		tmp[0]++;
-		haxe_Log.trace("Position::PutPiece piece count = " + this.pieceCount[c][0],{ fileName : "Position.hx", lineNumber : 172, className : "Position", methodName : "PutPiece"});
-		haxe_Log.trace("Position::PutPiece piece index",{ fileName : "Position.hx", lineNumber : 173, className : "Position", methodName : "PutPiece"});
 		var tmp1 = this.pieceCount[c];
 		this.index[sq] = tmp1[pt]++;
-		haxe_Log.trace("Position::PutPiece piece index pt:" + pt + " = " + this.index[sq],{ fileName : "Position.hx", lineNumber : 175, className : "Position", methodName : "PutPiece"});
-		haxe_Log.trace("Position::PutPiece piece list",{ fileName : "Position.hx", lineNumber : 176, className : "Position", methodName : "PutPiece"});
 		this.pieceList[c][pt][this.index[sq]] = sq;
-		haxe_Log.trace("Position::PutPiece piece list = " + this.pieceList[c][pt][this.index[sq]],{ fileName : "Position.hx", lineNumber : 178, className : "Position", methodName : "PutPiece"});
 		if(pt == 1) {
 			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(sq)]);
 		}
 	}
 	,MovePiece: function(from,to,c,pt) {
-		haxe_Log.trace("Position::MovePiece from:" + from + " to:" + to + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 185, className : "Position", methodName : "MovePiece"});
+		haxe_Log.trace("Position::MovePiece from:" + from + " to:" + to + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 175, className : "Position", methodName : "MovePiece"});
 		this.board[to] = Types.Make_Piece(c,pt);
 		this.board[from] = 0;
 		this.byColorBB[c].SetBit(to);
@@ -1063,7 +1157,7 @@ Position.prototype = {
 		}
 	}
 	,RemovePiece: function(sq,c,pt) {
-		haxe_Log.trace("Position::RemovePiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 199, className : "Position", methodName : "RemovePiece"});
+		haxe_Log.trace("Position::RemovePiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 189, className : "Position", methodName : "RemovePiece"});
 		this.board[sq] = 0;
 		this.byColorBB[c].ClrBit(sq);
 		this.byTypeBB[0].ClrBit(sq);
@@ -1132,7 +1226,7 @@ Position.prototype = {
 		}
 	}
 	,setPosition: function(sfen) {
-		haxe_Log.trace("Position::setPosition start",{ fileName : "Position.hx", lineNumber : 271, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace("Position::setPosition start",{ fileName : "Position.hx", lineNumber : 261, className : "Position", methodName : "setPosition"});
 		this.InitBB();
 		this.Clear();
 		var sf = new SFEN(sfen);
@@ -1149,7 +1243,7 @@ Position.prototype = {
 			}
 			this.PutPiece(i,c,pt);
 		}
-		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 286, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace("Position::setPosition " + sfen,{ fileName : "Position.hx", lineNumber : 276, className : "Position", methodName : "setPosition"});
 		this.hand = sf.getHand();
 		var moves = sf.getMoves();
 		var _g1 = 0;
@@ -1158,7 +1252,7 @@ Position.prototype = {
 			var i1 = _g1++;
 			this.doMove(moves[i1]);
 		}
-		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 292, className : "Position", methodName : "setPosition"});
+		haxe_Log.trace(this.board,{ fileName : "Position.hx", lineNumber : 282, className : "Position", methodName : "setPosition"});
 		var tmp = this.AttackersToSq(this.KingSquare(this.sideToMove));
 		var tmp1 = this.PiecesColour(Types.OppColour(this.sideToMove));
 		this.st.checkersBB = tmp.newAND(tmp1);
@@ -1179,7 +1273,7 @@ Position.prototype = {
 		}
 	}
 	,Clear: function() {
-		haxe_Log.trace("Position::Clear",{ fileName : "Position.hx", lineNumber : 314, className : "Position", methodName : "Clear"});
+		haxe_Log.trace("Position::Clear",{ fileName : "Position.hx", lineNumber : 304, className : "Position", methodName : "Clear"});
 		var _g = 0;
 		while(_g < 81) {
 			var i = _g++;
@@ -1224,8 +1318,6 @@ Position.prototype = {
 			this.pieceList[0][j][14] = 0;
 			this.pieceList[0][j][15] = 0;
 		}
-		haxe_Log.trace("PieceCount i:" + 0 + " " + Std.string(this.pieceCount[0]),{ fileName : "Position.hx", lineNumber : 333, className : "Position", methodName : "Clear"});
-		haxe_Log.trace(this.pieceCount[0].length,{ fileName : "Position.hx", lineNumber : 334, className : "Position", methodName : "Clear"});
 		this.byColorBB[1].Clear();
 		this.pieceCount[1] = [];
 		var _g11 = 0;
@@ -1249,8 +1341,6 @@ Position.prototype = {
 			this.pieceList[1][j1][14] = 0;
 			this.pieceList[1][j1][15] = 0;
 		}
-		haxe_Log.trace("PieceCount i:" + 1 + " " + Std.string(this.pieceCount[1]),{ fileName : "Position.hx", lineNumber : 333, className : "Position", methodName : "Clear"});
-		haxe_Log.trace(this.pieceCount[1].length,{ fileName : "Position.hx", lineNumber : 334, className : "Position", methodName : "Clear"});
 		var _g12 = 0;
 		while(_g12 < 15) {
 			var i1 = _g12++;
@@ -1327,7 +1417,7 @@ Position.prototype = {
 			s += HxOverrides.substr("  " + this.board[sq8],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 362, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 348, className : "Position", methodName : "printBoard"});
 	}
 };
 var SFEN = function(sfen) {
@@ -2141,11 +2231,14 @@ Object.defineProperty(js__$Boot_HaxeError.prototype,"message",{ get : function()
 js_Boot.__toStr = ({ }).toString;
 BB.squareDistance = [];
 BB.stepAttacksBB = [];
+BB.lineBB = [];
 BB.squareBB = [];
 BB.enemyField1 = [];
 BB.enemyField2 = [];
 BB.enemyField3 = [];
 BB.pawnLineBB = [];
+BB.pseudoAttacks = [];
+BB.pseudoQueenAttacks = [];
 BB.initialized = false;
 BB.steps = [[0,0,0,0,0,0,0,0,0],[-1,0,0,0,0,0,0,0,0],[-1,-2,-3,-4,-5,-6,-7,-8,0],[7,-11,0,0,0,0,0,0,0],[-1,8,10,-10,-8,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,10,-8,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]];
 BB.rDeltas = [-1,-9,1,9];
@@ -2160,6 +2253,24 @@ MoveList.QUIET_CHECKS = 2;
 MoveList.EVASIONS = 3;
 MoveList.NON_EVASIONS = 4;
 MoveList.LEGAL = 5;
+MovePicker.MAIN_SEARCH = 0;
+MovePicker.CAPTURES_S1 = 1;
+MovePicker.KILLERS_S1 = 2;
+MovePicker.QUIETS_1_S1 = 3;
+MovePicker.QUIETS_2_S1 = 4;
+MovePicker.BAD_CAPTURES_S1 = 5;
+MovePicker.EVASION = 6;
+MovePicker.EVASIONS_S2 = 7;
+MovePicker.QSEARCH_0 = 8;
+MovePicker.CAPTURES_S3 = 9;
+MovePicker.QUIET_CHECKS_S3 = 10;
+MovePicker.QSEARCH_1 = 11;
+MovePicker.CAPTURES_S4 = 12;
+MovePicker.PROBCUT = 13;
+MovePicker.CAPTURES_S5 = 14;
+MovePicker.RECAPTURE = 15;
+MovePicker.CAPTURES_S6 = 16;
+MovePicker.STOP = 17;
 SFEN.startpos = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1";
 Search.rootMoves = [];
 Search.numRootMoves = 0;

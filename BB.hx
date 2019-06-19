@@ -8,11 +8,14 @@ class BB {
 	public static var ranksBB:Array<Bitboard>;
 	public static var squareDistance:Array<Array<Int>> = [];
 	public static var stepAttacksBB:Array<Array<Bitboard>> = []; // [pc][sq] = BB
+	public static var lineBB:Array<Array<Bitboard>> = []; // [sq1][sq2] // 1と2の地点をつなぐ直線の効き
 	public static var squareBB:Array<Bitboard> = [];
 	public static var enemyField1:Array<Bitboard> = []; // 敵陣の1段目BB[color]
 	public static var enemyField2:Array<Bitboard> = []; // 敵陣の2段目BB[color]
 	public static var enemyField3:Array<Bitboard> = []; // 敵陣の3段目BB[color]
 	public static var pawnLineBB:Array<Bitboard> = []; // 二歩チェック要。pawnがある列のBitが立つ[color]
+	public static var pseudoAttacks:Array<Array<Bitboard>> = []; // [pt][sq] 飛車と角の利き
+	public static var pseudoQueenAttacks:Array<Bitboard> = []; // [sq]
 	private static var initialized:Bool = false;
 	static private var steps:Array<Array<Int>> = [
 		// 駒の移動。のビットシフト。飛びの効きは0。
@@ -74,11 +77,8 @@ class BB {
 		}
 		for (s1 in Types.SQ_A1...Types.SQ_NB) {
 			squareDistance[s1] = [];
-			for (s2 in Types.SQ_A1...Types.SQ_NB) {
+			for (s2 in Types.SQ_A1...Types.SQ_HB) {
 				squareDistance[s1][s2] = MathUtil.max(FileDistance(s1, s2), RankDistance(s1, s2));
-				// if( s1 != s2 ) {
-				// 	distanceRingsBB[s1][ squareDistance[s1][s2] - 1 ].OR( squareBB[s2] );
-				// }
 			}
 		}
 		var pt:PT = new PT(0);
@@ -87,6 +87,36 @@ class BB {
 			stepAttacksBB[pt] = [];
 			for (s1 in Types.SQ_A1...Types.SQ_NB) {
 				stepAttacksBB[pt][s1] = new Bitboard();
+			}
+		}
+		var s:Int = 0;
+		for (pt in Types.NO_PIECE_TYPE...Types.PIECE_TYPE_NB) {
+			pseudoAttacks[pt] = [];
+		}
+		for (s in Types.SQ_A1...Types.SQ_NB) {
+			var a = AttacksBB(s, new Bitboard(), Types.BISHOP);
+			pseudoAttacks[Types.BISHOP][s] = AttacksBB(s, new Bitboard(), Types.BISHOP);
+			pseudoAttacks[Types.ROOK][s] = AttacksBB(s, new Bitboard(), Types.ROOK);
+			pseudoAttacks[Types.HORSE][s] = AttacksBB(s, new Bitboard(), Types.HORSE);
+			pseudoAttacks[Types.DRAGON][s] = AttacksBB(s, new Bitboard(), Types.DRAGON);
+			pseudoQueenAttacks[s] = new Bitboard(); // 飛び駒の効きの判定に使用
+			pseudoQueenAttacks[s].OR(pseudoAttacks[Types.BISHOP][s]);
+			pseudoQueenAttacks[s].OR(pseudoAttacks[Types.ROOK][s]);
+		}
+		for (s1 in Types.SQ_A1...Types.SQ_NB) {
+			lineBB[s1] = [];
+			for (s2 in Types.SQ_A1...Types.SQ_NB) {
+				lineBB[s1][s2] = new Bitboard();
+				if (pseudoQueenAttacks[s1].newAND(squareBB[s2]).IsNonZero()) {
+					pt = Types.ROOK;
+					if (pseudoAttacks[Types.BISHOP][s1].newAND(squareBB[s2]).IsNonZero()) {
+						pt = Types.BISHOP;
+					}
+					lineBB[s1][s2].Copy(pseudoAttacks[pt][s1]);
+					lineBB[s1][s2].AND(pseudoAttacks[pt][s2]);
+					lineBB[s1][s2].OR(squareBB[s1]);
+					lineBB[s1][s2].OR(squareBB[s2]);
+				}
 			}
 		}
 		var c = Types.BLACK; // JSだとLoopを分割しないとスルーされるかも
