@@ -7,7 +7,7 @@ class BB {
 	public static var filesBB:Array<Bitboard>;
 	public static var ranksBB:Array<Bitboard>;
 	public static var squareDistance:Array<Array<Int>> = [];
-	private static var stepAttacksBB:Array<Array<Bitboard>> = []; // [pc][sq] = BB
+	public static var stepAttacksBB:Array<Array<Bitboard>> = []; // [pc][sq] = BB
 	public static var squareBB:Array<Bitboard> = [];
 	public static var enemyField1:Array<Bitboard> = []; // 敵陣の1段目BB[color]
 	public static var enemyField2:Array<Bitboard> = []; // 敵陣の2段目BB[color]

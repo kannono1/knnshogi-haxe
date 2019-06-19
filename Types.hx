@@ -31,7 +31,7 @@ class Types {
 	public static inline var RANK_1:Int = 0;
 	static public inline var COLOR_NB:Int = 2;
 	public static inline var ALL_PIECES:Int = 0;
-	public static inline var PIECE_TYPE_NB:Int = 0;
+	public static inline var PIECE_TYPE_NB:Int = 15;
 	public static inline var PIECE_PROMOTE:Int = 8;
 	public static inline var NO_PIECE_TYPE:PT = new PT(0);
 	public static inline var PAWN:PT = new PT(1);
@@ -81,6 +81,7 @@ class Types {
 	public static inline var SQ_A1:Int = 0;
 	public static inline var SQ_HB:Int = 80;
 	public static inline var SQ_NB:Int = 81;
+	public static inline var SQ_NONE:Int = 81;
 	public static inline var FILE_NB:Int = 9;
 	public static inline var RANK_NB:Int = 9;
 	public static inline var MAX_MOVES:Int = 600;

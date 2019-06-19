@@ -16,6 +16,14 @@ class Bitboard {
 		upper = u;
 	}
 
+	public function Clear() {
+		lower = 0;
+		middle = 0;
+		upper = 0;
+		count = 0;
+		needCount = false;
+	}
+
 	public function Copy(other:Bitboard) {
 		lower = other.lower;
 		middle = other.middle;
