@@ -578,6 +578,9 @@ Main.onClickCell = function(sq) {
 Main.onClickHand = function(pr) {
 	Main.gui.onClickHand(pr);
 };
+Main.onClickPromote = function(b) {
+	Main.gui.onClickPromote(b == 1);
+};
 Math.__name__ = true;
 var Position = function() {
 	this.pieceList = [];
@@ -1800,22 +1803,14 @@ ui_UI.prototype = {
 		this.game.start();
 	}
 	,Init: function() {
-		this.initDialog();
 	}
-	,initDialog: function() {
-		var _gthis = this;
-		var dialog = window.document.getElementById("dialog_promote");
-		dialog.addEventListener("cancel",function(e) {
-			e.preventDefault();
-		});
-		dialog.addEventListener("close",function(e1) {
-			var promote = dialog.returnValue == "yes";
-			_gthis.game.doPlayerMove(_gthis.selectedSq,_gthis.toSq,promote);
-			_gthis.updateUi(3);
-		});
+	,onClickPromote: function(promote) {
+		haxe_Log.trace("onClickPromote " + (promote == null ? "null" : "" + promote),{ fileName : "ui/UI.hx", lineNumber : 42, className : "ui.UI", methodName : "onClickPromote"});
+		this.game.doPlayerMove(this.selectedSq,this.toSq,promote);
+		this.updateUi(3);
 	}
 	,isPromotable: function(sq,pc) {
-		haxe_Log.trace("isPromotable sq:" + sq + " pc:" + pc,{ fileName : "ui/UI.hx", lineNumber : 43, className : "ui.UI", methodName : "isPromotable"});
+		haxe_Log.trace("isPromotable sq:" + sq + " pc:" + pc,{ fileName : "ui/UI.hx", lineNumber : 48, className : "ui.UI", methodName : "isPromotable"});
 		if(pc % 16 > 8) {
 			return false;
 		} else if(Types.Rank_Of(sq) < 3) {
@@ -1827,7 +1822,7 @@ ui_UI.prototype = {
 		}
 	}
 	,onClickCell: function(sq) {
-		haxe_Log.trace("on clickCell:",{ fileName : "ui/UI.hx", lineNumber : 56, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
+		haxe_Log.trace("on clickCell:",{ fileName : "ui/UI.hx", lineNumber : 61, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
 		switch(this.operationMode) {
 		case 0:
 			this.selectedSq = sq;
@@ -1838,7 +1833,6 @@ ui_UI.prototype = {
 			var from_pc = this.game.PieceOn(this.selectedSq);
 			if(this.isPromotable(this.toSq,from_pc)) {
 				var dialog = window.document.getElementById("dialog_promote");
-				dialog.showModal();
 			} else {
 				this.game.doPlayerMove(this.selectedSq,this.toSq,false);
 				this.updateUi(3);
@@ -1852,14 +1846,14 @@ ui_UI.prototype = {
 		}
 	}
 	,onClickHand: function(pr) {
-		haxe_Log.trace("on clickHand:",{ fileName : "ui/UI.hx", lineNumber : 79, className : "ui.UI", methodName : "onClickHand", customParams : [pr]});
+		haxe_Log.trace("on clickHand:",{ fileName : "ui/UI.hx", lineNumber : 84, className : "ui.UI", methodName : "onClickHand", customParams : [pr]});
 		if(this.operationMode == 0) {
 			this.selectedHand = pr;
 			this.updateUi(2);
 		}
 	}
 	,onEnemyMoved: function() {
-		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 89, className : "ui.UI", methodName : "onEnemyMoved"});
+		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 94, className : "ui.UI", methodName : "onEnemyMoved"});
 		this.updateUi(0);
 	}
 	,onEndGame: function(winner) {

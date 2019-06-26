@@ -24,19 +24,24 @@ class UI {
 	}
 
 	private function Init() {
-		initDialog();
+		// initDialog();
 	}
 
-	private function initDialog() {
-		var dialog:Dynamic = Browser.document.getElementById('dialog_promote');
-		dialog.addEventListener('cancel', function(e:Dynamic) {
-			e.preventDefault();
-		});
-		dialog.addEventListener('close', function(e:Dynamic) {
-			var promote = (dialog.returnValue == 'yes');
-			game.doPlayerMove(this.selectedSq, toSq, promote);
-			this.updateUi(OPERATION_MODE.WAIT);
-		});
+	// private function initDialog() {
+	// 	var dialog:Dynamic = Browser.document.getElementById('dialog_promote');
+	// 	dialog.addEventListener('cancel', function(e:Dynamic) {
+	// 		e.preventDefault();
+	// 	});
+	// 	dialog.addEventListener('close', function(e:Dynamic) {
+	// 		var promote = (dialog.returnValue == 'yes');
+	// 		game.doPlayerMove(this.selectedSq, toSq, promote);
+	// 		this.updateUi(OPERATION_MODE.WAIT);
+	// 	});
+	// }
+	public function onClickPromote(promote:Bool) {
+		trace('onClickPromote $promote');
+		game.doPlayerMove(this.selectedSq, toSq, promote);
+		this.updateUi(OPERATION_MODE.WAIT);
 	}
 
 	private function isPromotable(sq:Int, pc:PC):Bool {
@@ -63,7 +68,7 @@ class UI {
 				var from_pc:PC = game.PieceOn(selectedSq);
 				if (isPromotable(toSq, from_pc)) {
 					var dialog:Dynamic = Browser.document.getElementById('dialog_promote');
-					dialog.showModal();
+					// dialog.showModal();
 				} else {
 					game.doPlayerMove(this.selectedSq, toSq, false);
 					this.updateUi(OPERATION_MODE.WAIT);

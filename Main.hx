@@ -16,7 +16,12 @@ class Main {
 	static public function onClickCell(sq:Int) {
 		gui.onClickCell(sq);
 	}
+
 	static public function onClickHand(pr:PR) {
 		gui.onClickHand(pr);
+	}
+
+	static public function onClickPromote(b:Int) {
+		gui.onClickPromote((b == 1));
 	}
 }
