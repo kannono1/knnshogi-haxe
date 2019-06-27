@@ -1803,9 +1803,19 @@ ui_UI.prototype = {
 		this.game.start();
 	}
 	,Init: function() {
+		this.hideDialog();
+	}
+	,showDialog: function() {
+		window.document.getElementById("dialog_promote").style.display = "block";
+		window.document.getElementById("dialog_bg").style.display = "block";
+	}
+	,hideDialog: function() {
+		window.document.getElementById("dialog_promote").style.display = "none";
+		window.document.getElementById("dialog_bg").style.display = "none";
 	}
 	,onClickPromote: function(promote) {
-		haxe_Log.trace("onClickPromote " + (promote == null ? "null" : "" + promote),{ fileName : "ui/UI.hx", lineNumber : 42, className : "ui.UI", methodName : "onClickPromote"});
+		haxe_Log.trace("onClickPromote " + (promote == null ? "null" : "" + promote),{ fileName : "ui/UI.hx", lineNumber : 41, className : "ui.UI", methodName : "onClickPromote"});
+		this.hideDialog();
 		this.game.doPlayerMove(this.selectedSq,this.toSq,promote);
 		this.updateUi(3);
 	}
@@ -1832,7 +1842,7 @@ ui_UI.prototype = {
 			this.toSq = sq;
 			var from_pc = this.game.PieceOn(this.selectedSq);
 			if(this.isPromotable(this.toSq,from_pc)) {
-				var dialog = window.document.getElementById("dialog_promote");
+				this.showDialog();
 			} else {
 				this.game.doPlayerMove(this.selectedSq,this.toSq,false);
 				this.updateUi(3);
@@ -1846,14 +1856,14 @@ ui_UI.prototype = {
 		}
 	}
 	,onClickHand: function(pr) {
-		haxe_Log.trace("on clickHand:",{ fileName : "ui/UI.hx", lineNumber : 84, className : "ui.UI", methodName : "onClickHand", customParams : [pr]});
+		haxe_Log.trace("on clickHand:",{ fileName : "ui/UI.hx", lineNumber : 83, className : "ui.UI", methodName : "onClickHand", customParams : [pr]});
 		if(this.operationMode == 0) {
 			this.selectedHand = pr;
 			this.updateUi(2);
 		}
 	}
 	,onEnemyMoved: function() {
-		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 94, className : "ui.UI", methodName : "onEnemyMoved"});
+		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 93, className : "ui.UI", methodName : "onEnemyMoved"});
 		this.updateUi(0);
 	}
 	,onEndGame: function(winner) {
