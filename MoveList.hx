@@ -213,6 +213,7 @@ class MoveList {
 		}
 		SerializeDrop(pt, target2);
 	}
+
 	public function GenerateAllDopMoves(pos:Position, us:Int, target:Bitboard) {
 		GenerateDopMoves(pos, us, target, Types.PAWN);
 		GenerateDopMoves(pos, us, target, Types.LANCE);
@@ -281,6 +282,20 @@ class MoveList {
 				return;
 			}
 			var target1:Bitboard = BB.betweenBB[checksq][ksq].newCOPY();
+			var target2:Bitboard = target1.newOR(BB.squareBB[checksq]);
+			generatePawnMoves(pos, us, target2);
+			GenerateMoves(pos, us, target2, Types.LANCE);
+			GenerateMoves(pos, us, target2, Types.KNIGHT);
+			GenerateMoves(pos, us, target2, Types.SILVER);
+			GenerateMoves(pos, us, target2, Types.BISHOP);
+			GenerateMoves(pos, us, target2, Types.ROOK);
+			GenerateMoves(pos, us, target2, Types.GOLD);
+			GenerateMoves(pos, us, target2, Types.PRO_PAWN);
+			GenerateMoves(pos, us, target2, Types.PRO_LANCE);
+			GenerateMoves(pos, us, target2, Types.PRO_KNIGHT);
+			GenerateMoves(pos, us, target2, Types.PRO_SILVER);
+			GenerateMoves(pos, us, target2, Types.HORSE);
+			GenerateMoves(pos, us, target2, Types.DRAGON);
 			GenerateAllDopMoves(pos, us, target1);
 		}
 		if (genType == LEGAL) {

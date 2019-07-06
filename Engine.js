@@ -829,7 +829,7 @@ MoveList.prototype = {
 		this.GenerateDopMoves(pos,us,target,7);
 	}
 	,GenerateAll: function(pos,us,target,genType) {
-		haxe_Log.trace("MoveList::GenerateAll c: " + us + " genType:" + genType,{ fileName : "MoveList.hx", lineNumber : 227, className : "MoveList", methodName : "GenerateAll"});
+		haxe_Log.trace("MoveList::GenerateAll c: " + us + " genType:" + genType,{ fileName : "MoveList.hx", lineNumber : 228, className : "MoveList", methodName : "GenerateAll"});
 		if(genType != 0) {
 			this.GenerateAllDopMoves(pos,us,target);
 		}
@@ -854,7 +854,7 @@ MoveList.prototype = {
 		var pt = this1;
 		var this2 = 0;
 		var pc = this2;
-		haxe_Log.trace("MoveList::Generate c: " + us + " genType:" + genType,{ fileName : "MoveList.hx", lineNumber : 251, className : "MoveList", methodName : "Generate"});
+		haxe_Log.trace("MoveList::Generate c: " + us + " genType:" + genType,{ fileName : "MoveList.hx", lineNumber : 252, className : "MoveList", methodName : "Generate"});
 		if(genType == 4) {
 			var target = pos.PiecesColour(us).newNOT();
 			this.GenerateAll(pos,us,target,genType);
@@ -890,6 +890,20 @@ MoveList.prototype = {
 				return;
 			}
 			var target1 = BB.betweenBB[checksq][ksq].newCOPY();
+			var target2 = target1.newOR(BB.squareBB[checksq]);
+			this.generatePawnMoves(pos,us,target2);
+			this.GenerateMoves(pos,us,target2,2);
+			this.GenerateMoves(pos,us,target2,3);
+			this.GenerateMoves(pos,us,target2,4);
+			this.GenerateMoves(pos,us,target2,5);
+			this.GenerateMoves(pos,us,target2,6);
+			this.GenerateMoves(pos,us,target2,7);
+			this.GenerateMoves(pos,us,target2,9);
+			this.GenerateMoves(pos,us,target2,10);
+			this.GenerateMoves(pos,us,target2,11);
+			this.GenerateMoves(pos,us,target2,12);
+			this.GenerateMoves(pos,us,target2,13);
+			this.GenerateMoves(pos,us,target2,14);
 			this.GenerateAllDopMoves(pos,us,target1);
 		}
 		if(genType == 5) {
