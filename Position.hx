@@ -61,6 +61,9 @@ class Position {
 	}
 
 	public function Legal(m:Move):Bool {
+		if( Types.Is_Drop(m) ){
+			return true;
+		}
 		var us:Int = sideToMove;
 		var from:Int = Types.Move_FromSq(m);
 		if (Types.TypeOf_Piece(PieceOn(from)) == Types.KING) {

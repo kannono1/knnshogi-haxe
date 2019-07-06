@@ -8,7 +8,8 @@ class BB {
 	public static var ranksBB:Array<Bitboard>;
 	public static var squareDistance:Array<Array<Int>> = [];
 	public static var stepAttacksBB:Array<Array<Bitboard>> = []; // [pc][sq] = BB
-	public static var lineBB:Array<Array<Bitboard>> = []; // [sq1][sq2] // 1と2の地点をつなぐ直線の効き
+	public static var betweenBB:Array<Array<Bitboard>> = []; // [sq1][sq2] // 1と2の地点をつなぐ直線の効き
+	public static var lineBB:Array<Array<Bitboard>> = []; // [sq1][sq2] // 1と2の地点を通る直線の効き
 	public static var squareBB:Array<Bitboard> = [];
 	public static var enemyField1:Array<Bitboard> = []; // 敵陣の1段目BB[color]
 	public static var enemyField2:Array<Bitboard> = []; // 敵陣の2段目BB[color]
@@ -77,7 +78,7 @@ class BB {
 		}
 		for (s1 in Types.SQ_A1...Types.SQ_NB) {
 			squareDistance[s1] = [];
-			for (s2 in Types.SQ_A1...Types.SQ_HB) {
+			for (s2 in Types.SQ_A1...Types.SQ_NB) {
 				squareDistance[s1][s2] = MathUtil.max(FileDistance(s1, s2), RankDistance(s1, s2));
 			}
 		}
@@ -104,10 +105,18 @@ class BB {
 			pseudoQueenAttacks[s].OR(pseudoAttacks[Types.ROOK][s]);
 		}
 		for (s1 in Types.SQ_A1...Types.SQ_NB) {
+			betweenBB[s1] = [];
 			lineBB[s1] = [];
 			for (s2 in Types.SQ_A1...Types.SQ_NB) {
+				betweenBB[s1][s2] = new Bitboard();
 				lineBB[s1][s2] = new Bitboard();
-				if (pseudoQueenAttacks[s1].newAND(squareBB[s2]).IsNonZero()) {
+				if (pseudoQueenAttacks[s1].newAND(squareBB[s2]).IsNonZero()) {// Queenのライン上にある
+					var deltta:Int = Std.int((s2 - s1) / SquareDistance(s1, s2));
+					s = s1 + deltta;
+					while (s != s2) {
+						betweenBB[s1][s2].OR(squareBB[s]);
+						s += deltta;
+					}
 					pt = Types.ROOK;
 					if (pseudoAttacks[Types.BISHOP][s1].newAND(squareBB[s2]).IsNonZero()) {
 						pt = Types.BISHOP;

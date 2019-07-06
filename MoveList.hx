@@ -196,17 +196,15 @@ class MoveList {
 		SerializePawns(b1, up, us);
 	}
 
-	public function GenerateDopMoves(pos:Position, us:Int, target:Bitboard, pt:PT, genType:Int) {
+	public function GenerateDopMoves(pos:Position, us:Int, target:Bitboard, pt:PT) {
 		if (!pos.HandExists(us, Types.RawTypeOf(pt))) {
 			return; // 持ち駒チェエク
 		}
-		var target2:Bitboard = pos.PiecesAll().newNOT(); // 空いてるところ
+		var target2:Bitboard = target.newAND(pos.PiecesAll().newNOT()); // 空いてるところ
 		switch (pt) {
 			case Types.PAWN:
 				target2.AND(BB.enemyField1[us].newNOT()); // 1段目には打てない
 				target2.AND(BB.pawnLineBB[us].newNOT()); // 二歩チェック
-				trace('GenerateDrop us:$us pawnBB:${BB.pawnLineBB[us].toStringBB()}');
-				trace('GenerateDrop target2:${target2.toStringBB()}');
 			case Types.LANCE:
 				target2.AND(BB.enemyField1[us].newNOT()); // 1段目には打てない
 			case Types.KNIGHT:
@@ -215,17 +213,20 @@ class MoveList {
 		}
 		SerializeDrop(pt, target2);
 	}
+	public function GenerateAllDopMoves(pos:Position, us:Int, target:Bitboard) {
+		GenerateDopMoves(pos, us, target, Types.PAWN);
+		GenerateDopMoves(pos, us, target, Types.LANCE);
+		GenerateDopMoves(pos, us, target, Types.KNIGHT);
+		GenerateDopMoves(pos, us, target, Types.SILVER);
+		GenerateDopMoves(pos, us, target, Types.BISHOP);
+		GenerateDopMoves(pos, us, target, Types.ROOK);
+		GenerateDopMoves(pos, us, target, Types.GOLD);
+	}
 
 	public function GenerateAll(pos:Position, us:Int, target:Bitboard, genType:Int) {
 		trace('MoveList::GenerateAll c: $us genType:$genType');
 		if (genType != CAPTURES) { // CAPTUREの時は打ち手を生成しない。（絶対に敵駒を取れないので）
-			GenerateDopMoves(pos, us, target, Types.PAWN, genType);
-			GenerateDopMoves(pos, us, target, Types.LANCE, genType);
-			GenerateDopMoves(pos, us, target, Types.KNIGHT, genType);
-			GenerateDopMoves(pos, us, target, Types.SILVER, genType);
-			GenerateDopMoves(pos, us, target, Types.BISHOP, genType);
-			GenerateDopMoves(pos, us, target, Types.ROOK, genType);
-			GenerateDopMoves(pos, us, target, Types.GOLD, genType);
+			GenerateAllDopMoves(pos, us, target);
 		}
 		generatePawnMoves(pos, us, target);
 		GenerateMoves(pos, us, target, Types.LANCE);
@@ -256,7 +257,6 @@ class MoveList {
 			var checkersCnt:Int = 0;
 			var ksq:Int = pos.KingSquare(us);
 			var checksq:Int = 0; // 王手をかけている駒位置
-			trace('ksq:$ksq');
 			var sliderAttacks:Bitboard = new Bitboard(); // 敵駒の効き
 			var b = new Bitboard();
 			b.Copy(pos.Checkers()); // 王手している駒
@@ -276,17 +276,14 @@ class MoveList {
 			b.Copy(pos.AttacksFromPTypeSQ(ksq, Types.B_KING)); // 自王の移動範囲
 			b.AND(pos.PiecesColour(us).newNOT()); // 敵の駒
 			b.AND(sliderAttacks.newNOT()); // 敵の効きが無い場所
-			trace('KingBB', b.toStringBB());
 			Serialize(ksq, b);
-			trace('chekersCnt:$checkersCnt');
-			trace('movecount:$moveCount');
 			if (checkersCnt > 1) { // 両王手であるなら、王の移動のみが回避手となる。ゆえにこれで指し手生成は終了。
 				return;
 			}
-			// var target:Bitboard = pos.PiecesColour(us).newNOT();
-			// GenerateAll(pos, us, target, genType);
+			var target1:Bitboard = BB.betweenBB[checksq][ksq].newCOPY();
+			GenerateAllDopMoves(pos, us, target1);
 		}
-		if (genType == LEGAL) { // 5 LEAGALのときはGenTypeを更新して再度Generateを実行する
+		if (genType == LEGAL) {
 			if (pos.Checkers().IsNonZero()) {
 				Generate(pos, EVASIONS);
 			} else {
