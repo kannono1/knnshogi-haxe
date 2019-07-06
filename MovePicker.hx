@@ -62,17 +62,15 @@ class MovePicker {
 		if (generated) {
 			// if (cur == end) {
 			GenerateNext();
-			generated = true;// knn
+			generated = true; // knn
 		}
-		if (cur > 1) {
+		if (moves.moveCount == 0) {
 			trace('MovePicker return MOVE_NONE');
 			return Types.MOVE_NONE;
-		} else {
-			var move:Move = new Move(0);
-			move = moves.mlist[cur].move;
-			cur++;
-			trace('MovePicker return ${Types.Move_To_String(move)}');
-			return move;
 		}
+		var move:Move = moves.mlist[cur].move;
+		cur++;
+		trace('MovePicker return ${Types.Move_To_String(move)}');
+		return move;
 	}
 }

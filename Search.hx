@@ -123,7 +123,7 @@ class Search {
 				// rootMovesのスコアの更新 //
 				var rm:SearchRootMove; // root move
 				for (k in 0...numRootMoves) {
-					if (rootMoves[k].Equals(move)) { // MPのmoveからrootMovesのmoveを引く
+					if (rootMoves[k].Equals(move)) { // MovePickerのmoveからrootMovesのmoveを引く
 						rm = rootMoves[k];
 						if (pvMove || value > alpha) {
 							rm.score = value;

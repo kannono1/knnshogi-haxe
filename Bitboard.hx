@@ -38,6 +38,10 @@ class Bitboard {
 		return newBB;
 	}
 
+	public function IsZero():Bool {
+		return (lower == 0 && middle == 0 && upper == 0);
+	}
+
 	public function IsNonZero():Bool {
 		return (lower != 0 || middle != 0 || upper != 0);
 	}

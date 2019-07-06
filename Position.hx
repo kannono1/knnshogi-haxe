@@ -60,6 +60,18 @@ class Position {
 		return pieceList[c][Types.KING][0];
 	}
 
+	public function Legal(m:Move):Bool {
+		var us:Int = sideToMove;
+		var from:Int = Types.Move_FromSq(m);
+		if (Types.TypeOf_Piece(PieceOn(from)) == Types.KING) {
+			if ( AttackersToSq( Types.Move_ToSq(m)).newAND( PiecesColour(Types.OppColour(us))).IsZero()) {
+				return true;
+			}
+			return false;
+		}
+		return true;
+	}
+
 	public function PiecesAll():Bitboard {
 		return byTypeBB[Types.ALL_PIECES];
 	}
