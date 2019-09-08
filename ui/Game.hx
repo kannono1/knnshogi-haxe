@@ -11,9 +11,9 @@ import Types.PC;
 class Game extends Position {
 	public var playerColor:Int = Types.BLACK;
 
-	// private var _sfen = 'startpos';
-	private var _sfen = 'sfen lnsg1gsnl/1r311b1/pppppppbk/9/9/9/PPPPPPP1P/1B5R1/LNSGKGSN1 w plL 1';
-	// private var _sfen = 'sfen lnsgkgsnl/1r5b1/pppppp1pp/8P/9/9/PPPPPPP1P/1B5R1/LNSGKGSNL b - 1';
+	private var _sfen = 'startpos';
+	// private var _sfen = 'sfen lnsgkgsnl/1r311b1/ppppppppp/RS7/9/9/PPPPPPP1P/1B5R1/LNSGKGSN1 b plL 1';
+	// private var _sfen = 'sfen lnsgkg1nl/1r4sb1/ppppppppp/7P1/9/9/PPPPPPP1P/1B5R1/LNSGKGSNL w - 1';
 	private var ui:UI;
 	private var worker:Worker;
 	private var moves:Array<Move> = [];

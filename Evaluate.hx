@@ -7,6 +7,7 @@ class Evaluate {
 	}
 
 	public static function DoEvaluate(pos:Position, doTrace:Bool):Int {
+		var score:Int = 0;
 		return Std.int(Math.random() * 100);
 	}
 }

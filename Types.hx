@@ -49,19 +49,19 @@ class Types {
 	public static inline var HORSE:PT = new PT(13);
 	public static inline var DRAGON:PT = new PT(14);
 	public static inline var NO_PIECE:PC = new PC(0);
-	public static inline var B_PAWN  :PC = new PC(1);
-	public static inline var B_LANCE :PC = new PC(2);
+	public static inline var B_PAWN:PC = new PC(1);
+	public static inline var B_LANCE:PC = new PC(2);
 	public static inline var B_KNIGHT:PC = new PC(3);
 	public static inline var B_SILVER:PC = new PC(4);
 	public static inline var B_BISHOP:PC = new PC(5);
 	public static inline var B_ROOK:PC = new PC(6);
 	public static inline var B_GOLD:PC = new PC(7);
 	public static inline var B_KING:PC = new PC(8);
-	public static inline var B_PRO_PAWN  :PC = new PC(9);
-	public static inline var B_PRO_LANCE :PC = new PC(10);
+	public static inline var B_PRO_PAWN:PC = new PC(9);
+	public static inline var B_PRO_LANCE:PC = new PC(10);
 	public static inline var B_PRO_KNIGHT:PC = new PC(11);
 	public static inline var B_PRO_SILVER:PC = new PC(12);
-	public static inline var B_HORSE :PC = new PC(13);
+	public static inline var B_HORSE:PC = new PC(13);
 	public static inline var B_DRAGON:PC = new PC(14);
 	public static inline var W_PAWN:PC = new PC(17);
 	public static inline var W_LANCE:PC = new PC(18);
@@ -71,11 +71,11 @@ class Types {
 	public static inline var W_ROOK:PC = new PC(22);
 	public static inline var W_GOLD:PC = new PC(23);
 	public static inline var W_KING:PC = new PC(24);
-	public static inline var W_PRO_PAWN  :PC = new PC(25);
-	public static inline var W_PRO_LANCE :PC = new PC(26);
+	public static inline var W_PRO_PAWN:PC = new PC(25);
+	public static inline var W_PRO_LANCE:PC = new PC(26);
 	public static inline var W_PRO_KNIGHT:PC = new PC(27);
 	public static inline var W_PRO_SILVER:PC = new PC(28);
-	public static inline var W_HORSE :PC = new PC(29);
+	public static inline var W_HORSE:PC = new PC(29);
 	public static inline var W_DRAGON:PC = new PC(30);
 	public static inline var PIECE_NB:PC = new PC(31);
 	public static inline var SQ_A1:Int = 0;
@@ -106,6 +106,31 @@ class Types {
 	public static inline var VALUE_MATE:Int = 30000;
 	public static inline var VALUE_INFINITE:Int = 30001;
 	public static inline var VALUE_NONE:Int = 30002;
+	public static inline var PawnValue:Int = 90;
+	public static inline var LanceValue:Int = 315;
+	public static inline var KnightValue:Int = 405;
+	public static inline var SilverValue:Int = 495;
+	public static inline var GoldValue:Int = 540;
+	public static inline var BishopValue:Int = 855;
+	public static inline var RookValue:Int = 990;
+	public static inline var ProPawnValue:Int = 540;
+	public static inline var ProLanceValue:Int = 540;
+	public static inline var ProKnightValue:Int = 540;
+	public static inline var ProSilverValue:Int = 540;
+	public static inline var HorseValue:Int = 945;
+	public static inline var DragonValue:Int = 1395;
+	public static inline var KingValue:Int = 15000;
+	private static var flipSquare:Array<Int> = [
+		80, 79, 78, 77, 76, 75, 74, 73, 72,
+		71, 70, 69, 68, 67, 66, 65, 64, 63,
+		62, 61, 60, 59, 58, 57, 56, 55, 54,
+		53, 52, 51, 50, 49, 48, 47, 46, 45,
+		44, 43, 42, 41, 40, 39, 38, 37, 36,
+		35, 34, 33, 32, 31, 30, 29, 28, 27,
+		26, 25, 24, 23, 22, 21, 20, 19, 18,
+		17, 16, 15, 14, 13, 12, 11, 10,  9,
+		 8,  7,  6,  5,  4,  3,  2,  1,  0,
+	];
 
 	public static function hasLongEffect(pt:PT):Bool {
 		switch (pt) {
@@ -266,6 +291,10 @@ class Types {
 
 	public static function Square(f:Int, r:Int):Int {
 		return (f * RANK_NB) + r;
+	}
+
+	public static function FlipSquare(sq:Int):Int {
+		return flipSquare[sq];
 	}
 
 	static public function getPieceColor(pc:PC):Int {

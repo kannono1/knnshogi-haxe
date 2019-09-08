@@ -21,6 +21,7 @@ class Engine {
 
 	static private function Init() {
 		BB.Init();
+		Position.Init();
 		Evaluate.Init();
 		Search.Init();
 	}

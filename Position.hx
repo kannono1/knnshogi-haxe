@@ -7,6 +7,12 @@ import Types.PT;
 
 @:allow()
 class Position {
+	public static var psq:Array<Array<Array<Int>>> = []; // [color][pt][sq] = v
+	public static var pieceValue:Array<Int> = [
+		Types.VALUE_ZERO, Types.PawnValue, Types.LanceValue, Types.KnightValue, Types.SilverValue, Types.BishopValue, Types.RookValue, Types.GoldValue,
+		Types.KingValue, Types.ProPawnValue, Types.ProLanceValue, Types.ProKnightValue, Types.ProSilverValue, Types.HorseValue, Types.DragonValue
+	];
+
 	public var board:Array<Int> = [];
 	public var sideToMove:Int = Types.BLACK;
 	public var hand:Array<Array<Int>> = [];
@@ -19,12 +25,25 @@ class Position {
 	private var st:StateInfo;
 
 	public function new() {
-		trace('Posision::new');
 		InitBB();
 	}
 
+	public static function Init() {
+		psq[Types.BLACK] = [];
+		psq[Types.WHITE] = [];
+		for (pt in Types.NO_PIECE_TYPE...Types.PIECE_TYPE_NB) {
+			psq[Types.BLACK][pt] = [];
+			psq[Types.WHITE][pt] = [];
+			var v:Int = pieceValue[pt];
+			for (s in Types.SQ_A1...Types.SQ_NB) {
+				var sFlip:Int = Types.FlipSquare(s);
+				psq[Types.BLACK][pt][s]     =  (v + PSQTable.psqT[pt][s]);
+				psq[Types.WHITE][pt][sFlip] = -(v + PSQTable.psqT[pt][s]);
+			}
+		}
+	}
+
 	public function InitBB() {
-		trace('Posision::InitBB');
 		byTypeBB = [];
 		for (i in 0...Types.PIECE_NB) {
 			byTypeBB.push(new Bitboard());
@@ -61,13 +80,13 @@ class Position {
 	}
 
 	public function Legal(m:Move):Bool {
-		if( Types.Is_Drop(m) ){
+		if (Types.Is_Drop(m)) {
 			return true;
 		}
 		var us:Int = sideToMove;
 		var from:Int = Types.Move_FromSq(m);
 		if (Types.TypeOf_Piece(PieceOn(from)) == Types.KING) {
-			if ( AttackersToSq( Types.Move_ToSq(m)).newAND( PiecesColour(Types.OppColour(us))).IsZero()) {
+			if (AttackersToSq(Types.Move_ToSq(m)).newAND(PiecesColour(Types.OppColour(us))).IsZero()) {
 				return true;
 			}
 			return false;
@@ -334,19 +353,12 @@ class Position {
 				}
 			}
 		}
-		// startState.Clear();
-		// startState.epSquare = Types.SQ_NONE;
-		// st = startState;
 		for (i in 0...Types.PIECE_TYPE_NB) {
 			for (j in 0...16) {
 				pieceList[Types.WHITE][i][j] = Types.SQ_NONE;
 				pieceList[Types.BLACK][i][j] = Types.SQ_NONE;
 			}
 		}
-		// nodes = 0;
-		// gamePly = 0;
-		// sideToMove = 0;
-		// chess960 = false;
 	}
 
 	public function printBoard() {
