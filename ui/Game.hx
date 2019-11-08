@@ -11,9 +11,9 @@ import Types.PC;
 class Game extends Position {
 	public var playerColor:Int = Types.BLACK;
 
-	private var _sfen = 'startpos';
+	// private var _sfen = 'startpos';
 	// private var _sfen = 'sfen lnsgkgsnl/1r311b1/ppppppppp/RS7/9/9/PPPPPPP1P/1B5R1/LNSGKGSN1 b plL 1';
-	// private var _sfen = 'sfen lnsgkg1nl/1r4sb1/ppppppppp/7P1/9/9/PPPPPPP1P/1B5R1/LNSGKGSNL w - 1';
+	private var _sfen = 'sfen lnsgkg1nl/1r4sb1/ppppppppp/7P1/9/9/PPPPPPP1P/1B5R1/LNSGKGSNL w - 1';
 	private var ui:UI;
 	private var worker:Worker;
 	private var moves:Array<Move> = [];
@@ -34,22 +34,22 @@ class Game extends Position {
 
 	public function doPlayerMove(from:Int, to:Int, promote:Bool) {
 		if (promote) {
-			doMove(Types.Make_Move_Promote(from, to));
+			doMove(Types.Make_Move_Promote(from, to), new StateInfo());
 		} else {
-			doMove(Types.Make_Move(from, to));
+			doMove(Types.Make_Move(from, to), new StateInfo());
 		}
 	}
 
 	public function doPlayerPut(pr:PR, to:Int) {
 		trace('Game::doPlayerPut pr: $pr to: $to');
 		var move:Move = Types.Make_Move_Drop(pr, to);
-		doMove(move);
+		doMove(move, new StateInfo());
 	}
 
-	override public function doMove(move:Move) {
+	override public function doMove(move:Move, newSt:StateInfo) {
 		trace('Game::doMove ${Types.Move_To_String(move)}');
 		moves.push(move);
-		super.doMove(move);
+		super.doMove(move, newSt);
 		printBoard();
 		trace('hand $hand');
 		if (isEnemyTurn()) {
@@ -106,7 +106,7 @@ class Game extends Position {
 		if (move == 0) {
 			endGame();
 		} else {
-			doMove(move);
+			doMove(move, new StateInfo());
 			ui.onEnemyMoved();
 		}
 	}

@@ -3,17 +3,23 @@ knnshogi-haxe
 
 
 # 
-- Haxe 4.0.0-rc.2
+- Haxe 4.0.1
 - VSCode
 
 # Build
 ```
-./build
+./vscode/tasks.json
+
+Shift - Ctrl - B
+> all
+
+close
+Ctrl - `
 ```
 
 # Dev Server
 ```
-python3 -m http.server
+python3 -m http.server 8088
 ```
 
-http://localhost:8000/
+http://localhost:8088/

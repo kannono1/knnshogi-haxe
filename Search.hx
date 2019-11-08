@@ -53,7 +53,7 @@ class Search {
 		var delta:Int = Types.VALUE_INFINITE;
 		while (++depth <= Types.MAX_PLY) { // depth loop
 			for (pvIdx in 0...pvSize) { // for Multu pv
-				while (true) {// 
+				while (true) { //
 					bestValue = Search(pos, alpha, beta);
 					StableSort(rootMoves, pvIdx, numRootMoves - 1);
 					if (bestValue <= alpha) {
@@ -101,26 +101,30 @@ class Search {
 		}
 	}
 
-	private static function Search(pos:Position, alpha:Int, beta:Int):Int {
+	private static function Qsearch(pos:Position, alpha:Int, beta:Int, depth:Int):Int{
+		var bestValue = 0;
+		bestValue = Evaluate.DoEvaluate(pos, false);
+		trace('Qsearch depth:${depth} alpha:${alpha} beta:${beta} value:${bestValue}');
+		return bestValue;
+	}
+
+	private static function Search(pos:Position, alpha:Int, beta:Int, depth:Int=0):Int {
 		trace('Search::Search');
 		var pvMove:Bool = true;
 		var mp:MovePicker = new MovePicker();
 		var move:Move = new Move(0);
 		var rootNode:Bool = true;
-		var bestValue = 0;
 		var value = 0;
 		var eval = 0;
+		var st = new StateInfo();
 		eval = Evaluate.DoEvaluate(pos, false); // 局面の静的評価値
-		bestValue = eval;
 		mp.InitA(pos);
 		while ((move = mp.NextMove()) != Types.MOVE_NONE) {
-			trace('Search mvoe==${Types.Move_To_String(move)}');
-			pos.doMove(move);
-			bestValue = Evaluate.DoEvaluate(pos, false);
-			value = bestValue;
+			pos.doMove(move, st);
+			value = -Qsearch(pos, -alpha, -beta, depth);
 			pos.undoMove(move);
-			if (rootNode) { 
-				// rootMovesのスコアの更新 //
+			trace('Search mvoe==${Types.Move_To_String(move)} color=${pos.SideToMove()} v=${value} alpha=${alpha}');
+			if (rootNode) {
 				var rm:SearchRootMove; // root move
 				for (k in 0...numRootMoves) {
 					if (rootMoves[k].Equals(move)) { // MovePickerのmoveからrootMovesのmoveを引く
@@ -134,8 +138,16 @@ class Search {
 					}
 				}
 			}
+			if (value > alpha) {
+				trace('Search value:${value} > alpha:${alpha}');
+				alpha = value;
+				// bestMove = move;
+				// if (alpha >= beta) {
+				// 	break;
+				// }
+			}
 		}
-		trace('Search bestValue:$bestValue');
-		return bestValue;
+		trace('Search bestValue:${alpha}');
+		return alpha;
 	}
 }

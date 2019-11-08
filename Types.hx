@@ -33,6 +33,7 @@ class Types {
 	public static inline var ALL_PIECES:Int = 0;
 	public static inline var PIECE_TYPE_NB:Int = 15;
 	public static inline var PIECE_PROMOTE:Int = 8;
+	public static inline var PIECE_HAND_NB:Int = 8;
 	public static inline var NO_PIECE_TYPE:PT = new PT(0);
 	public static inline var PAWN:PT = new PT(1);
 	public static inline var LANCE:PT = new PT(2);

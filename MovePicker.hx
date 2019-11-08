@@ -31,11 +31,9 @@ class MovePicker {
 	private var generated:Bool = false;
 
 	public function new() {
-		trace('MovePicker::new');
 	}
 
 	public function InitA(p:Position) {
-		trace('MovePicker::InitA');
 		pos = p;
 		moves.Reset();
 		cur = 0;
@@ -45,8 +43,7 @@ class MovePicker {
 		} else {
 			stage = MAIN_SEARCH;
 		}
-		trace('stage == $stage');
-		// GenerateNext(); // ittan
+		GenerateNext(); // ittan
 	}
 
 	public function GenerateNext() {
@@ -54,23 +51,18 @@ class MovePicker {
 		moves.Generate(pos, MoveList.LEGAL);
 		end = moves.moveCount;
 		stage++;
-		trace('MovePicker::GenerateNext stage=', stage);
 	}
 
 	public function NextMove():Move {
-		trace('MovePicker::NextMove cur:$cur end:$end moveCount:${moves.moveCount}');
-		if (generated) {
-			// if (cur == end) {
-			GenerateNext();
-			generated = true; // knn
-		}
+		// if (generated) {
+		// 	GenerateNext();
+		// 	generated = true; // knn
+		// }
 		if (moves.moveCount == 0) {
-			trace('MovePicker return MOVE_NONE');
 			return Types.MOVE_NONE;
 		}
 		var move:Move = moves.mlist[cur].move;
 		cur++;
-		trace('MovePicker return ${Types.Move_To_String(move)}');
 		return move;
 	}
 }

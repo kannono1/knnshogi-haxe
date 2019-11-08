@@ -21,8 +21,9 @@ class Position {
 	public var index:Array<Int> = []; // [sq]=pieceCount[c][pt]
 	public var pieceCount:Array<Array<Int>> = []; // [c][pt]=count
 	public var pieceList:Array<Array<Array<Int>>> = []; // [c][pt][index]=sq
+	public var materialValue:Int = 0;// 駒割
 
-	private var st:StateInfo;
+	private var st:StateInfo;// undoのときに使用する
 
 	public function new() {
 		InitBB();
@@ -122,12 +123,11 @@ class Position {
 		sideToMove = (sideToMove + 1) % 2;
 	}
 
-	public function doMove(move:Move) {
-		doMoveFull(move);
+	public function doMove(move:Move, newSt:StateInfo) {
+		doMoveFull(move, newSt);
 	}
 
-	private function doMoveFull(move:Move) {
-		trace('Position::doMoveFull ${Types.Move_To_String(move)}');
+	private function doMoveFull(move:Move, newSt:StateInfo) {
 		var from = Types.Move_FromSq(move);
 		var to = Types.Move_ToSq(move);
 		var us = sideToMove;
@@ -135,16 +135,19 @@ class Position {
 		var pc:PC = MovedPieceAfter(move);
 		var pr:PR = Types.RawTypeOf(pc);
 		var pt = Types.TypeOf_Piece(pc);
-		trace('to: $to from: $from pc: $pc');
+		var materialDiff:Int = 0;
+		newSt.Copy(st);
+		newSt.previous = st;
+		st = newSt;
 		if (Types.Is_Drop(move)) {
 			SubHand(us, pr);
 			PutPiece(to, us, pt);
+			materialDiff = 0; // 駒打ちなので駒割りの変動なし。
 			changeSideToMove();
 			return;
 		}
 		var captured:PT = Types.TypeOf_Piece(PieceOn(to));
 		var capturedRaw:PR = Types.RawTypeOf(captured);
-		trace('catured: $captured capturedRaw: $capturedRaw');
 		if (captured != 0) {
 			var capsq:Int = to;
 			AddHand(us, capturedRaw);
@@ -155,13 +158,15 @@ class Position {
 		if (Types.Move_Type(move) == Types.MOVE_PROMO) {
 			RemovePiece(to, us, pt);
 			PutPiece(to, us, new PT(pt + Types.PIECE_PROMOTE));
+			materialDiff = Evaluate.proDiffPieceValue[pt];
 		}
 		st.capturedType = captured;
+		materialDiff += Evaluate.capturePieceValue[captured];
+		st.materialValue = st.previous.materialValue + (us == Types.BLACK ? materialDiff : -materialDiff);
 		changeSideToMove();
 	}
 
 	public function undoMove(move:Move) {
-		trace('Position::undoMove');
 		changeSideToMove(); // sideToMove =Types.OppColour(sideToMove);
 		var us:Int = sideToMove;
 		var them:Int = Types.OppColour(us);
@@ -189,10 +194,10 @@ class Position {
 				PutPiece(capsq, them, captured);
 			}
 		}
+		st = st.previous;
 	}
 
 	public function PutPiece(sq:Int, c:Int, pt:PT) {
-		trace('Position::PutPiece sq:$sq c:$c pt:$pt');
 		board[sq] = Types.Make_Piece(c, pt);
 		byColorBB[c].SetBit(sq);
 		byTypeBB[Types.ALL_PIECES].SetBit(sq);
@@ -206,7 +211,6 @@ class Position {
 	}
 
 	public function MovePiece(from:Int, to:Int, c:Int, pt:PT) {
-		trace('Position::MovePiece from:$from to:$to c:$c pt:$pt');
 		board[to] = Types.Make_Piece(c, pt);
 		board[from] = 0;
 		byColorBB[c].SetBit(to);
@@ -220,7 +224,6 @@ class Position {
 	}
 
 	private function RemovePiece(sq:Int, c:Int, pt:PT) {
-		trace('Position::RemovePiece sq:$sq c:$c pt:$pt');
 		board[sq] = 0;
 		byColorBB[c].ClrBit(sq);
 		byTypeBB[Types.ALL_PIECES].ClrBit(sq);
@@ -292,7 +295,6 @@ class Position {
 	}
 
 	public function setPosition(sfen) {
-		trace('Position::setPosition start');
 		InitBB();
 		Clear();
 		var sf:SFEN = new SFEN(sfen);
@@ -307,18 +309,21 @@ class Position {
 			}
 			PutPiece(i, c, pt);
 		}
-		trace('Position::setPosition $sfen');
 		hand = sf.getHand();
+		st.materialValue = Evaluate.material(this);
 		var moves = sf.getMoves();
 		for (i in 0...moves.length) {
-			doMove(moves[i]);
+			doMove(moves[i], new StateInfo());
 		}
-		trace(board);
 		st.checkersBB = AttackersToSq(KingSquare(sideToMove)).newAND(PiecesColour(Types.OppColour(sideToMove)));
 	}
 
 	public function SideToMove():Int {
 		return sideToMove;
+	}
+
+	public function state():StateInfo{
+		return st;
 	}
 
 	public function AttacksFromPTypeSQ(sq:Int, pc:PC):Bitboard {
@@ -335,7 +340,6 @@ class Position {
 	}
 
 	private function Clear() {
-		trace('Position::Clear');
 		for (i in 0...Types.SQ_NB) {
 			board[i] = 0;
 			index[i] = 0;

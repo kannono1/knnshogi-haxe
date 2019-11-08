@@ -16,7 +16,6 @@ class MoveList {
 	public var moveCount:Int = 0;
 
 	public function new() {
-		trace('MoveList::new');
 		for (i in 0...Types.MAX_MOVES) {
 			mlist[i] = new MoveExt();
 		}
@@ -182,7 +181,6 @@ class MoveList {
 	}
 
 	public function generatePawnMoves(pos:Position, us:Int, target:Bitboard) {
-		trace('MoveList::GeneratePawnMoves c: $us');
 		var up:Int = Types.DELTA_S;
 		var tRank8BB:Bitboard = BB.ranksBB[8]; // 最奥の行
 		if (us == Types.BLACK) {
@@ -225,7 +223,6 @@ class MoveList {
 	}
 
 	public function GenerateAll(pos:Position, us:Int, target:Bitboard, genType:Int) {
-		trace('MoveList::GenerateAll c: $us genType:$genType');
 		if (genType != CAPTURES) { // CAPTUREの時は打ち手を生成しない。（絶対に敵駒を取れないので）
 			GenerateAllDopMoves(pos, us, target);
 		}
@@ -249,7 +246,6 @@ class MoveList {
 		var us:Int = pos.SideToMove();
 		var pt:PT = new PT(0);
 		var pc:PC = new PC(0);
-		trace('MoveList::Generate c: $us genType:$genType');
 		if (genType == NON_EVASIONS) {
 			var target:Bitboard = pos.PiecesColour(us).newNOT(); // CAPTURE＋QUIETS
 			GenerateAll(pos, us, target, genType);

@@ -7,6 +7,5 @@ class MoveExt {
 	public var score:Int = 0;
 
 	public function new() {
-		trace('MoveExt::new');
 	}
 }
