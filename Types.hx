@@ -25,6 +25,7 @@ abstract PC(Int) to Int {
 }
 
 class Types {
+	static public inline var ONE_PLY:Int = 1;
 	static public inline var BLACK:Int = 0;
 	static public inline var WHITE:Int = 1;
 	public static inline var FILE_A:Int = 0;
@@ -86,7 +87,7 @@ class Types {
 	public static inline var FILE_NB:Int = 9;
 	public static inline var RANK_NB:Int = 9;
 	public static inline var MAX_MOVES:Int = 600;
-	public static inline var MAX_PLY:Int = 1;
+	public static inline var MAX_PLY:Int = 2; // 最大探索深度
 	public static inline var DELTA_N:Int = -1; // 飛び(上下左右)の方向のシフトビット
 	public static inline var DELTA_E:Int = -9;
 	public static inline var DELTA_S:Int = 1;

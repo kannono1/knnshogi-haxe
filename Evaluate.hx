@@ -96,7 +96,7 @@ class Evaluate {
 	}
 
 	public static function DoEvaluate(pos:Position, doTrace:Bool):Int {
-		trace('Evaluate::DoEvaluate v=${pos.state().materialValue} c=${pos.SideToMove()} c2=${pos.sideToMove} -v=${-pos.state().materialValue}');
+		// trace('Evaluate::DoEvaluate v=${pos.state().materialValue} c=${pos.SideToMove()} c2=${pos.sideToMove} -v=${-pos.state().materialValue}');
 		return (pos.SideToMove() == Types.BLACK)? pos.state().materialValue : -1 * pos.state().materialValue;
 	}
 }

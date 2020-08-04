@@ -187,7 +187,10 @@ class Position {
 				RemovePiece(to, us, promotion);
 				PutPiece(to, us, pt);
 			}
-			MovePiece(to, from, us, pt);
+			else{
+				RemovePiece(to, us, pt);
+				PutPiece(from, us, pt);
+			}
 			if (captured != 0) {
 				var capsq:Int = to;
 				SubHand(us, capturedRaw);
@@ -203,7 +206,9 @@ class Position {
 		byTypeBB[Types.ALL_PIECES].SetBit(sq);
 		byTypeBB[pt].SetBit(sq);
 		pieceCount[c][Types.ALL_PIECES]++;
+		trace('pieceCount:${pieceCount} c:${c} pt:${pt}');
 		index[sq] = pieceCount[c][pt]++;
+		trace('index:${index} sq:${sq} index[sq]:${index[sq]}');
 		pieceList[c][pt][index[sq]] = sq;
 		if (pt == Types.PAWN) { // 二歩用BB更新
 			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(sq)]);

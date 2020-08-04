@@ -3,14 +3,14 @@ knnshogi-haxe
 
 
 # 
-- Haxe 4.0.1
+- Haxe 4.1.2
 - VSCode
 
 # Build
 ```
 ./vscode/tasks.json
 
-Shift - Ctrl - B
+Shift - Cmd - B
 > all
 
 close
