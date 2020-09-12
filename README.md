@@ -3,7 +3,7 @@ knnshogi-haxe
 
 
 # 
-- Haxe 4.1.2
+- Haxe 4.1.4
 - VSCode
 
 # Build
@@ -15,6 +15,10 @@ Shift - Cmd - B
 
 close
 Ctrl - `
+
+
+> Engine.js
+> Main.js
 ```
 
 # Dev Server
