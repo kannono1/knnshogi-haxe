@@ -27,3 +27,5 @@ python3 -m http.server 8088
 ```
 
 http://localhost:8088/
+
+https://kannono1.github.io/knnshogi-haxe/

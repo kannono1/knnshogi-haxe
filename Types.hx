@@ -1,5 +1,20 @@
 package;
 
+enum abstract PieceNumber(Int) {
+	var PIECE_NUMBER_PAWN; 
+	var PIECE_NUMBER_LANCE = 18;
+	var PIECE_NUMBER_KNIGHT = 22;
+	var PIECE_NUMBER_SILVER = 26;
+	var PIECE_NUMBER_GOLD = 30;
+	var PIECE_NUMBER_BISHOP = 34;
+	var PIECE_NUMBER_ROOK = 36;
+	var PIECE_NUMBER_KING = 38;
+	var PIECE_NUMBER_BKING = 38;
+	var PIECE_NUMBER_WKING = 39; // 先手、後手の玉の番号が必要な場合はこっちを用いる
+	var PIECE_NUMBER_ZERO = 0;
+	var PIECE_NUMBER_NB = 40;	
+}
+
 abstract Move(Int) to Int {
 	inline public function new(i:Int) {
 		this = i;

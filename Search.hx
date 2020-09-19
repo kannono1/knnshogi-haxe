@@ -54,24 +54,24 @@ class Search {
 		var alpha:Int = -Types.VALUE_INFINITE; // 評価値が小さくなって打ち切ることをαカットといいます。
 		var beta:Int = Types.VALUE_INFINITE;
 		var delta:Int = Types.VALUE_INFINITE;
-		depth = 2;
-		// while (++depth <= Types.MAX_PLY) { // depth loop
-		alpha = -Types.VALUE_INFINITE; // 評価値が小さくなって打ち切ることをαカットといいます。
-		beta = Types.VALUE_INFINITE;
-		bestValue = Search(pos, alpha, beta, depth, NodeRoot);
-		StableSort(rootMoves, 0, numRootMoves - 1);
-		if (bestValue <= alpha) {
-			alpha = MathUtil.max(bestValue - delta, -Types.VALUE_INFINITE);
-		} else {
-			if (bestValue >= beta) {
-				beta = MathUtil.min(bestValue + delta, Types.VALUE_INFINITE);
+		while (++depth < Types.MAX_PLY) { // depth loop
+			trace('Search::IDLoop depth=$depth');
+			alpha = -Types.VALUE_INFINITE; // 評価値が小さくなって打ち切ることをαカットといいます。
+			beta = Types.VALUE_INFINITE;
+			bestValue = Search(pos, alpha, beta, depth, NodeRoot);
+			StableSort(rootMoves, 0, numRootMoves - 1);
+			if (bestValue <= alpha) {
+				alpha = MathUtil.max(bestValue - delta, -Types.VALUE_INFINITE);
+			} else {
+				if (bestValue >= beta) {
+					beta = MathUtil.min(bestValue + delta, Types.VALUE_INFINITE);
+				}
 			}
+			delta += Std.int(delta / 2);
+			StableSort(rootMoves, 0, MathUtil.min(numRootMoves - 1, 1));
 		}
-		delta += Std.int(delta / 2);
-		StableSort(rootMoves, 0, MathUtil.min(numRootMoves - 1, 1));
-		// }
 		trace('Search::IDLoop end');
-		for(i in 0...30){
+		for (i in 0...30) {
 			trace('rootMoves${i} ${Types.Move_To_String(rootMoves[i].pv[0])} ${rootMoves[i].score}');
 		}
 	}
@@ -117,34 +117,31 @@ class Search {
 		return value;
 	}
 
+	// depth 1からMAX_PLY-1まで
 	private static function Search(pos:Position, alpha:Int, beta:Int, depth:Int, nodeType:Int):Int {
-		// pos.printBoard();
-		// trace(pos.PiecesColourType(Types.WHITE, Types.PAWN).toStringBB());///
 		var pvMove:Bool = true;
 		var mp:MovePicker = new MovePicker();
 		var move:Move = new Move(0);
-		var rootNode:Bool = nodeType == NodeRoot;
+		var rootNode:Bool = nodeType == NodeRoot;// Thinkから呼ばれたらRootNodeになる
 		var value = 0;
 		var st = new StateInfo();
 		mp.InitA(pos);
 		while ((move = mp.NextMove()) != Types.MOVE_NONE) {
 			if (rootNode) {
-				trace('+++++++++++++++++++++++++++++++++++++++++');
 			}
-			trace('Search::Search depth:${depth} c:${pos.SideToMove()} nodeType:${nodeType} m>> ${Types.Move_To_String(move)}');
-			// trace('doMove ${Types.Move_To_String(move)}');
 			pos.doMove(move, st);
 			value = depth
-				- Types.ONE_PLY < Types.ONE_PLY ? -Qsearch(pos, -beta, -alpha, depth) : -Search(pos, -beta, -alpha, depth - Types.ONE_PLY, NodeNonPV);
+				- Types.ONE_PLY < Types.ONE_PLY 
+				? -Qsearch(pos, -beta, -alpha, depth) 
+				: -Search(pos, -beta, -alpha, depth - Types.ONE_PLY, NodeNonPV);
 			pos.undoMove(move);
-			trace('Search mvoe==${Types.Move_To_String(move)} color=${pos.SideToMove()} v=${value} alpha=${alpha}');
 			if (rootNode) {
 				var rm:SearchRootMove; // root move
 				for (k in 0...numRootMoves) {
 					if (rootMoves[k].Equals(move)) { // MovePickerのmoveからrootMovesのmoveを引く
 						rm = rootMoves[k];
 						// if (pvMove || value > alpha) {
-							rm.score = value;
+						rm.score = value;
 						// } else {
 						// 	rm.score = -Types.VALUE_INFINITE;
 						// }
@@ -153,12 +150,11 @@ class Search {
 				}
 			}
 			if (value > alpha) {
-			// 	trace('Search value:${value} > alpha:${alpha}');
 				alpha = value;
-			// 	// bestMove = move;
-			// 	if (alpha >= beta) {
-			// 		break;
-			// 	}
+				// 	// bestMove = move;
+				// 	if (alpha >= beta) {
+				// 		break;
+				// 	}
 			}
 		}
 		trace('Search bestValue:${alpha}');
