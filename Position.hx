@@ -1,5 +1,8 @@
 package;
 
+import Evaluate.BonaPiece;
+import Evaluate.EvalList;
+import Types.PieceNumber;
 import Types.Move;
 import Types.PC;
 import Types.PR;
@@ -15,7 +18,7 @@ class Position {
 
 	public var board:Array<Int> = [];
 	public var sideToMove:Int = Types.BLACK;
-	public var hand:Array<Array<Int>> = [];
+	public var hand:Array<Array<Int>> = [];//[color][count]
 	public var byTypeBB:Array<Bitboard> = [];
 	public var byColorBB:Array<Bitboard> = [];
 	public var index:Array<Int> = []; // [sq]=pieceCount[c][pt]
@@ -24,6 +27,7 @@ class Position {
 	public var materialValue:Int = 0;// 駒割
 
 	private var st:StateInfo;// undoのときに使用する
+	private var evalList:EvalList = new EvalList();
 
 	public function new() {
 		InitBB();
@@ -115,6 +119,21 @@ class Position {
 		return byTypeBB[pt];
 	}
 
+	// c側の手駒ptの最後の1枚のBonaPiece番号を返す
+	private function bona_piece_of(c:Int, pt:PT):BonaPiece {
+		var ct:Int = hand[c][pt];
+		return evalList.kpp_hand_index[c][pt].fb + ct - 1;
+	}
+
+	// c側の手駒ptの(最後の1枚の)PieceNumberを返す。
+	private function piece_no_of_hand(c:Int, pt:PT):PieceNumber {
+		return evalList.piece_no_of_hand(bona_piece_of(c, pt));
+	}
+	// 盤上のsqの升にある駒のPieceNumberを返す。
+	private function piece_no_of(sq:Int):PieceNumber {
+		return evalList.piece_no_of_board(sq);
+	}
+
 	public function PiecesTypes(pt1:PT, pt2:PT):Bitboard {
 		return byTypeBB[pt1].newOR(byTypeBB[pt2]);
 	}
@@ -140,8 +159,10 @@ class Position {
 		newSt.previous = st;
 		st = newSt;
 		if (Types.Is_Drop(move)) {
+			st.dirtyPiece.dirty_num = 1;
 			SubHand(us, pr);
 			PutPiece(to, us, pt);
+			var piece_no:PieceNumber  = piece_no_of(pr);
 			materialDiff = 0; // 駒打ちなので駒割りの変動なし。
 			changeSideToMove();
 			return;
@@ -153,6 +174,11 @@ class Position {
 			AddHand(us, capturedRaw);
 			RemovePiece(capsq, them, captured);
 		}
+		// 移動元にあった駒のpiece_noを得る
+		var piece_no2:PieceNumber  = piece_no_of(from);
+		trace('// 移動元にあった駒のpiece_noを得る ${piece_no2}');
+		// dp.pieceNo[0] = piece_no2;
+		// dp.changed_piece[0].old_piece = evalList.bona_piece(piece_no2);
 		RemovePiece(from, us, pt);
 		MovePiece(from, to, us, pt);
 		if (Types.Move_Type(move) == Types.MOVE_PROMO) {
@@ -299,22 +325,39 @@ class Position {
 		}
 	}
 
-	public function setPosition(sfen) {
+	public function setPosition(sfen:String) {
+		// PieceListを更新する上で、どの駒がどこにあるかを設定しなければならないが、
+		// それぞれの駒をどこまで使ったかのカウンター
+		var piece_no_count:Array<PieceNumber> = [ PIECE_NUMBER_ZERO,PIECE_NUMBER_PAWN,PIECE_NUMBER_LANCE,PIECE_NUMBER_KNIGHT,
+		PIECE_NUMBER_SILVER, PIECE_NUMBER_BISHOP, PIECE_NUMBER_ROOK,PIECE_NUMBER_GOLD ];
 		InitBB();
 		Clear();
 		var sf:SFEN = new SFEN(sfen);
 		sideToMove = sf.SideToMove();
 		board = sf.getBoard();
-		for (i in 0...81) {
-			var pc = PieceOn(i);
+		for (sq in 0...81) {
+			var pc = PieceOn(sq);
 			var pt = Types.TypeOf_Piece(pc);
 			var c = Types.getPieceColor(pc);
 			if (pc == 0) {
 				continue;
 			}
-			PutPiece(i, c, pt);
+			PutPiece(sq, c, pt);
+			var piece_no:PieceNumber  =
+			(pc == Types.B_KING) ? PIECE_NUMBER_BKING : // 先手玉
+			(pc == Types.W_KING) ? PIECE_NUMBER_WKING : // 後手玉
+			piece_no_count[Types.raw_type_of(pc)]++; // それ以外
+			evalList.put_piece(piece_no, sq, pc); // sqの升にpcの駒を配置する // on sfen
 		}
 		hand = sf.getHand();
+		for(c in 0...Types.COLOR_NB){
+			for(rpc in 0...Types.PIECE_HAND_NB){
+				for(i in 0...hand[c][rpc]){
+					var piece_no:PieceNumber = piece_no_count[rpc]++;
+					evalList.put_piece_hand(piece_no, c, new PT(rpc), i);
+				}
+			}
+		}
 		st.materialValue = Evaluate.material(this);
 		var moves = sf.getMoves();
 		for (i in 0...moves.length) {

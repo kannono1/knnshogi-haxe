@@ -1,6 +1,6 @@
 package;
 
-enum abstract PieceNumber(Int) {
+enum abstract PieceNumber(Int) from Int to Int {
 	var PIECE_NUMBER_PAWN; 
 	var PIECE_NUMBER_LANCE = 18;
 	var PIECE_NUMBER_KNIGHT = 22;
@@ -40,6 +40,8 @@ abstract PC(Int) to Int {
 }
 
 class Types {
+	static public inline var INT32_MAX:Int = 2147483647;
+	static public inline var VALUE_NOT_EVALUATED:Int = INT32_MAX;
 	static public inline var ONE_PLY:Int = 1;
 	static public inline var BLACK:Int = 0;
 	static public inline var WHITE:Int = 1;
@@ -98,6 +100,7 @@ class Types {
 	public static inline var SQ_A1:Int = 0;
 	public static inline var SQ_HB:Int = 80;
 	public static inline var SQ_NB:Int = 81;
+	public static inline var SQ_NB_PLUS1:Int = SQ_NB + 1; // 玉がいない場合、SQ_NBに移動したものとして扱うため、配列をSQ_NB+1で確保しないといけないときがあるのでこの定数を用いる。
 	public static inline var SQ_NONE:Int = 81;
 	public static inline var FILE_NB:Int = 9;
 	public static inline var RANK_NB:Int = 9;
@@ -148,6 +151,8 @@ class Types {
 		17, 16, 15, 14, 13, 12, 11, 10,  9,
 		 8,  7,  6,  5,  4,  3,  2,  1,  0,
 	];
+
+	public static function Inv(sq:Int):Int { return (SQ_NB - 1) - sq; }
 
 	public static function hasLongEffect(pt:PT):Bool {
 		switch (pt) {
@@ -298,6 +303,9 @@ class Types {
 		return String.fromCharCode(97 + Rank_Of(s));
 	}
 
+	public static function raw_type_of(p:Int):PR {
+		return RawTypeOf(p);
+	}
 	public static function RawTypeOf(p:Int):PR {
 		return new PR(p % 8);
 	}
