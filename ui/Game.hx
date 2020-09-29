@@ -51,6 +51,7 @@ class Game extends Position {
 		moves.push(move);
 		super.doMove(move, newSt);
 		printBoard();
+		printPieceNo();
 		trace('hand $hand');
 		if (isEnemyTurn()) {
 			startThink();

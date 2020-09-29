@@ -582,6 +582,25 @@ class EvalList {
 	piece_no_of_board(sq) {
 		return this.piece_no_list_board[sq];
 	}
+	printPieceNo() {
+		haxe_Log.trace("EvalList::print",{ fileName : "Evaluate.hx", lineNumber : 159, className : "EvalList", methodName : "printPieceNo"});
+		let str = "--- print PieceNo ---";
+		let _g = 0;
+		while(_g < 81) {
+			let i = _g++;
+			if(i % 9 == 0) {
+				str += "\n";
+			}
+			let s = this.piece_no_list_board[Types.bbToSquare[i]];
+			if(isNaN(s)) {
+				str += " - ";
+			} else {
+				str += HxOverrides.substr(" " + this.piece_no_list_board[Types.bbToSquare[i]] + " ",-3,null);
+			}
+		}
+		haxe_Log.trace("" + str,{ fileName : "Evaluate.hx", lineNumber : 173, className : "EvalList", methodName : "printPieceNo"});
+		haxe_Log.trace("piece_no_list_hand: " + Std.string(this.piece_no_list_hand),{ fileName : "Evaluate.hx", lineNumber : 174, className : "EvalList", methodName : "printPieceNo"});
+	}
 	set_piece_on_board(piece_no,fb,fw,sq) {
 		this.pieceListFb[piece_no] = fb;
 		this.pieceListFw[piece_no] = fw;
@@ -935,10 +954,8 @@ class Position {
 		this.byTypeBB[pt].SetBit(sq);
 		let tmp = this.pieceCount[c];
 		tmp[0]++;
-		haxe_Log.trace("pieceCount:" + Std.string(this.pieceCount) + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 235, className : "Position", methodName : "PutPiece"});
 		let tmp1 = this.pieceCount[c];
 		this.index[sq] = tmp1[pt]++;
-		haxe_Log.trace("index:" + Std.string(this.index) + " sq:" + sq + " index[sq]:" + this.index[sq],{ fileName : "Position.hx", lineNumber : 237, className : "Position", methodName : "PutPiece"});
 		this.pieceList[c][pt][this.index[sq]] = sq;
 		if(pt == 1) {
 			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(sq)]);
@@ -1192,6 +1209,7 @@ class Position {
 		let tmp = this.AttackersToSq(this.KingSquare(this.sideToMove));
 		let tmp1 = this.PiecesColour(Types.OppColour(this.sideToMove));
 		this.st.checkersBB = tmp.newAND(tmp1);
+		this.evalList.printPieceNo();
 	}
 	SideToMove() {
 		return this.sideToMove;
@@ -1291,7 +1309,7 @@ class Position {
 		}
 	}
 	printBoard() {
-		let s = "";
+		let s = "+++ printBoard +++";
 		s += "\n";
 		let f = 8;
 		while(f >= 0) {
@@ -1355,7 +1373,10 @@ class Position {
 			s += HxOverrides.substr("  " + this.board[sq],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 427, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 428, className : "Position", methodName : "printBoard"});
+	}
+	printPieceNo() {
+		this.evalList.printPieceNo();
 	}
 	static Init() {
 		Position.psq[0] = [];
@@ -2038,7 +2059,8 @@ class ui_Game extends Position {
 		this.moves.push(move);
 		super.doMove(move,newSt);
 		this.printBoard();
-		haxe_Log.trace("hand " + Std.string(this.hand),{ fileName : "ui/Game.hx", lineNumber : 54, className : "ui.Game", methodName : "doMove"});
+		this.printPieceNo();
+		haxe_Log.trace("hand " + Std.string(this.hand),{ fileName : "ui/Game.hx", lineNumber : 55, className : "ui.Game", methodName : "doMove"});
 		if(this.isEnemyTurn()) {
 			this.startThink();
 		}
@@ -2071,7 +2093,7 @@ class ui_Game extends Position {
 	}
 	getEmptySq() {
 		let b = this.PiecesAll().newNOT().NORM27();
-		haxe_Log.trace(b.toStringBB(),{ fileName : "ui/Game.hx", lineNumber : 90, className : "ui.Game", methodName : "getEmptySq"});
+		haxe_Log.trace(b.toStringBB(),{ fileName : "ui/Game.hx", lineNumber : 91, className : "ui.Game", methodName : "getEmptySq"});
 		let arr = [];
 		while(b.IsNonZero()) arr.push(b.PopLSB());
 		return arr;
@@ -2080,7 +2102,7 @@ class ui_Game extends Position {
 		return this.sideToMove != this.playerColor;
 	}
 	onMessage(s) {
-		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 103, className : "ui.Game", methodName : "onMessage"});
+		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 104, className : "ui.Game", methodName : "onMessage"});
 		let tokens = s.data.split(" ");
 		let move = Types.generateMoveFromString(tokens[1]);
 		if(move == 0) {
@@ -2091,11 +2113,11 @@ class ui_Game extends Position {
 		}
 	}
 	start() {
-		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 115, className : "ui.Game", methodName : "start"});
+		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 116, className : "ui.Game", methodName : "start"});
 		this.setPosition(this._sfen);
 	}
 	endGame() {
-		haxe_Log.trace("Game::End",{ fileName : "ui/Game.hx", lineNumber : 120, className : "ui.Game", methodName : "endGame"});
+		haxe_Log.trace("Game::End",{ fileName : "ui/Game.hx", lineNumber : 121, className : "ui.Game", methodName : "endGame"});
 		this.ui.onEndGame(this.sideToMove);
 	}
 	setPosition(sfen) {
@@ -2498,5 +2520,6 @@ Types.HorseValue = 945;
 Types.DragonValue = 1395;
 Types.KingValue = 15000;
 Types.flipSquare = [80,79,78,77,76,75,74,73,72,71,70,69,68,67,66,65,64,63,62,61,60,59,58,57,56,55,54,53,52,51,50,49,48,47,46,45,44,43,42,41,40,39,38,37,36,35,34,33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0];
+Types.bbToSquare = [72,63,54,45,36,27,18,9,0,73,64,55,46,37,28,19,10,1,74,65,56,47,38,29,20,11,2,75,66,57,48,39,30,21,12,3,76,67,58,49,40,31,22,13,4,77,68,59,50,41,32,23,14,5,78,69,60,51,42,33,24,15,6,79,70,61,52,43,34,25,16,7,80,71,62,53,44,35,26,17,8];
 Main.main();
 })(typeof exports != "undefined" ? exports : typeof window != "undefined" ? window : typeof self != "undefined" ? self : this, typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);

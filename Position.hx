@@ -232,9 +232,9 @@ class Position {
 		byTypeBB[Types.ALL_PIECES].SetBit(sq);
 		byTypeBB[pt].SetBit(sq);
 		pieceCount[c][Types.ALL_PIECES]++;
-		trace('pieceCount:${pieceCount} c:${c} pt:${pt}');
+		// trace('pieceCount:${pieceCount} c:${c} pt:${pt}');
 		index[sq] = pieceCount[c][pt]++;
-		trace('index:${index} sq:${sq} index[sq]:${index[sq]}');
+		// trace('index:${index} sq:${sq} index[sq]:${index[sq]}');
 		pieceList[c][pt][index[sq]] = sq;
 		if (pt == Types.PAWN) { // 二歩用BB更新
 			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(sq)]);
@@ -364,6 +364,7 @@ class Position {
 			doMove(moves[i], new StateInfo());
 		}
 		st.checkersBB = AttackersToSq(KingSquare(sideToMove)).newAND(PiecesColour(Types.OppColour(sideToMove)));
+		evalList.printPieceNo();//
 	}
 
 	public function SideToMove():Int {
@@ -414,7 +415,7 @@ class Position {
 	}
 
 	public function printBoard() {
-		var s = '';
+		var s = '+++ printBoard +++';
 		for (r in 0...9) {
 			s += '\n';
 			var f = 8;
@@ -425,5 +426,9 @@ class Position {
 			}
 		}
 		trace(s);
+	}
+
+	public function printPieceNo() {
+		evalList.printPieceNo();
 	}
 }

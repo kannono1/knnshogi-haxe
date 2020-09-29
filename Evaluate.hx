@@ -155,6 +155,25 @@ class EvalList {
 	// 盤上のある升sqに対応するPieceNumberを返す。
 	public function piece_no_of_board(sq:Int):PieceNumber { return piece_no_list_board[sq]; }
 
+	public function printPieceNo() {
+		trace('EvalList::print');
+		var str = "--- print PieceNo ---";
+		for(i in 0...Types.SQ_NB){
+			if(i%9 == 0){
+				str += "\n";
+			}
+			var s = piece_no_list_board[ Types.bbToSquare[i] ];
+			if(Math.isNaN(s)){
+				str += " - ";
+			}
+			else{
+				str += ' ${piece_no_list_board[ Types.bbToSquare[i] ]} '.substr(-3);
+			}
+		}
+		trace('${str}');
+		trace('piece_no_list_hand: ${piece_no_list_hand}');
+	}
+
 	// 盤上sqにあるpiece_noの駒のBonaPieceがfb,fwであることを設定する。
 	private function set_piece_on_board(piece_no:PieceNumber , fb:BonaPiece  , fw:BonaPiece , sq:Int) {
 		pieceListFb[piece_no] = fb;
