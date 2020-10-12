@@ -831,6 +831,7 @@ class Evaluate {
 		request.send(null);
 	}
 	static compute_eval_impl(pos) {
+		haxe_Log.trace("compute_eval_impl start",{ fileName : "Evaluate.hx", lineNumber : 417, className : "Evaluate", methodName : "compute_eval_impl"});
 		let sq_bk = pos.king_square(0);
 		let sq_wk = pos.king_square(1);
 		let ppkppb = Evaluate.kpp[sq_bk];
@@ -845,6 +846,7 @@ class Evaluate {
 		let l1;
 		let sum = new EvalSum();
 		sum.p[0][0] = sum.p[1][0] = 0;
+		haxe_Log.trace("compute_eval kk " + sq_bk + ", " + sq_wk,{ fileName : "Evaluate.hx", lineNumber : 430, className : "Evaluate", methodName : "compute_eval_impl"});
 		sum.p[2][0] = Evaluate.kk[sq_bk][sq_wk][0];
 		sum.p[2][1] = Evaluate.kk[sq_bk][sq_wk][1];
 		let _g = 0;
@@ -872,13 +874,16 @@ class Evaluate {
 		st.sum = sum;
 	}
 	static compute_eval(pos) {
+		haxe_Log.trace("compute_eval start",{ fileName : "Evaluate.hx", lineNumber : 459, className : "Evaluate", methodName : "compute_eval"});
 		Evaluate.compute_eval_impl(pos);
 		return pos.state().sum.sum(pos.side_to_move()) / 32 | 0;
 	}
 	static evaluateBody(pos) {
+		haxe_Log.trace("evaluateBody start",{ fileName : "Evaluate.hx", lineNumber : 465, className : "Evaluate", methodName : "evaluateBody"});
 		Evaluate.compute_eval_impl(pos);
 	}
 	static DoEvaluate(pos,doTrace) {
+		Evaluate.compute_eval(pos);
 		let st = pos.state();
 		let sum = st.sum;
 		return sum.sum(pos.side_to_move()) / 32 | 0;
@@ -1350,6 +1355,7 @@ class Position {
 		return this.st.checkersBB;
 	}
 	king_square(c) {
+		haxe_Log.trace("king_square c:" + c + " " + Std.string(this.pieceList[c][8]),{ fileName : "Position.hx", lineNumber : 88, className : "Position", methodName : "king_square"});
 		return this.pieceList[c][8][0];
 	}
 	Legal(m) {
@@ -1402,6 +1408,7 @@ class Position {
 		this.doMoveFull(move,newSt);
 	}
 	doMoveFull(move,newSt) {
+		haxe_Log.trace("doMoveFull " + Types.Move_To_StringLong(move),{ fileName : "Position.hx", lineNumber : 155, className : "Position", methodName : "doMoveFull"});
 		let from = Types.Move_FromSq(move);
 		let to = Types.Move_ToSq(move);
 		let us = this.sideToMove;
@@ -1430,7 +1437,6 @@ class Position {
 			this.RemovePiece(capsq,them,captured);
 		}
 		let piece_no2 = this.piece_no_of(from);
-		haxe_Log.trace("// 移動元にあった駒のpiece_noを得る " + piece_no2,{ fileName : "Position.hx", lineNumber : 183, className : "Position", methodName : "doMoveFull"});
 		this.RemovePiece(from,us,pt);
 		this.MovePiece(from,to,us,pt);
 		this.evalList.put_piece(piece_no2,to,pc);
@@ -1479,6 +1485,7 @@ class Position {
 		this.st = this.st.previous;
 	}
 	PutPiece(sq,c,pt) {
+		haxe_Log.trace("PutPiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 233, className : "Position", methodName : "PutPiece"});
 		this.board[sq] = Types.Make_Piece(c,pt);
 		this.byColorBB[c].SetBit(sq);
 		this.byTypeBB[0].SetBit(sq);
@@ -1487,34 +1494,41 @@ class Position {
 		tmp[0]++;
 		let tmp1 = this.pieceCount[c];
 		this.index[sq] = tmp1[pt]++;
+		haxe_Log.trace("" + this.pieceList[c][pt][this.index[sq]] + " sq:" + sq,{ fileName : "Position.hx", lineNumber : 240, className : "Position", methodName : "PutPiece"});
 		this.pieceList[c][pt][this.index[sq]] = sq;
 		if(pt == 1) {
 			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(sq)]);
 		}
 	}
 	MovePiece(from,to,c,pt) {
+		haxe_Log.trace("MovePiece to:" + to + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 248, className : "Position", methodName : "MovePiece"});
 		this.board[to] = Types.Make_Piece(c,pt);
 		this.board[from] = 0;
 		this.byColorBB[c].SetBit(to);
 		this.byTypeBB[0].SetBit(to);
 		this.byTypeBB[pt].SetBit(to);
 		this.index[to] = this.index[from];
+		haxe_Log.trace("" + this.pieceList[c][pt][this.index[to]] + " to:" + to,{ fileName : "Position.hx", lineNumber : 255, className : "Position", methodName : "MovePiece"});
 		this.pieceList[c][pt][this.index[to]] = to;
 		if(pt == 1) {
 			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(to)]);
 		}
 	}
 	RemovePiece(sq,c,pt) {
+		haxe_Log.trace("RemovePiece sq:" + sq + " c:" + c + " pt:" + pt,{ fileName : "Position.hx", lineNumber : 263, className : "Position", methodName : "RemovePiece"});
 		this.board[sq] = 0;
 		this.byColorBB[c].ClrBit(sq);
 		this.byTypeBB[0].ClrBit(sq);
 		this.byTypeBB[pt].ClrBit(sq);
 		let tmp = this.pieceCount[c];
 		tmp[0]--;
-		let tmp1 = this.pieceCount[c];
-		tmp1[pt]--;
+		if(this.pieceCount[c][pt] > 0) {
+			let tmp = this.pieceCount[c];
+			tmp[pt]--;
+		}
 		let lastSquare = this.pieceList[c][pt][this.pieceCount[c][pt]];
 		this.index[lastSquare] = this.index[sq];
+		haxe_Log.trace("pieceList[c][pt][index[lastSquare]] lastSquare:" + lastSquare + " pieceCount[c][pt]:" + this.pieceCount[c][pt],{ fileName : "Position.hx", lineNumber : 274, className : "Position", methodName : "RemovePiece"});
 		this.pieceList[c][pt][this.index[lastSquare]] = lastSquare;
 		this.pieceList[c][pt][this.pieceCount[c][pt]] = 81;
 		if(pt == 1) {
@@ -1906,7 +1920,7 @@ class Position {
 			s += HxOverrides.substr("  " + this.board[sq],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 437, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 441, className : "Position", methodName : "printBoard"});
 	}
 	printPieceNo() {
 		this.evalList.printPieceNo();

@@ -463,6 +463,7 @@ class Evaluate {
 	}
 
 	public static function DoEvaluate(pos:Position, doTrace:Bool):Int {
+		compute_eval(pos);
 		var st = pos.state();
 		var sum = st.sum;
 		return Std.int(sum.sum(pos.side_to_move()) / FV_SCALE);

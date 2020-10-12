@@ -178,11 +178,7 @@ class Position {
 			AddHand(us, capturedRaw);
 			RemovePiece(capsq, them, captured);
 		}
-		// 移動元にあった駒のpiece_noを得る
 		var piece_no2:PieceNumber  = piece_no_of(from);
-		trace('// 移動元にあった駒のpiece_noを得る ${piece_no2}');
-		// dp.pieceNo[0] = piece_no2;
-		// dp.changed_piece[0].old_piece = evalList.bona_piece(piece_no2);
 		RemovePiece(from, us, pt);
 		MovePiece(from, to, us, pt);
 		evalList.put_piece(piece_no2, to, pc);
@@ -237,9 +233,7 @@ class Position {
 		byTypeBB[Types.ALL_PIECES].SetBit(sq);
 		byTypeBB[pt].SetBit(sq);
 		pieceCount[c][Types.ALL_PIECES]++;
-		// trace('pieceCount:${pieceCount} c:${c} pt:${pt}');
 		index[sq] = pieceCount[c][pt]++;
-		// trace('index:${index} sq:${sq} index[sq]:${index[sq]}');
 		pieceList[c][pt][index[sq]] = sq;
 		if (pt == Types.PAWN) { // 二歩用BB更新
 			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(sq)]);
@@ -265,7 +259,9 @@ class Position {
 		byTypeBB[Types.ALL_PIECES].ClrBit(sq);
 		byTypeBB[pt].ClrBit(sq);
 		pieceCount[c][Types.ALL_PIECES]--;
-		pieceCount[c][pt]--;
+		if(pieceCount[c][pt] > 0){
+			pieceCount[c][pt]--;
+		}
 		var lastSquare:Int = pieceList[c][pt][pieceCount[c][pt]];
 		index[lastSquare] = index[sq];
 		pieceList[c][pt][index[lastSquare]] = lastSquare;
