@@ -4,7 +4,6 @@ import haxe.io.BytesData;
 import js.lib.ArrayBuffer;
 import js.lib.DataView;
 import js.html.XMLHttpRequest;
-import engine.EvalValueKK;
 import haxe.ds.Vector;
 import Types.PC;
 import Types.PieceNumber;
@@ -292,22 +291,20 @@ class Evaluate {
 	// 評価関数パラメーター
 	private static var kk:Vector<Vector<Vector<Int>>>;  //EvalValueKK.kk; //[[[]]];//[SQ_NB][SQ_NB][2];
 	private static var kkp:Vector<Vector<Vector<Vector<Int>>>>;//[SQ_NB][SQ_NB][fe_end][2];
-	private static var kpp:Array<Array<Array<Int>>> = [[[]]];//[SQ_NB][fe_end][fe_end];
+	private static var kpp:Vector<Vector<Vector<Int>>>;//[SQ_NB][fe_end][fe_end];
 
 	public static function Init() {
 		trace('Evaluate::Init ${fe_end}');
 		load_eval();
-		trace('Evaluate::kk ${kk}');
 	}
 
 	private static function load_eval(){
-		trace('Evaluate::load_eval');
 		load_eval_impl();
 	}
 	private static function load_eval_impl(){
-		trace('Evaluate::load_eval_imple');
 		load_eval_kk();
 		load_eval_kkp();
+		load_eval_kpp();
 	}
 	private static function load_eval_kk(){
 		var dir = "rezero_kpp_kkpt_epoch4";
@@ -348,12 +345,11 @@ class Evaluate {
 		// KKPファイル名
 		var KKP_BIN = "KKP_synthesized.bin";//81*81*1548*4(16bitx2) = 4,151,800 8Byte
 		var filename = '${dir}/${KKP_BIN}';
-		trace('kkp filename ${filename}');
 		var request:XMLHttpRequest = new XMLHttpRequest();
 		request.open('GET', filename, true);
 		request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER; //'arraybuffer';
 		request.onload = function (e) {
-			trace('kkp read start');
+			trace('kkp read start ${filename}');
 			var arrayBuffer:ArrayBuffer = request.response; 	
 			if (arrayBuffer == null) {
 				trace('buffer is null');
@@ -378,9 +374,39 @@ class Evaluate {
 				}
 			} 
 			trace('kkp read end p = ${p}');//20M
-			trace('f_pawn ${BonaPiece.f_pawn}');
-			trace('kkp[44][36][90+59][0] = ${kkp[44][36][90+59][0]}');
-			trace('kkp[44][36][90+59][1] = ${kkp[44][36][90+59][1]}');
+		};		
+		request.send(null);
+	}
+	private static function load_eval_kpp(){
+		var dir = "rezero_kpp_kkpt_epoch4";
+		var KPP_BIN = "KPP_synthesized.bin";
+		var filename = '${dir}/${KPP_BIN}';
+		var request:XMLHttpRequest = new XMLHttpRequest();
+		request.open('GET', filename, true);
+		request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER;
+		request.onload = function (e) {
+			trace('kpp read start');
+			var arrayBuffer:ArrayBuffer = request.response; 	
+			if (arrayBuffer == null) {
+				trace('kpp buffer is null');
+				return;
+			}
+			var dataview:DataView = new DataView(arrayBuffer);
+			var bytesData = new BytesData(dataview.byteLength);
+			final byteSize = 2;
+			var p:Int = 0;
+			kpp = new Vector(Types.SQ_NB);
+			for (i in 0...Types.SQ_NB){
+				kpp[i] = new Vector(fe_end);
+				for (j in 0...fe_end){
+					kpp[i][j] = new Vector(fe_end);
+					for(k in 0...fe_end){
+						kpp[i][j][k] = dataview.getInt16(p*byteSize, true);// 2byte, littleEdian
+						p++;
+					}
+				}
+			} 
+			trace('kpp read end p = ${p}');//
 		};		
 		request.send(null);
 	}
@@ -390,8 +416,8 @@ class Evaluate {
 	private static function compute_eval_impl(pos:Position) {
 		var sq_bk:Int = pos.king_square(Types.BLACK);
 		var sq_wk:Int = pos.king_square(Types.WHITE);
-		var ppkppb:Array<Array<Int>> = kpp[sq_bk];// bkの位置のKPP配列
-		var ppkppw:Array<Array<Int>> = kpp[Types.Inv(sq_wk)];// wkの位置のKPP配列
+		var ppkppb:Vector<Vector<Int>> = kpp[sq_bk];// bkの位置のKPP配列
+		var ppkppw:Vector<Vector<Int>> = kpp[Types.Inv(sq_wk)];// wkの位置のKPP配列
 		var pos_ = pos;
 		var length:Int = pos_.eval_list().length();//// 駒リストの長さ // 38固定
 		var list_fb = pos_.eval_list().piece_list_fb();// 先手のBonaPiece配列
@@ -405,8 +431,8 @@ class Evaluate {
 		for (i in  0...length) {
 			k0 = list_fb[i];// 先手のBonaPieceを取得
 			k1 = list_fw[i];// 後手のBonaPieceを取得
-			var pkppb:Array<Int> = ppkppb[k0];// 先手のBPの位置のKPP配列
-			var pkppw:Array<Int> = ppkppw[k1];// 後手のBPの位置のKPP配列
+			var pkppb:Vector<Int> = ppkppb[k0];// 先手のBPの位置のKPP配列
+			var pkppw:Vector<Int> = ppkppw[k1];// 後手のBPの位置のKPP配列
 			for (j in 0...i) {
 				l0 = list_fb[j];
 				l1 = list_fw[j];

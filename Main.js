@@ -604,7 +604,7 @@ class EvalList {
 		return this.piece_no_list_board[sq];
 	}
 	printPieceNo() {
-		haxe_Log.trace("EvalList::print",{ fileName : "Evaluate.hx", lineNumber : 172, className : "EvalList", methodName : "printPieceNo"});
+		haxe_Log.trace("EvalList::print",{ fileName : "Evaluate.hx", lineNumber : 171, className : "EvalList", methodName : "printPieceNo"});
 		let str = "--- print PieceNo ---";
 		let _g = 0;
 		while(_g < 81) {
@@ -619,8 +619,8 @@ class EvalList {
 				str += HxOverrides.substr(" " + this.piece_no_list_board[Types.bbToSquare[i]] + " ",-3,null);
 			}
 		}
-		haxe_Log.trace("" + str,{ fileName : "Evaluate.hx", lineNumber : 186, className : "EvalList", methodName : "printPieceNo"});
-		haxe_Log.trace("piece_no_list_hand: " + Std.string(this.piece_no_list_hand),{ fileName : "Evaluate.hx", lineNumber : 187, className : "EvalList", methodName : "printPieceNo"});
+		haxe_Log.trace("" + str,{ fileName : "Evaluate.hx", lineNumber : 185, className : "EvalList", methodName : "printPieceNo"});
+		haxe_Log.trace("piece_no_list_hand: " + Std.string(this.piece_no_list_hand),{ fileName : "Evaluate.hx", lineNumber : 186, className : "EvalList", methodName : "printPieceNo"});
 	}
 	set_piece_on_board(piece_no,fb,fw,sq) {
 		this.pieceListFb[piece_no] = fb;
@@ -643,18 +643,16 @@ class DirtyPiece {
 DirtyPiece.__name__ = true;
 class Evaluate {
 	static Init() {
-		haxe_Log.trace("Evaluate::Init " + (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),{ fileName : "Evaluate.hx", lineNumber : 298, className : "Evaluate", methodName : "Init"});
+		haxe_Log.trace("Evaluate::Init " + (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),{ fileName : "Evaluate.hx", lineNumber : 297, className : "Evaluate", methodName : "Init"});
 		Evaluate.load_eval();
-		haxe_Log.trace("Evaluate::kk " + Std.string(Evaluate.kk),{ fileName : "Evaluate.hx", lineNumber : 300, className : "Evaluate", methodName : "Init"});
 	}
 	static load_eval() {
-		haxe_Log.trace("Evaluate::load_eval",{ fileName : "Evaluate.hx", lineNumber : 304, className : "Evaluate", methodName : "load_eval"});
 		Evaluate.load_eval_impl();
 	}
 	static load_eval_impl() {
-		haxe_Log.trace("Evaluate::load_eval_imple",{ fileName : "Evaluate.hx", lineNumber : 308, className : "Evaluate", methodName : "load_eval_impl"});
 		Evaluate.load_eval_kk();
 		Evaluate.load_eval_kkp();
+		Evaluate.load_eval_kpp();
 	}
 	static load_eval_kk() {
 		let dir = "rezero_kpp_kkpt_epoch4";
@@ -664,10 +662,10 @@ class Evaluate {
 		request.open("GET",filename,true);
 		request.responseType = "arraybuffer";
 		request.onload = function(e) {
-			haxe_Log.trace("kk read start",{ fileName : "Evaluate.hx", lineNumber : 321, className : "Evaluate", methodName : "load_eval_kk"});
+			haxe_Log.trace("kk read start",{ fileName : "Evaluate.hx", lineNumber : 318, className : "Evaluate", methodName : "load_eval_kk"});
 			let arrayBuffer = request.response;
 			if(arrayBuffer == null) {
-				haxe_Log.trace("buffer is null",{ fileName : "Evaluate.hx", lineNumber : 324, className : "Evaluate", methodName : "load_eval_kk"});
+				haxe_Log.trace("buffer is null",{ fileName : "Evaluate.hx", lineNumber : 321, className : "Evaluate", methodName : "load_eval_kk"});
 				return;
 			}
 			let dataview = new DataView(arrayBuffer);
@@ -694,7 +692,7 @@ class Evaluate {
 					++p;
 				}
 			}
-			haxe_Log.trace("kk read end",{ fileName : "Evaluate.hx", lineNumber : 342, className : "Evaluate", methodName : "load_eval_kk"});
+			haxe_Log.trace("kk read end",{ fileName : "Evaluate.hx", lineNumber : 339, className : "Evaluate", methodName : "load_eval_kk"});
 		};
 		request.send(null);
 	}
@@ -702,15 +700,14 @@ class Evaluate {
 		let dir = "rezero_kpp_kkpt_epoch4";
 		let KKP_BIN = "KKP_synthesized.bin";
 		let filename = "" + dir + "/" + KKP_BIN;
-		haxe_Log.trace("kkp filename " + filename,{ fileName : "Evaluate.hx", lineNumber : 351, className : "Evaluate", methodName : "load_eval_kkp"});
 		let request = new XMLHttpRequest();
 		request.open("GET",filename,true);
 		request.responseType = "arraybuffer";
 		request.onload = function(e) {
-			haxe_Log.trace("kkp read start",{ fileName : "Evaluate.hx", lineNumber : 356, className : "Evaluate", methodName : "load_eval_kkp"});
+			haxe_Log.trace("kkp read start " + filename,{ fileName : "Evaluate.hx", lineNumber : 352, className : "Evaluate", methodName : "load_eval_kkp"});
 			let arrayBuffer = request.response;
 			if(arrayBuffer == null) {
-				haxe_Log.trace("buffer is null",{ fileName : "Evaluate.hx", lineNumber : 359, className : "Evaluate", methodName : "load_eval_kkp"});
+				haxe_Log.trace("buffer is null",{ fileName : "Evaluate.hx", lineNumber : 355, className : "Evaluate", methodName : "load_eval_kkp"});
 				return;
 			}
 			let dataview = new DataView(arrayBuffer);
@@ -745,10 +742,53 @@ class Evaluate {
 					}
 				}
 			}
-			haxe_Log.trace("kkp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 380, className : "Evaluate", methodName : "load_eval_kkp"});
-			haxe_Log.trace("f_pawn " + 90,{ fileName : "Evaluate.hx", lineNumber : 381, className : "Evaluate", methodName : "load_eval_kkp"});
-			haxe_Log.trace("kkp[44][36][90+59][0] = " + Evaluate.kkp[44][36][149][0],{ fileName : "Evaluate.hx", lineNumber : 382, className : "Evaluate", methodName : "load_eval_kkp"});
-			haxe_Log.trace("kkp[44][36][90+59][1] = " + Evaluate.kkp[44][36][149][1],{ fileName : "Evaluate.hx", lineNumber : 383, className : "Evaluate", methodName : "load_eval_kkp"});
+			haxe_Log.trace("kkp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 376, className : "Evaluate", methodName : "load_eval_kkp"});
+		};
+		request.send(null);
+	}
+	static load_eval_kpp() {
+		let dir = "rezero_kpp_kkpt_epoch4";
+		let KPP_BIN = "KPP_synthesized.bin";
+		let filename = "" + dir + "/" + KPP_BIN;
+		let request = new XMLHttpRequest();
+		request.open("GET",filename,true);
+		request.responseType = "arraybuffer";
+		request.onload = function(e) {
+			haxe_Log.trace("kpp read start",{ fileName : "Evaluate.hx", lineNumber : 388, className : "Evaluate", methodName : "load_eval_kpp"});
+			let arrayBuffer = request.response;
+			if(arrayBuffer == null) {
+				haxe_Log.trace("kpp buffer is null",{ fileName : "Evaluate.hx", lineNumber : 391, className : "Evaluate", methodName : "load_eval_kpp"});
+				return;
+			}
+			let dataview = new DataView(arrayBuffer);
+			let bytesData = new ArrayBuffer(dataview.byteLength);
+			let byteSize = 2;
+			let p = 0;
+			let this1 = new Array(81);
+			Evaluate.kpp = this1;
+			let _g = 0;
+			while(_g < 81) {
+				let i = _g++;
+				let this1 = Evaluate.kpp;
+				let this2 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
+				this1[i] = this2;
+				let _g1 = 0;
+				let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
+				while(_g1 < _g2) {
+					let j = _g1++;
+					let this1 = Evaluate.kpp[i];
+					let this2 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
+					this1[j] = this2;
+					let _g = 0;
+					let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
+					while(_g < _g2) {
+						let k = _g++;
+						Evaluate.kpp[i][j][k] = dataview.getInt16(p * byteSize,true);
+						++p;
+					}
+				}
+			}
+			haxe_Log.trace("kpp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 409, className : "Evaluate", methodName : "load_eval_kpp"});
 		};
 		request.send(null);
 	}
@@ -2062,9 +2102,6 @@ class Types {
 	}
 }
 Types.__name__ = true;
-class engine_EvalValueKK {
-}
-engine_EvalValueKK.__name__ = true;
 class haxe_Log {
 	static formatOutput(v,infos) {
 		let str = Std.string(v);
@@ -2566,7 +2603,6 @@ Evaluate.pieceValue = [0,90,315,405,495,855,990,540,15000,540,540,540,540,945,13
 Evaluate.capturePieceValue = [0,180,630,810,990,1710,1980,1080,15000,630,855,945,1035,1800,2385,0,0,180,630,810,990,1710,1980,1080,15000,630,855,945,1035,1800,2385];
 Evaluate.proDiffPieceValue = [0,450,225,135,45,90,405,0,0];
 Evaluate.FV_SCALE = 32;
-Evaluate.kpp = [[[]]];
 PSQTable.psqT = [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
 Position._hx_skip_constructor = false;
 Position.psq = [];
@@ -2674,6 +2710,5 @@ Types.DragonValue = 1395;
 Types.KingValue = 15000;
 Types.flipSquare = [80,79,78,77,76,75,74,73,72,71,70,69,68,67,66,65,64,63,62,61,60,59,58,57,56,55,54,53,52,51,50,49,48,47,46,45,44,43,42,41,40,39,38,37,36,35,34,33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0];
 Types.bbToSquare = [72,63,54,45,36,27,18,9,0,73,64,55,46,37,28,19,10,1,74,65,56,47,38,29,20,11,2,75,66,57,48,39,30,21,12,3,76,67,58,49,40,31,22,13,4,77,68,59,50,41,32,23,14,5,78,69,60,51,42,33,24,15,6,79,70,61,52,43,34,25,16,7,80,71,62,53,44,35,26,17,8];
-engine_EvalValueKK.kk = [[[100,100]]];
 Main.main();
 })(typeof exports != "undefined" ? exports : typeof window != "undefined" ? window : typeof self != "undefined" ? self : this, typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
