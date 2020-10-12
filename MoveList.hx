@@ -252,7 +252,7 @@ class MoveList {
 		}
 		if (genType == EVASIONS) { // 3 王の移動先をMovesに入れてから相駒をGenerateする
 			var checkersCnt:Int = 0;
-			var ksq:Int = pos.KingSquare(us);
+			var ksq:Int = pos.king_square(us);
 			var checksq:Int = 0; // 王手をかけている駒位置
 			var sliderAttacks:Bitboard = new Bitboard(); // 敵駒の効き
 			var b = new Bitboard();
@@ -300,7 +300,7 @@ class MoveList {
 			} else {
 				Generate(pos, NON_EVASIONS);
 			}
-			var ksq = pos.KingSquare(pos.SideToMove());
+			var ksq = pos.king_square(pos.SideToMove());
 			var i:Int = 0;
 			while (i < moveCount) { // Legalの時は王の自殺手をチェックしてカウントをマイナスする。末尾の手で上書きする。
 				if ((Types.Move_FromSq(mlist[i].move) == ksq) && pos.Legal(mlist[i].move) == false) {

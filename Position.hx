@@ -33,6 +33,10 @@ class Position {
 		InitBB();
 	}
 
+	public function eval_list():EvalList{
+		return evalList;
+	}
+
 	public static function Init() {
 		psq[Types.BLACK] = [];
 		psq[Types.WHITE] = [];
@@ -80,7 +84,7 @@ class Position {
 		return st.checkersBB;
 	}
 
-	public function KingSquare(c:Int):Int {
+	public function king_square(c:Int):Int {
 		return pieceList[c][Types.KING][0];
 	}
 
@@ -181,6 +185,7 @@ class Position {
 		// dp.changed_piece[0].old_piece = evalList.bona_piece(piece_no2);
 		RemovePiece(from, us, pt);
 		MovePiece(from, to, us, pt);
+		evalList.put_piece(piece_no2, to, pc);
 		if (Types.Move_Type(move) == Types.MOVE_PROMO) {
 			RemovePiece(to, us, pt);
 			PutPiece(to, us, new PT(pt + Types.PIECE_PROMOTE));
@@ -358,13 +363,17 @@ class Position {
 				}
 			}
 		}
-		st.materialValue = Evaluate.material(this);
+		// st.materialValue = Evaluate.material(this);
 		var moves = sf.getMoves();
 		for (i in 0...moves.length) {
 			doMove(moves[i], new StateInfo());
 		}
-		st.checkersBB = AttackersToSq(KingSquare(sideToMove)).newAND(PiecesColour(Types.OppColour(sideToMove)));
+		st.checkersBB = AttackersToSq(king_square(sideToMove)).newAND(PiecesColour(Types.OppColour(sideToMove)));
 		evalList.printPieceNo();//
+	}
+
+	public function side_to_move():Int {
+		return sideToMove;
 	}
 
 	public function SideToMove():Int {

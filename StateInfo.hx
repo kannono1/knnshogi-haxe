@@ -9,6 +9,7 @@ class StateInfo {
 	public var materialValue:Int = 0;//駒得
 	public var previous:StateInfo;//前の情報
 	public var dirtyPiece = new DirtyPiece();
+	public var sum:EvalSum = new EvalSum();
 
 	public function new() {}
 
