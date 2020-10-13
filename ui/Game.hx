@@ -50,9 +50,9 @@ class Game extends Position {
 		trace('Game::doMove ${Types.Move_To_String(move)}');
 		moves.push(move);
 		super.doMove(move, newSt);
-		printBoard();
-		printPieceNo();
-		trace('hand $hand');
+		// printBoard();
+		// printPieceNo();
+		// trace('hand $hand');
 		if (isEnemyTurn()) {
 			startThink();
 		}

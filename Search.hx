@@ -60,15 +60,15 @@ class Search {
 			beta = Types.VALUE_INFINITE;
 			bestValue = Search(pos, alpha, beta, depth, NodeRoot);
 			StableSort(rootMoves, 0, numRootMoves - 1);
-			if (bestValue <= alpha) {
-				alpha = MathUtil.max(bestValue - delta, -Types.VALUE_INFINITE);
-			} else {
-				if (bestValue >= beta) {
-					beta = MathUtil.min(bestValue + delta, Types.VALUE_INFINITE);
-				}
-			}
-			delta += Std.int(delta / 2);
-			StableSort(rootMoves, 0, MathUtil.min(numRootMoves - 1, 1));
+			// if (bestValue <= alpha) {
+			// 	alpha = MathUtil.max(bestValue - delta, -Types.VALUE_INFINITE);
+			// } else {
+			// 	if (bestValue >= beta) {
+			// 		beta = MathUtil.min(bestValue + delta, Types.VALUE_INFINITE);
+			// 	}
+			// }
+			// delta += Std.int(delta / 2);
+			// StableSort(rootMoves, 0, MathUtil.min(numRootMoves - 1, 1));
 		}
 		trace('Search::IDLoop end');
 		for (i in 0...30) {
@@ -117,7 +117,6 @@ class Search {
 		return value;
 	}
 
-	// depth 1からMAX_PLY-1まで
 	private static function Search(pos:Position, alpha:Int, beta:Int, depth:Int, nodeType:Int):Int {
 		var pvMove:Bool = true;
 		var mp:MovePicker = new MovePicker();
@@ -126,19 +125,17 @@ class Search {
 		var value = 0;
 		var st = new StateInfo();
 		mp.InitA(pos);
-		while ((move = mp.NextMove()) != Types.MOVE_NONE) {
-			if (rootNode) {
-			}
+		while ((move = mp.NextMove()) != Types.MOVE_NONE) {// この局面の全指し手を探索
+			trace('depth:${depth}', Types.Move_To_StringLong(move));
 			pos.doMove(move, st);
-			value = depth
-				- Types.ONE_PLY < Types.ONE_PLY 
-				? -Qsearch(pos, -beta, -alpha, depth) 
-				: -Search(pos, -beta, -alpha, depth - Types.ONE_PLY, NodeNonPV);
+			value = depth - Types.ONE_PLY < Types.ONE_PLY 
+				? -Qsearch(pos, -beta, -alpha, depth) // depthが0になったら静止探索をする。
+				: -Search(pos, -beta, -alpha, depth - Types.ONE_PLY, NodeNonPV);// depth0になるまで再帰
 			pos.undoMove(move);
 			if (rootNode) {
 				var rm:SearchRootMove; // root move
 				for (k in 0...numRootMoves) {
-					if (rootMoves[k].Equals(move)) { // MovePickerのmoveからrootMovesのmoveを引く
+					if (rootMoves[k].Equals(move)) { // rootMoveにScoreを保存する
 						rm = rootMoves[k];
 						// if (pvMove || value > alpha) {
 						rm.score = value;
@@ -149,7 +146,7 @@ class Search {
 					}
 				}
 			}
-			if (value > alpha) {
+			if (value > alpha) {// 下限値を更新
 				alpha = value;
 				// 	// bestMove = move;
 				// 	if (alpha >= beta) {

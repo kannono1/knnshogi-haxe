@@ -175,6 +175,8 @@ class Position {
 		var capturedRaw:PR = Types.RawTypeOf(captured);
 		if (captured != 0) {
 			var capsq:Int = to;
+			var piece_no:PieceNumber = piece_no_of(to);
+			evalList.put_piece_hand(piece_no, us, new PT(pr), HandCount(us, pr));
 			AddHand(us, capturedRaw);
 			RemovePiece(capsq, them, captured);
 		}
@@ -212,7 +214,7 @@ class Position {
 				var promotion:PT = pt;
 				pt = new PT(pt - Types.PIECE_PROMOTE);
 				RemovePiece(to, us, promotion);
-				PutPiece(to, us, pt);
+				PutPiece(from, us, pt);
 			}
 			else{
 				RemovePiece(to, us, pt);
@@ -365,7 +367,6 @@ class Position {
 			doMove(moves[i], new StateInfo());
 		}
 		st.checkersBB = AttackersToSq(king_square(sideToMove)).newAND(PiecesColour(Types.OppColour(sideToMove)));
-		evalList.printPieceNo();//
 	}
 
 	public function side_to_move():Int {
@@ -419,8 +420,8 @@ class Position {
 		}
 	}
 
-	public function printBoard() {
-		var s = '+++ printBoard +++';
+	public function printBoard(msg:String="") {
+		var s = '+++ printBoard +++ : ${msg}';
 		for (r in 0...9) {
 			s += '\n';
 			var f = 8;
@@ -431,6 +432,10 @@ class Position {
 			}
 		}
 		trace(s);
+	}
+
+	public function printHand() {
+		trace(hand);
 	}
 
 	public function printPieceNo() {

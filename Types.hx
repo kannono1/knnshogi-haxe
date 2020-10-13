@@ -105,7 +105,7 @@ class Types {
 	public static inline var FILE_NB:Int = 9;
 	public static inline var RANK_NB:Int = 9;
 	public static inline var MAX_MOVES:Int = 600;
-	public static inline var MAX_PLY:Int = 2; // 最大探索深度
+	public static inline var MAX_PLY:Int = 3; // 最大探索深度
 	public static inline var DELTA_N:Int = -1; // 飛び(上下左右)の方向のシフトビット
 	public static inline var DELTA_E:Int = -9;
 	public static inline var DELTA_S:Int = 1;
