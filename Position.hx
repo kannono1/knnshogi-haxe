@@ -164,9 +164,10 @@ class Position {
 		st = newSt;
 		if (Types.Is_Drop(move)) {
 			st.dirtyPiece.dirty_num = 1;
-			SubHand(us, pr);
 			PutPiece(to, us, pt);
 			var piece_no:PieceNumber  = piece_no_of(pr);
+			evalList.put_piece(piece_no , to, pc);
+			SubHand(us, pr);
 			materialDiff = 0; // 駒打ちなので駒割りの変動なし。
 			changeSideToMove();
 			return;

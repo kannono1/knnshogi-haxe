@@ -1070,9 +1070,10 @@ class Position {
 		this.st = newSt;
 		if(Types.Is_Drop(move)) {
 			this.st.dirtyPiece.dirty_num = 1;
-			this.SubHand(us,pr);
 			this.PutPiece(to,us,pt);
 			let piece_no = this.piece_no_of(pr);
+			this.evalList.put_piece(piece_no,to,pc);
+			this.SubHand(us,pr);
 			materialDiff = 0;
 			this.changeSideToMove();
 			return;
@@ -1092,9 +1093,7 @@ class Position {
 		this.MovePiece(from,to,us,pt);
 		this.evalList.put_piece(piece_no2,to,pc);
 		if(Types.Move_Type(move) == 32768) {
-			haxe_Log.trace(Types.Move_To_StringLong(move),{ fileName : "Position.hx", lineNumber : 188, className : "Position", methodName : "doMoveFull"});
 			this.RemovePiece(to,us,pt);
-			haxe_Log.trace("Promote to:" + to + " us:" + us + " pt:" + pt + " newpT:" + (pt + 8),{ fileName : "Position.hx", lineNumber : 191, className : "Position", methodName : "doMoveFull"});
 			let this1 = pt + 8;
 			this.PutPiece(to,us,this1);
 			materialDiff = Evaluate.proDiffPieceValue[pt];
@@ -1125,8 +1124,6 @@ class Position {
 				pt = this1;
 				this.RemovePiece(to,us,promotion);
 				this.PutPiece(from,us,pt);
-				haxe_Log.trace("Undo Promotion !! promo:" + promotion + " pt:" + pt + " from:" + from + " to:" + to + " us:" + us,{ fileName : "Position.hx", lineNumber : 221, className : "Position", methodName : "undoMove"});
-				this.printBoard();
 			} else {
 				this.RemovePiece(to,us,pt);
 				this.PutPiece(from,us,pt);
@@ -1571,10 +1568,10 @@ class Position {
 			s += HxOverrides.substr("  " + this.board[sq],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 444, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 435, className : "Position", methodName : "printBoard"});
 	}
 	printHand() {
-		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 448, className : "Position", methodName : "printHand"});
+		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 439, className : "Position", methodName : "printHand"});
 	}
 	printPieceNo() {
 		this.evalList.printPieceNo();
