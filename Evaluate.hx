@@ -295,6 +295,30 @@ class Evaluate {
 
 	public static function Init() {
 		trace('Evaluate::Init ${fe_end}');
+		kk = new Vector(Types.SQ_NB);
+		for (i in 0...Types.SQ_NB){
+			kk[i] = new Vector(Types.SQ_NB);
+			for (j in 0...Types.SQ_NB){
+				kk[i][j] = new Vector(2);
+			}
+		} 
+		kkp = new Vector(Types.SQ_NB);
+		for (i in 0...Types.SQ_NB){
+			kkp[i] = new Vector(Types.SQ_NB);
+			for (j in 0...Types.SQ_NB){
+				kkp[i][j] = new Vector(fe_end);
+				for (m in 0...fe_end){
+					kkp[i][j][m] = new Vector(2);
+				}
+			}
+		} 
+		kpp = new Vector(Types.SQ_NB);
+		for (i in 0...Types.SQ_NB){
+			kpp[i] = new Vector(fe_end);
+			for (j in 0...fe_end){
+				kpp[i][j] = new Vector(fe_end);
+			}
+		} 
 		load_eval();
 	}
 
@@ -304,32 +328,26 @@ class Evaluate {
 	private static function load_eval_impl(){
 		load_eval_kk();
 		load_eval_kkp();
-		load_eval_kpp();
+		// load_eval_kpp();
 	}
 	private static function load_eval_kk(){
-		var dir = "rezero_kpp_kkpt_epoch4";
-		// KKファイル名
-		var KK_BIN = "KK_synthesized.bin";// 81*81*4(32bitx2) = 52,488 Byte
-		var filename = '${dir}/${KK_BIN}';
+		var filename = 'bin/KK_synthesized.bin';
 		var request:XMLHttpRequest = new XMLHttpRequest();
 		request.open('GET', filename, true);
 		request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER; //'arraybuffer';
 		request.onload = function (e) {
 			trace('kk read start');
 			var arrayBuffer:ArrayBuffer = request.response; 	
-			if (arrayBuffer == null) {
-				trace('buffer is null');
+			if (arrayBuffer == null || arrayBuffer.byteLength < 1000) {
+				trace('kk buffer is null');
 				return;
 			}
 			var dataview:DataView = new DataView(arrayBuffer);
 			var bytesData = new BytesData(dataview.byteLength);
 			final byteSize = 4;
 			var p:Int = 0;
-			kk = new Vector(Types.SQ_NB);
 			for (i in 0...Types.SQ_NB){
-				kk[i] = new Vector(Types.SQ_NB);
 				for (j in 0...Types.SQ_NB){
-					kk[i][j] = new Vector(2);
 					for(k in 0...2){
 						kk[i][j][k] = dataview.getInt32(p*byteSize, true);// 4byte, littleEdian
 						p++;
@@ -341,31 +359,24 @@ class Evaluate {
 		request.send(null);
 	}
 	private static function load_eval_kkp(){
-		var dir = "rezero_kpp_kkpt_epoch4";
-		// KKPファイル名
-		var KKP_BIN = "KKP_synthesized.bin";//81*81*1548*4(16bitx2) = 4,151,800 8Byte
-		var filename = '${dir}/${KKP_BIN}';
+		var filename = 'bin/KKP_synthesized.bin';
 		var request:XMLHttpRequest = new XMLHttpRequest();
 		request.open('GET', filename, true);
 		request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER; //'arraybuffer';
 		request.onload = function (e) {
 			trace('kkp read start ${filename}');
 			var arrayBuffer:ArrayBuffer = request.response; 	
-			if (arrayBuffer == null) {
-				trace('buffer is null');
+			if (arrayBuffer == null || arrayBuffer.byteLength < 1000) {
+				trace('kkp buffer is null');
 				return;
 			}
 			var dataview:DataView = new DataView(arrayBuffer);
 			var bytesData = new BytesData(dataview.byteLength);
 			final byteSize = 4;
 			var p:Int = 0;
-			kkp = new Vector(Types.SQ_NB);
 			for (i in 0...Types.SQ_NB){
-				kkp[i] = new Vector(Types.SQ_NB);
 				for (j in 0...Types.SQ_NB){
-					kkp[i][j] = new Vector(fe_end);
 					for (m in 0...fe_end){
-						kkp[i][j][m] = new Vector(2);
 						for(k in 0...2){
 							kkp[i][j][m][k] = dataview.getInt32(p*byteSize, true);// 4byte, littleEdian
 							p++;
@@ -378,16 +389,14 @@ class Evaluate {
 		request.send(null);
 	}
 	private static function load_eval_kpp(){
-		var dir = "rezero_kpp_kkpt_epoch4";
-		var KPP_BIN = "KPP_synthesized.bin";
-		var filename = '${dir}/${KPP_BIN}';
+		var filename = 'bin/KPP_synthesized.bin';
 		var request:XMLHttpRequest = new XMLHttpRequest();
 		request.open('GET', filename, true);
 		request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER;
 		request.onload = function (e) {
 			trace('kpp read start');
 			var arrayBuffer:ArrayBuffer = request.response; 	
-			if (arrayBuffer == null) {
+			if (arrayBuffer == null || arrayBuffer.byteLength < 1000) {
 				trace('kpp buffer is null');
 				return;
 			}
@@ -395,11 +404,8 @@ class Evaluate {
 			var bytesData = new BytesData(dataview.byteLength);
 			final byteSize = 2;
 			var p:Int = 0;
-			kpp = new Vector(Types.SQ_NB);
 			for (i in 0...Types.SQ_NB){
-				kpp[i] = new Vector(fe_end);
 				for (j in 0...fe_end){
-					kpp[i][j] = new Vector(fe_end);
 					for(k in 0...fe_end){
 						kpp[i][j][k] = dataview.getInt16(p*byteSize, true);// 2byte, littleEdian
 						p++;

@@ -644,6 +644,63 @@ DirtyPiece.__name__ = true;
 class Evaluate {
 	static Init() {
 		haxe_Log.trace("Evaluate::Init " + (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),{ fileName : "Evaluate.hx", lineNumber : 297, className : "Evaluate", methodName : "Init"});
+		let this1 = new Array(81);
+		Evaluate.kk = this1;
+		let _g = 0;
+		while(_g < 81) {
+			let i = _g++;
+			let this1 = Evaluate.kk;
+			let this2 = new Array(81);
+			this1[i] = this2;
+			let _g1 = 0;
+			while(_g1 < 81) {
+				let j = _g1++;
+				let this1 = Evaluate.kk[i];
+				let this2 = new Array(2);
+				this1[j] = this2;
+			}
+		}
+		let this2 = new Array(81);
+		Evaluate.kkp = this2;
+		let _g1 = 0;
+		while(_g1 < 81) {
+			let i = _g1++;
+			let this1 = Evaluate.kkp;
+			let this2 = new Array(81);
+			this1[i] = this2;
+			let _g = 0;
+			while(_g < 81) {
+				let j = _g++;
+				let this1 = Evaluate.kkp[i];
+				let this2 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
+				this1[j] = this2;
+				let _g1 = 0;
+				let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
+				while(_g1 < _g2) {
+					let m = _g1++;
+					let this1 = Evaluate.kkp[i][j];
+					let this2 = new Array(2);
+					this1[m] = this2;
+				}
+			}
+		}
+		let this3 = new Array(81);
+		Evaluate.kpp = this3;
+		let _g2 = 0;
+		while(_g2 < 81) {
+			let i = _g2++;
+			let this1 = Evaluate.kpp;
+			let this2 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
+			this1[i] = this2;
+			let _g = 0;
+			let _g1 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
+			while(_g < _g1) {
+				let j = _g++;
+				let this1 = Evaluate.kpp[i];
+				let this2 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
+				this1[j] = this2;
+			}
+		}
 		Evaluate.load_eval();
 	}
 	static load_eval() {
@@ -652,89 +709,65 @@ class Evaluate {
 	static load_eval_impl() {
 		Evaluate.load_eval_kk();
 		Evaluate.load_eval_kkp();
-		Evaluate.load_eval_kpp();
 	}
 	static load_eval_kk() {
-		let dir = "rezero_kpp_kkpt_epoch4";
-		let KK_BIN = "KK_synthesized.bin";
-		let filename = "" + dir + "/" + KK_BIN;
+		let filename = "bin/KK_synthesized.bin";
 		let request = new XMLHttpRequest();
 		request.open("GET",filename,true);
 		request.responseType = "arraybuffer";
 		request.onload = function(e) {
-			haxe_Log.trace("kk read start",{ fileName : "Evaluate.hx", lineNumber : 318, className : "Evaluate", methodName : "load_eval_kk"});
+			haxe_Log.trace("kk read start",{ fileName : "Evaluate.hx", lineNumber : 339, className : "Evaluate", methodName : "load_eval_kk", customParams : [request.response.byteLength]});
 			let arrayBuffer = request.response;
-			if(arrayBuffer == null) {
-				haxe_Log.trace("buffer is null",{ fileName : "Evaluate.hx", lineNumber : 321, className : "Evaluate", methodName : "load_eval_kk"});
+			if(arrayBuffer == null || arrayBuffer.byteLength < 1000) {
+				haxe_Log.trace("kk buffer is null",{ fileName : "Evaluate.hx", lineNumber : 342, className : "Evaluate", methodName : "load_eval_kk"});
 				return;
 			}
 			let dataview = new DataView(arrayBuffer);
 			let bytesData = new ArrayBuffer(dataview.byteLength);
 			let byteSize = 4;
 			let p = 0;
-			let this1 = new Array(81);
-			Evaluate.kk = this1;
 			let _g = 0;
 			while(_g < 81) {
 				let i = _g++;
-				let this1 = Evaluate.kk;
-				let this2 = new Array(81);
-				this1[i] = this2;
 				let _g1 = 0;
 				while(_g1 < 81) {
 					let j = _g1++;
-					let this1 = Evaluate.kk[i];
-					let this2 = new Array(2);
-					this1[j] = this2;
 					Evaluate.kk[i][j][0] = dataview.getInt32(p * byteSize,true);
 					++p;
 					Evaluate.kk[i][j][1] = dataview.getInt32(p * byteSize,true);
 					++p;
 				}
 			}
-			haxe_Log.trace("kk read end",{ fileName : "Evaluate.hx", lineNumber : 339, className : "Evaluate", methodName : "load_eval_kk"});
+			haxe_Log.trace("kk read end",{ fileName : "Evaluate.hx", lineNumber : 357, className : "Evaluate", methodName : "load_eval_kk"});
 		};
 		request.send(null);
 	}
 	static load_eval_kkp() {
-		let dir = "rezero_kpp_kkpt_epoch4";
-		let KKP_BIN = "KKP_synthesized.bin";
-		let filename = "" + dir + "/" + KKP_BIN;
+		let filename = "bin/KKP_synthesized.bin";
 		let request = new XMLHttpRequest();
 		request.open("GET",filename,true);
 		request.responseType = "arraybuffer";
 		request.onload = function(e) {
-			haxe_Log.trace("kkp read start " + filename,{ fileName : "Evaluate.hx", lineNumber : 352, className : "Evaluate", methodName : "load_eval_kkp"});
+			haxe_Log.trace("kkp read start " + filename,{ fileName : "Evaluate.hx", lineNumber : 367, className : "Evaluate", methodName : "load_eval_kkp"});
 			let arrayBuffer = request.response;
-			if(arrayBuffer == null) {
-				haxe_Log.trace("buffer is null",{ fileName : "Evaluate.hx", lineNumber : 355, className : "Evaluate", methodName : "load_eval_kkp"});
+			if(arrayBuffer == null || arrayBuffer.byteLength < 1000) {
+				haxe_Log.trace("kkp buffer is null",{ fileName : "Evaluate.hx", lineNumber : 370, className : "Evaluate", methodName : "load_eval_kkp"});
 				return;
 			}
 			let dataview = new DataView(arrayBuffer);
 			let bytesData = new ArrayBuffer(dataview.byteLength);
 			let byteSize = 4;
 			let p = 0;
-			let this1 = new Array(81);
-			Evaluate.kkp = this1;
 			let _g = 0;
 			while(_g < 81) {
 				let i = _g++;
-				let this1 = Evaluate.kkp;
-				let this2 = new Array(81);
-				this1[i] = this2;
 				let _g1 = 0;
 				while(_g1 < 81) {
 					let j = _g1++;
-					let this1 = Evaluate.kkp[i];
-					let this2 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
-					this1[j] = this2;
 					let _g = 0;
 					let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
 					while(_g < _g2) {
 						let m = _g++;
-						let this1 = Evaluate.kkp[i][j];
-						let this2 = new Array(2);
-						this1[m] = this2;
 						Evaluate.kkp[i][j][m][0] = dataview.getInt32(p * byteSize,true);
 						++p;
 						Evaluate.kkp[i][j][m][1] = dataview.getInt32(p * byteSize,true);
@@ -742,43 +775,33 @@ class Evaluate {
 					}
 				}
 			}
-			haxe_Log.trace("kkp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 376, className : "Evaluate", methodName : "load_eval_kkp"});
+			haxe_Log.trace("kkp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 387, className : "Evaluate", methodName : "load_eval_kkp"});
 		};
 		request.send(null);
 	}
 	static load_eval_kpp() {
-		let dir = "rezero_kpp_kkpt_epoch4";
-		let KPP_BIN = "KPP_synthesized.bin";
-		let filename = "" + dir + "/" + KPP_BIN;
+		let filename = "bin/KPP_synthesized.bin";
 		let request = new XMLHttpRequest();
 		request.open("GET",filename,true);
 		request.responseType = "arraybuffer";
 		request.onload = function(e) {
-			haxe_Log.trace("kpp read start",{ fileName : "Evaluate.hx", lineNumber : 388, className : "Evaluate", methodName : "load_eval_kpp"});
+			haxe_Log.trace("kpp read start",{ fileName : "Evaluate.hx", lineNumber : 397, className : "Evaluate", methodName : "load_eval_kpp"});
 			let arrayBuffer = request.response;
-			if(arrayBuffer == null) {
-				haxe_Log.trace("kpp buffer is null",{ fileName : "Evaluate.hx", lineNumber : 391, className : "Evaluate", methodName : "load_eval_kpp"});
+			if(arrayBuffer == null || arrayBuffer.byteLength < 1000) {
+				haxe_Log.trace("kpp buffer is null",{ fileName : "Evaluate.hx", lineNumber : 400, className : "Evaluate", methodName : "load_eval_kpp"});
 				return;
 			}
 			let dataview = new DataView(arrayBuffer);
 			let bytesData = new ArrayBuffer(dataview.byteLength);
 			let byteSize = 2;
 			let p = 0;
-			let this1 = new Array(81);
-			Evaluate.kpp = this1;
 			let _g = 0;
 			while(_g < 81) {
 				let i = _g++;
-				let this1 = Evaluate.kpp;
-				let this2 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
-				this1[i] = this2;
 				let _g1 = 0;
 				let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
 				while(_g1 < _g2) {
 					let j = _g1++;
-					let this1 = Evaluate.kpp[i];
-					let this2 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
-					this1[j] = this2;
 					let _g = 0;
 					let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
 					while(_g < _g2) {
@@ -788,7 +811,7 @@ class Evaluate {
 					}
 				}
 			}
-			haxe_Log.trace("kpp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 409, className : "Evaluate", methodName : "load_eval_kpp"});
+			haxe_Log.trace("kpp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 415, className : "Evaluate", methodName : "load_eval_kpp"});
 		};
 		request.send(null);
 	}
