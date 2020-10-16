@@ -600,7 +600,6 @@ class EvalSum {
 	sum(c) {
 		let scoreBoard = this.p[0][0] - this.p[1][0] + this.p[2][0];
 		let scoreTurn = this.p[2][1];
-		haxe_Log.trace("EvalSum scoreBoard:" + scoreBoard + " scoreTurn:" + scoreTurn,{ fileName : "EvalSum.hx", lineNumber : 19, className : "EvalSum", methodName : "sum", customParams : [this.p]});
 		return (c == 0 ? scoreBoard : -scoreBoard) + scoreTurn;
 	}
 }
@@ -2216,14 +2215,12 @@ class Search {
 			value = depth - 1 < 1 ? -Search.Qsearch(pos,-beta,-alpha,depth) : -Search.Search(pos,-beta,-alpha,depth - 1,2);
 			pos.undoMove(move);
 			if(rootNode) {
-				haxe_Log.trace("ROOT !!",{ fileName : "Search.hx", lineNumber : 136, className : "Search", methodName : "Search"});
 				let rm;
 				let _g = 0;
 				let _g1 = Search.numRootMoves;
 				while(_g < _g1) {
 					let k = _g++;
 					if(Search.rootMoves[k].Equals(move)) {
-						haxe_Log.trace("update score=" + value,{ fileName : "Search.hx", lineNumber : 140, className : "Search", methodName : "Search", customParams : [Types.Move_To_StringLong(move)]});
 						rm = Search.rootMoves[k];
 						rm.score = value;
 						break;
@@ -2234,7 +2231,7 @@ class Search {
 				alpha = value;
 			}
 		}
-		haxe_Log.trace("Search bestValue:" + alpha,{ fileName : "Search.hx", lineNumber : 159, className : "Search", methodName : "Search"});
+		haxe_Log.trace("Search bestValue:" + alpha,{ fileName : "Search.hx", lineNumber : 157, className : "Search", methodName : "Search"});
 		return alpha;
 	}
 }

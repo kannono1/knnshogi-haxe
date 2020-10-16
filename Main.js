@@ -562,7 +562,6 @@ class EvalSum {
 	sum(c) {
 		let scoreBoard = this.p[0][0] - this.p[1][0] + this.p[2][0];
 		let scoreTurn = this.p[2][1];
-		haxe_Log.trace("EvalSum scoreBoard:" + scoreBoard + " scoreTurn:" + scoreTurn,{ fileName : "EvalSum.hx", lineNumber : 19, className : "EvalSum", methodName : "sum", customParams : [this.p]});
 		return (c == 0 ? scoreBoard : -scoreBoard) + scoreTurn;
 	}
 }
@@ -2397,7 +2396,7 @@ class ui_UI {
 			return false;
 		} else if(Types.Rank_Of(sq) < 3) {
 			return true;
-		} else if(Types.Rank_Of(this.selectedSq) <= 3) {
+		} else if(Types.Rank_Of(this.selectedSq) < 3) {
 			return true;
 		} else {
 			return false;

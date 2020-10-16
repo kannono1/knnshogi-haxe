@@ -50,7 +50,7 @@ class UI {
 			return false; // 成駒だったらFalse
 		} else if (Types.Rank_Of(sq) < 3) {
 			return true;
-		} else if (Types.Rank_Of(selectedSq) <= 3) {
+		} else if (Types.Rank_Of(selectedSq) < 3) {
 			return true;
 		} else {
 			return false;
