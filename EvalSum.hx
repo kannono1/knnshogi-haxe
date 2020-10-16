@@ -3,9 +3,9 @@ package;
 class EvalSum {
     public var m:Array<Int> = [];
     public var p:Array<Array<Int>> = [
-        [],
-        [],
-        []
+        [0, 0],
+        [0, 0],
+        [0, 0]
     ];// KK
 
     public function new(){}

@@ -300,6 +300,8 @@ class Evaluate {
 			kk[i] = new Vector(Types.SQ_NB);
 			for (j in 0...Types.SQ_NB){
 				kk[i][j] = new Vector(2);
+				kk[i][j][0] = 0;
+				kk[i][j][1] = 0;
 			}
 		} 
 		kkp = new Vector(Types.SQ_NB);
@@ -309,6 +311,8 @@ class Evaluate {
 				kkp[i][j] = new Vector(fe_end);
 				for (m in 0...fe_end){
 					kkp[i][j][m] = new Vector(2);
+					kkp[i][j][m][0] = 0;
+					kkp[i][j][m][1] = 0;
 				}
 			}
 		} 
@@ -317,6 +321,9 @@ class Evaluate {
 			kpp[i] = new Vector(fe_end);
 			for (j in 0...fe_end){
 				kpp[i][j] = new Vector(fe_end);
+				for (k in 0...fe_end){
+					kpp[i][j][k] = 0;
+				}
 			}
 		} 
 		load_eval();

@@ -594,12 +594,13 @@ class Engine {
 Engine.__name__ = true;
 class EvalSum {
 	constructor() {
-		this.p = [[],[],[]];
+		this.p = [[0,0],[0,0],[0,0]];
 		this.m = [];
 	}
 	sum(c) {
 		let scoreBoard = this.p[0][0] - this.p[1][0] + this.p[2][0];
 		let scoreTurn = this.p[2][1];
+		haxe_Log.trace("EvalSum scoreBoard:" + scoreBoard + " scoreTurn:" + scoreTurn,{ fileName : "EvalSum.hx", lineNumber : 19, className : "EvalSum", methodName : "sum", customParams : [this.p]});
 		return (c == 0 ? scoreBoard : -scoreBoard) + scoreTurn;
 	}
 }
@@ -696,6 +697,8 @@ class Evaluate {
 				let this1 = Evaluate.kk[i];
 				let this2 = new Array(2);
 				this1[j] = this2;
+				Evaluate.kk[i][j][0] = 0;
+				Evaluate.kk[i][j][1] = 0;
 			}
 		}
 		let this2 = new Array(81);
@@ -719,6 +722,8 @@ class Evaluate {
 					let this1 = Evaluate.kkp[i][j];
 					let this2 = new Array(2);
 					this1[m] = this2;
+					Evaluate.kkp[i][j][m][0] = 0;
+					Evaluate.kkp[i][j][m][1] = 0;
 				}
 			}
 		}
@@ -737,6 +742,12 @@ class Evaluate {
 				let this1 = Evaluate.kpp[i];
 				let this2 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
 				this1[j] = this2;
+				let _g1 = 0;
+				let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
+				while(_g1 < _g2) {
+					let k = _g1++;
+					Evaluate.kpp[i][j][k] = 0;
+				}
 			}
 		}
 		Evaluate.load_eval();
@@ -754,10 +765,10 @@ class Evaluate {
 		request.open("GET",filename,true);
 		request.responseType = "arraybuffer";
 		request.onload = function(e) {
-			haxe_Log.trace("kk read start",{ fileName : "Evaluate.hx", lineNumber : 339, className : "Evaluate", methodName : "load_eval_kk", customParams : [request.response.byteLength]});
+			haxe_Log.trace("kk read start",{ fileName : "Evaluate.hx", lineNumber : 346, className : "Evaluate", methodName : "load_eval_kk"});
 			let arrayBuffer = request.response;
 			if(arrayBuffer == null || arrayBuffer.byteLength < 1000) {
-				haxe_Log.trace("kk buffer is null",{ fileName : "Evaluate.hx", lineNumber : 342, className : "Evaluate", methodName : "load_eval_kk"});
+				haxe_Log.trace("kk buffer is null",{ fileName : "Evaluate.hx", lineNumber : 349, className : "Evaluate", methodName : "load_eval_kk"});
 				return;
 			}
 			let dataview = new DataView(arrayBuffer);
@@ -776,7 +787,7 @@ class Evaluate {
 					++p;
 				}
 			}
-			haxe_Log.trace("kk read end",{ fileName : "Evaluate.hx", lineNumber : 357, className : "Evaluate", methodName : "load_eval_kk"});
+			haxe_Log.trace("kk read end",{ fileName : "Evaluate.hx", lineNumber : 364, className : "Evaluate", methodName : "load_eval_kk"});
 		};
 		request.send(null);
 	}
@@ -786,10 +797,10 @@ class Evaluate {
 		request.open("GET",filename,true);
 		request.responseType = "arraybuffer";
 		request.onload = function(e) {
-			haxe_Log.trace("kkp read start " + filename,{ fileName : "Evaluate.hx", lineNumber : 367, className : "Evaluate", methodName : "load_eval_kkp"});
+			haxe_Log.trace("kkp read start " + filename,{ fileName : "Evaluate.hx", lineNumber : 374, className : "Evaluate", methodName : "load_eval_kkp"});
 			let arrayBuffer = request.response;
 			if(arrayBuffer == null || arrayBuffer.byteLength < 1000) {
-				haxe_Log.trace("kkp buffer is null",{ fileName : "Evaluate.hx", lineNumber : 370, className : "Evaluate", methodName : "load_eval_kkp"});
+				haxe_Log.trace("kkp buffer is null",{ fileName : "Evaluate.hx", lineNumber : 377, className : "Evaluate", methodName : "load_eval_kkp"});
 				return;
 			}
 			let dataview = new DataView(arrayBuffer);
@@ -813,7 +824,7 @@ class Evaluate {
 					}
 				}
 			}
-			haxe_Log.trace("kkp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 387, className : "Evaluate", methodName : "load_eval_kkp"});
+			haxe_Log.trace("kkp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 394, className : "Evaluate", methodName : "load_eval_kkp"});
 		};
 		request.send(null);
 	}
@@ -823,10 +834,10 @@ class Evaluate {
 		request.open("GET",filename,true);
 		request.responseType = "arraybuffer";
 		request.onload = function(e) {
-			haxe_Log.trace("kpp read start",{ fileName : "Evaluate.hx", lineNumber : 397, className : "Evaluate", methodName : "load_eval_kpp"});
+			haxe_Log.trace("kpp read start",{ fileName : "Evaluate.hx", lineNumber : 404, className : "Evaluate", methodName : "load_eval_kpp"});
 			let arrayBuffer = request.response;
 			if(arrayBuffer == null || arrayBuffer.byteLength < 1000) {
-				haxe_Log.trace("kpp buffer is null",{ fileName : "Evaluate.hx", lineNumber : 400, className : "Evaluate", methodName : "load_eval_kpp"});
+				haxe_Log.trace("kpp buffer is null",{ fileName : "Evaluate.hx", lineNumber : 407, className : "Evaluate", methodName : "load_eval_kpp"});
 				return;
 			}
 			let dataview = new DataView(arrayBuffer);
@@ -849,7 +860,7 @@ class Evaluate {
 					}
 				}
 			}
-			haxe_Log.trace("kpp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 415, className : "Evaluate", methodName : "load_eval_kpp"});
+			haxe_Log.trace("kpp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 422, className : "Evaluate", methodName : "load_eval_kpp"});
 		};
 		request.send(null);
 	}
@@ -2200,17 +2211,19 @@ class Search {
 			if(!(move != 0)) {
 				break;
 			}
-			haxe_Log.trace("depth:" + depth,{ fileName : "Search.hx", lineNumber : 129, className : "Search", methodName : "Search", customParams : [Types.Move_To_StringLong(move)]});
+			haxe_Log.trace("depth:" + depth,{ fileName : "Search.hx", lineNumber : 129, className : "Search", methodName : "Search", customParams : [Types.Move_To_StringLong(move),"nodeType:" + nodeType + " rootNode:" + (rootNode == null ? "null" : "" + rootNode)]});
 			pos.doMove(move,st);
 			value = depth - 1 < 1 ? -Search.Qsearch(pos,-beta,-alpha,depth) : -Search.Search(pos,-beta,-alpha,depth - 1,2);
 			pos.undoMove(move);
 			if(rootNode) {
+				haxe_Log.trace("ROOT !!",{ fileName : "Search.hx", lineNumber : 136, className : "Search", methodName : "Search"});
 				let rm;
 				let _g = 0;
 				let _g1 = Search.numRootMoves;
 				while(_g < _g1) {
 					let k = _g++;
 					if(Search.rootMoves[k].Equals(move)) {
+						haxe_Log.trace("update score=" + value,{ fileName : "Search.hx", lineNumber : 140, className : "Search", methodName : "Search", customParams : [Types.Move_To_StringLong(move)]});
 						rm = Search.rootMoves[k];
 						rm.score = value;
 						break;
@@ -2221,7 +2234,7 @@ class Search {
 				alpha = value;
 			}
 		}
-		haxe_Log.trace("Search bestValue:" + alpha,{ fileName : "Search.hx", lineNumber : 157, className : "Search", methodName : "Search"});
+		haxe_Log.trace("Search bestValue:" + alpha,{ fileName : "Search.hx", lineNumber : 159, className : "Search", methodName : "Search"});
 		return alpha;
 	}
 }
