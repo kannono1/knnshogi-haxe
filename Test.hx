@@ -13,7 +13,13 @@ class Test {
 		trace('Test main');
 		pos = new Position();
 		Init();
-		Assert('平手開始局面', doThink('startpos') != new Move(0));
+		TestAll();
+	}
+
+	static private function TestAll(){
+		AssertFn('王手回避', 'rnslklsnb/1g5g1/ppppLpppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSN1 w - 1'
+			, (bm:Move)->[Types.Make_Move(36, 46), Types.Make_Move(36, 28)].indexOf(bm) != -1);
+		AssertFn('平手開始局面','startpos', (bm)-> bm != new Move(0));
 	}
 
 	static private function Init() {
@@ -41,5 +47,16 @@ class Test {
 			throw('AssertionError');
 		}
 		trace('Assert ${msg} OK !!');
+	}
+
+	static private function AssertFn(msg:String, sfen:String, fn) {
+		trace('AssertFn ${msg} start');
+		var bm = doThink(sfen);
+		var expected = fn(bm);
+		if(!expected){
+			throw('AssertionFnError ${msg} ${sfen} bm:${bm}');
+		}
+		trace('Assert ${msg} OK !!');
+		trace('+++++++++++++++++++++++++++++++++++');
 	}
 }

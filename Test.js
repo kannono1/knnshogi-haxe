@@ -581,6 +581,13 @@ class EvalList {
 		this.pieceListFb = new Array(40);
 		this.kpp_hand_index = [[new ExtBonaPiece(0,0),new ExtBonaPiece(1,20),new ExtBonaPiece(39,44),new ExtBonaPiece(49,54),new ExtBonaPiece(59,64),new ExtBonaPiece(79,82),new ExtBonaPiece(85,88),new ExtBonaPiece(69,74)],[new ExtBonaPiece(0,0),new ExtBonaPiece(20,1),new ExtBonaPiece(44,39),new ExtBonaPiece(54,49),new ExtBonaPiece(64,59),new ExtBonaPiece(82,79),new ExtBonaPiece(88,85),new ExtBonaPiece(74,69)]];
 		this.kpp_board_index = [new ExtBonaPiece(0,0),new ExtBonaPiece(90,90 + 81),new ExtBonaPiece(90 + 81 + 81,90 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(0,0),new ExtBonaPiece(0,0),new ExtBonaPiece(90 + 81,90),new ExtBonaPiece(90 + 81 + 81 + 81,90 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(0,0)];
+		let _g = 0;
+		let _g1 = this.length();
+		while(_g < _g1) {
+			let i = _g++;
+			this.pieceListFb[i] = 0;
+			this.pieceListFw[i] = 0;
+		}
 	}
 	piece_list_fb() {
 		return this.pieceListFb;
@@ -604,7 +611,7 @@ class EvalList {
 		return this.piece_no_list_board[sq];
 	}
 	printPieceNo() {
-		haxe_Log.trace("EvalList::print",{ fileName : "Evaluate.hx", lineNumber : 171, className : "EvalList", methodName : "printPieceNo"});
+		haxe_Log.trace("EvalList::print",{ fileName : "Evaluate.hx", lineNumber : 180, className : "EvalList", methodName : "printPieceNo"});
 		let str = "--- print PieceNo ---";
 		let _g = 0;
 		while(_g < 81) {
@@ -619,8 +626,8 @@ class EvalList {
 				str += HxOverrides.substr(" " + this.piece_no_list_board[Types.bbToSquare[i]] + " ",-3,null);
 			}
 		}
-		haxe_Log.trace("" + str,{ fileName : "Evaluate.hx", lineNumber : 185, className : "EvalList", methodName : "printPieceNo"});
-		haxe_Log.trace("piece_no_list_hand: " + Std.string(this.piece_no_list_hand),{ fileName : "Evaluate.hx", lineNumber : 186, className : "EvalList", methodName : "printPieceNo"});
+		haxe_Log.trace("" + str,{ fileName : "Evaluate.hx", lineNumber : 194, className : "EvalList", methodName : "printPieceNo"});
+		haxe_Log.trace("piece_no_list_hand: " + Std.string(this.piece_no_list_hand),{ fileName : "Evaluate.hx", lineNumber : 195, className : "EvalList", methodName : "printPieceNo"});
 	}
 	set_piece_on_board(piece_no,fb,fw,sq) {
 		this.pieceListFb[piece_no] = fb;
@@ -643,7 +650,7 @@ class DirtyPiece {
 DirtyPiece.__name__ = true;
 class Evaluate {
 	static Init() {
-		haxe_Log.trace("Evaluate::Init " + (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),{ fileName : "Evaluate.hx", lineNumber : 297, className : "Evaluate", methodName : "Init"});
+		haxe_Log.trace("Evaluate::Init " + (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),{ fileName : "Evaluate.hx", lineNumber : 306, className : "Evaluate", methodName : "Init"});
 		let this1 = new Array(81);
 		Evaluate.kk = this1;
 		let _g = 0;
@@ -2029,7 +2036,6 @@ class Search {
 			if(!(move != 0)) {
 				break;
 			}
-			haxe_Log.trace("depth:" + depth,{ fileName : "Search.hx", lineNumber : 129, className : "Search", methodName : "Search", customParams : [Types.Move_To_StringLong(move),"nodeType:" + nodeType + " rootNode:" + (rootNode == null ? "null" : "" + rootNode)]});
 			pos.doMove(move,st);
 			value = depth - 1 < 1 ? -Search.Qsearch(pos,-beta,-alpha,depth) : -Search.Search(pos,-beta,-alpha,depth - 1,2);
 			pos.undoMove(move);
@@ -2139,8 +2145,16 @@ class Test {
 		haxe_Log.trace("Test main",{ fileName : "Test.hx", lineNumber : 13, className : "Test", methodName : "main"});
 		Test.pos = new Position();
 		Test.Init();
-		let this1 = 0;
-		Test.Assert("平手開始局面",Test.doThink("startpos") != this1);
+		Test.TestAll();
+	}
+	static TestAll() {
+		Test.AssertFn("王手回避","rnslklsnb/1g5g1/ppppLpppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSN1 w - 1",function(bm) {
+			return [Types.Make_Move(36,46),Types.Make_Move(36,28)].indexOf(bm) != -1;
+		});
+		Test.AssertFn("平手開始局面","startpos",function(bm) {
+			let this1 = 0;
+			return bm != this1;
+		});
 	}
 	static Init() {
 		BB.Init();
@@ -2149,22 +2163,32 @@ class Test {
 		Search.Init();
 	}
 	static doThink(sfen) {
-		haxe_Log.trace("doThink start: :" + sfen,{ fileName : "Test.hx", lineNumber : 27, className : "Test", methodName : "doThink"});
+		haxe_Log.trace("doThink start: :" + sfen,{ fileName : "Test.hx", lineNumber : 33, className : "Test", methodName : "doThink"});
 		Test.pos.setPosition(sfen);
 		Test.pos.printBoard();
-		haxe_Log.trace("doThink pos.c: " + Test.pos.SideToMove(),{ fileName : "Test.hx", lineNumber : 30, className : "Test", methodName : "doThink"});
+		haxe_Log.trace("doThink pos.c: " + Test.pos.SideToMove(),{ fileName : "Test.hx", lineNumber : 36, className : "Test", methodName : "doThink"});
 		Search.Reset(Test.pos);
 		Search.Think();
 		let moveResult = Search.rootMoves[0].pv[0];
-		haxe_Log.trace("bestmove " + Types.Move_To_String(moveResult),{ fileName : "Test.hx", lineNumber : 34, className : "Test", methodName : "doThink"});
+		haxe_Log.trace("bestmove " + Types.Move_To_String(moveResult),{ fileName : "Test.hx", lineNumber : 40, className : "Test", methodName : "doThink"});
 		return moveResult;
 	}
 	static Assert(msg,expected) {
-		haxe_Log.trace("Assert " + msg + " start",{ fileName : "Test.hx", lineNumber : 39, className : "Test", methodName : "Assert"});
+		haxe_Log.trace("Assert " + msg + " start",{ fileName : "Test.hx", lineNumber : 45, className : "Test", methodName : "Assert"});
 		if(!expected) {
 			throw haxe_Exception.thrown("AssertionError");
 		}
-		haxe_Log.trace("Assert " + msg + " OK !!",{ fileName : "Test.hx", lineNumber : 43, className : "Test", methodName : "Assert"});
+		haxe_Log.trace("Assert " + msg + " OK !!",{ fileName : "Test.hx", lineNumber : 49, className : "Test", methodName : "Assert"});
+	}
+	static AssertFn(msg,sfen,fn) {
+		haxe_Log.trace("AssertFn " + msg + " start",{ fileName : "Test.hx", lineNumber : 53, className : "Test", methodName : "AssertFn"});
+		let bm = Test.doThink(sfen);
+		let expected = fn(bm);
+		if(!expected) {
+			throw haxe_Exception.thrown("AssertionFnError " + msg + " " + sfen + " bm:" + bm);
+		}
+		haxe_Log.trace("Assert " + msg + " OK !!",{ fileName : "Test.hx", lineNumber : 59, className : "Test", methodName : "AssertFn"});
+		haxe_Log.trace("+++++++++++++++++++++++++++++++++++",{ fileName : "Test.hx", lineNumber : 60, className : "Test", methodName : "AssertFn"});
 	}
 }
 Test.__name__ = true;

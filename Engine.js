@@ -619,6 +619,13 @@ class EvalList {
 		this.pieceListFb = new Array(40);
 		this.kpp_hand_index = [[new ExtBonaPiece(0,0),new ExtBonaPiece(1,20),new ExtBonaPiece(39,44),new ExtBonaPiece(49,54),new ExtBonaPiece(59,64),new ExtBonaPiece(79,82),new ExtBonaPiece(85,88),new ExtBonaPiece(69,74)],[new ExtBonaPiece(0,0),new ExtBonaPiece(20,1),new ExtBonaPiece(44,39),new ExtBonaPiece(54,49),new ExtBonaPiece(64,59),new ExtBonaPiece(82,79),new ExtBonaPiece(88,85),new ExtBonaPiece(74,69)]];
 		this.kpp_board_index = [new ExtBonaPiece(0,0),new ExtBonaPiece(90,90 + 81),new ExtBonaPiece(90 + 81 + 81,90 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(0,0),new ExtBonaPiece(0,0),new ExtBonaPiece(90 + 81,90),new ExtBonaPiece(90 + 81 + 81 + 81,90 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(0,0)];
+		let _g = 0;
+		let _g1 = this.length();
+		while(_g < _g1) {
+			let i = _g++;
+			this.pieceListFb[i] = 0;
+			this.pieceListFw[i] = 0;
+		}
 	}
 	piece_list_fb() {
 		return this.pieceListFb;
@@ -642,7 +649,7 @@ class EvalList {
 		return this.piece_no_list_board[sq];
 	}
 	printPieceNo() {
-		haxe_Log.trace("EvalList::print",{ fileName : "Evaluate.hx", lineNumber : 171, className : "EvalList", methodName : "printPieceNo"});
+		haxe_Log.trace("EvalList::print",{ fileName : "Evaluate.hx", lineNumber : 180, className : "EvalList", methodName : "printPieceNo"});
 		let str = "--- print PieceNo ---";
 		let _g = 0;
 		while(_g < 81) {
@@ -657,8 +664,8 @@ class EvalList {
 				str += HxOverrides.substr(" " + this.piece_no_list_board[Types.bbToSquare[i]] + " ",-3,null);
 			}
 		}
-		haxe_Log.trace("" + str,{ fileName : "Evaluate.hx", lineNumber : 185, className : "EvalList", methodName : "printPieceNo"});
-		haxe_Log.trace("piece_no_list_hand: " + Std.string(this.piece_no_list_hand),{ fileName : "Evaluate.hx", lineNumber : 186, className : "EvalList", methodName : "printPieceNo"});
+		haxe_Log.trace("" + str,{ fileName : "Evaluate.hx", lineNumber : 194, className : "EvalList", methodName : "printPieceNo"});
+		haxe_Log.trace("piece_no_list_hand: " + Std.string(this.piece_no_list_hand),{ fileName : "Evaluate.hx", lineNumber : 195, className : "EvalList", methodName : "printPieceNo"});
 	}
 	set_piece_on_board(piece_no,fb,fw,sq) {
 		this.pieceListFb[piece_no] = fb;
@@ -681,7 +688,7 @@ class DirtyPiece {
 DirtyPiece.__name__ = true;
 class Evaluate {
 	static Init() {
-		haxe_Log.trace("Evaluate::Init " + (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),{ fileName : "Evaluate.hx", lineNumber : 297, className : "Evaluate", methodName : "Init"});
+		haxe_Log.trace("Evaluate::Init " + (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),{ fileName : "Evaluate.hx", lineNumber : 306, className : "Evaluate", methodName : "Init"});
 		let this1 = new Array(81);
 		Evaluate.kk = this1;
 		let _g = 0;
@@ -2067,7 +2074,6 @@ class Search {
 			if(!(move != 0)) {
 				break;
 			}
-			haxe_Log.trace("depth:" + depth,{ fileName : "Search.hx", lineNumber : 129, className : "Search", methodName : "Search", customParams : [Types.Move_To_StringLong(move),"nodeType:" + nodeType + " rootNode:" + (rootNode == null ? "null" : "" + rootNode)]});
 			pos.doMove(move,st);
 			value = depth - 1 < 1 ? -Search.Qsearch(pos,-beta,-alpha,depth) : -Search.Search(pos,-beta,-alpha,depth - 1,2);
 			pos.undoMove(move);

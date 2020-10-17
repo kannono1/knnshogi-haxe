@@ -83,16 +83,16 @@ class EvalList {
 	    new ExtBonaPiece(f_rook, e_rook),
 	    new ExtBonaPiece(f_gold, e_gold),
 	    new ExtBonaPiece(f_king, e_king),
-	    new ExtBonaPiece(f_gold, e_gold), // 成歩
-	    new ExtBonaPiece(f_gold, e_gold), // 成香
-	    new ExtBonaPiece(f_gold, e_gold), // 成桂
-	    new ExtBonaPiece(f_gold, e_gold), // 成銀
-	    new ExtBonaPiece(f_horse, e_horse), // 馬
-	    new ExtBonaPiece(f_dragon, e_dragon), // 龍
-	    new ExtBonaPiece(BONA_PIECE_ZERO, BONA_PIECE_ZERO), // 金の成りはない
+	    new ExtBonaPiece(f_gold, e_gold), // 9 成歩
+	    new ExtBonaPiece(f_gold, e_gold), //10 成香
+	    new ExtBonaPiece(f_gold, e_gold), //11 成桂
+	    new ExtBonaPiece(f_gold, e_gold), //12 成銀
+	    new ExtBonaPiece(f_horse, e_horse), //13 馬
+	    new ExtBonaPiece(f_dragon, e_dragon), //14 龍
+	    new ExtBonaPiece(BONA_PIECE_ZERO, BONA_PIECE_ZERO), //15 金の成りはない
 	    // 後手から見た場合。fとeが入れ替わる。
-	    new ExtBonaPiece(BONA_PIECE_ZERO, BONA_PIECE_ZERO),
-	    new ExtBonaPiece(e_pawn, f_pawn),
+	    new ExtBonaPiece(BONA_PIECE_ZERO, BONA_PIECE_ZERO),//16
+	    new ExtBonaPiece(e_pawn, f_pawn),//17
 	    new ExtBonaPiece(e_lance, f_lance),
 	    new ExtBonaPiece(e_knight, f_knight),
 	    new ExtBonaPiece(e_silver, f_silver),
@@ -141,7 +141,12 @@ class EvalList {
 	public var piece_no_list_board = new Vector<PieceNumber>(Types.SQ_NB_PLUS1);
 	public var piece_no_list_hand:Array<PieceNumber> = [];
 
-	public function new() { }
+	public function new() {
+		for(i in 0...length()){
+			pieceListFb[i] = 0;
+			pieceListFw[i] = 0;
+		}
+	}
 
 	// 評価関数(FV38型)で用いる駒番号のリスト
 	public function piece_list_fb() { return pieceListFb; }
@@ -153,7 +158,11 @@ class EvalList {
 
 	// 盤上のsqの升にpiece_noのpcの駒を配置する
 	public function put_piece(piece_no:PieceNumber , sq:Int, pc:PC) {
-		set_piece_on_board(piece_no, kpp_board_index[pc].fb + sq, kpp_board_index[pc].fw + Types.Inv(sq), sq);
+		set_piece_on_board(
+			piece_no
+			, kpp_board_index[pc].fb + sq
+			, kpp_board_index[pc].fw + Types.Inv(sq)
+			, sq);
 	}
 
 	// c側の手駒ptのi+1枚目の駒のPieceNumberを設定する。(1枚目の駒のPieceNumberを設定したいならi==0にして呼び出すの意味)
