@@ -26,6 +26,12 @@ Ctrl - `
 python3 -m http.server 8088
 ```
 
+# Test
+```
+haxe -js Test.js -main Test -D js-es=6
+node Test.js
+```
+
 http://localhost:8088/
 
 https://kannono1.github.io/knnshogi-haxe/

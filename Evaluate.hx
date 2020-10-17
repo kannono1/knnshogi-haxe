@@ -3,7 +3,7 @@ package;
 import haxe.io.BytesData;
 import js.lib.ArrayBuffer;
 import js.lib.DataView;
-import js.html.XMLHttpRequest;
+// import js.html.XMLHttpRequest;
 import haxe.ds.Vector;
 import Types.PC;
 import Types.PieceNumber;
@@ -291,7 +291,7 @@ class Evaluate {
 	// 評価関数パラメーター
 	private static var kk:Vector<Vector<Vector<Int>>>;  //EvalValueKK.kk; //[[[]]];//[SQ_NB][SQ_NB][2];
 	private static var kkp:Vector<Vector<Vector<Vector<Int>>>>;//[SQ_NB][SQ_NB][fe_end][2];
-	private static var kpp:Vector<Vector<Vector<Int>>>;//[SQ_NB][fe_end][fe_end];
+	// private static var kpp:Vector<Vector<Vector<Int>>>;//[SQ_NB][fe_end][fe_end];
 
 	public static function Init() {
 		trace('Evaluate::Init ${fe_end}');
@@ -316,16 +316,16 @@ class Evaluate {
 				}
 			}
 		} 
-		kpp = new Vector(Types.SQ_NB);
-		for (i in 0...Types.SQ_NB){
-			kpp[i] = new Vector(fe_end);
-			for (j in 0...fe_end){
-				kpp[i][j] = new Vector(fe_end);
-				for (k in 0...fe_end){
-					kpp[i][j][k] = 0;
-				}
-			}
-		} 
+		// kpp = new Vector(Types.SQ_NB);
+		// for (i in 0...Types.SQ_NB){
+		// 	kpp[i] = new Vector(fe_end);
+		// 	for (j in 0...fe_end){
+		// 		kpp[i][j] = new Vector(fe_end);
+		// 		for (k in 0...fe_end){
+		// 			kpp[i][j][k] = 0;
+		// 		}
+		// 	}
+		// } 
 		load_eval();
 	}
 
@@ -333,104 +333,104 @@ class Evaluate {
 		load_eval_impl();
 	}
 	private static function load_eval_impl(){
-		load_eval_kk();
-		load_eval_kkp();
+		// load_eval_kk();
+		// load_eval_kkp();
 		// load_eval_kpp();
 	}
-	private static function load_eval_kk(){
-		var filename = 'bin/KK_synthesized.bin';
-		var request:XMLHttpRequest = new XMLHttpRequest();
-		request.open('GET', filename, true);
-		request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER; //'arraybuffer';
-		request.onload = function (e) {
-			trace('kk read start');
-			var arrayBuffer:ArrayBuffer = request.response; 	
-			if (arrayBuffer == null || arrayBuffer.byteLength < 1000) {
-				trace('kk buffer is null');
-				return;
-			}
-			var dataview:DataView = new DataView(arrayBuffer);
-			var bytesData = new BytesData(dataview.byteLength);
-			final byteSize = 4;
-			var p:Int = 0;
-			for (i in 0...Types.SQ_NB){
-				for (j in 0...Types.SQ_NB){
-					for(k in 0...2){
-						kk[i][j][k] = dataview.getInt32(p*byteSize, true);// 4byte, littleEdian
-						p++;
-					}
-				}
-			} 
-			trace('kk read end');
-		};		
-		request.send(null);
-	}
-	private static function load_eval_kkp(){
-		var filename = 'bin/KKP_synthesized.bin';
-		var request:XMLHttpRequest = new XMLHttpRequest();
-		request.open('GET', filename, true);
-		request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER; //'arraybuffer';
-		request.onload = function (e) {
-			trace('kkp read start ${filename}');
-			var arrayBuffer:ArrayBuffer = request.response; 	
-			if (arrayBuffer == null || arrayBuffer.byteLength < 1000) {
-				trace('kkp buffer is null');
-				return;
-			}
-			var dataview:DataView = new DataView(arrayBuffer);
-			var bytesData = new BytesData(dataview.byteLength);
-			final byteSize = 4;
-			var p:Int = 0;
-			for (i in 0...Types.SQ_NB){
-				for (j in 0...Types.SQ_NB){
-					for (m in 0...fe_end){
-						for(k in 0...2){
-							kkp[i][j][m][k] = dataview.getInt32(p*byteSize, true);// 4byte, littleEdian
-							p++;
-						}
-					}
-				}
-			} 
-			trace('kkp read end p = ${p}');//20M
-		};		
-		request.send(null);
-	}
-	private static function load_eval_kpp(){
-		var filename = 'bin/KPP_synthesized.bin';
-		var request:XMLHttpRequest = new XMLHttpRequest();
-		request.open('GET', filename, true);
-		request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER;
-		request.onload = function (e) {
-			trace('kpp read start');
-			var arrayBuffer:ArrayBuffer = request.response; 	
-			if (arrayBuffer == null || arrayBuffer.byteLength < 1000) {
-				trace('kpp buffer is null');
-				return;
-			}
-			var dataview:DataView = new DataView(arrayBuffer);
-			var bytesData = new BytesData(dataview.byteLength);
-			final byteSize = 2;
-			var p:Int = 0;
-			for (i in 0...Types.SQ_NB){
-				for (j in 0...fe_end){
-					for(k in 0...fe_end){
-						kpp[i][j][k] = dataview.getInt16(p*byteSize, true);// 2byte, littleEdian
-						p++;
-					}
-				}
-			} 
-			trace('kpp read end p = ${p}');//
-		};		
-		request.send(null);
-	}
+	// private static function load_eval_kk(){
+	// 	var filename = 'bin/KK_synthesized.bin';
+	// 	var request:XMLHttpRequest = new XMLHttpRequest();
+	// 	request.open('GET', filename, true);
+	// 	request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER; //'arraybuffer';
+	// 	request.onload = function (e) {
+	// 		trace('kk read start');
+	// 		var arrayBuffer:ArrayBuffer = request.response; 	
+	// 		if (arrayBuffer == null || arrayBuffer.byteLength < 1000) {
+	// 			trace('kk buffer is null');
+	// 			return;
+	// 		}
+	// 		var dataview:DataView = new DataView(arrayBuffer);
+	// 		var bytesData = new BytesData(dataview.byteLength);
+	// 		final byteSize = 4;
+	// 		var p:Int = 0;
+	// 		for (i in 0...Types.SQ_NB){
+	// 			for (j in 0...Types.SQ_NB){
+	// 				for(k in 0...2){
+	// 					kk[i][j][k] = dataview.getInt32(p*byteSize, true);// 4byte, littleEdian
+	// 					p++;
+	// 				}
+	// 			}
+	// 		} 
+	// 		trace('kk read end');
+	// 	};		
+	// 	request.send(null);
+	// }
+	// private static function load_eval_kkp(){
+	// 	var filename = 'bin/KKP_synthesized.bin';
+	// 	var request:XMLHttpRequest = new XMLHttpRequest();
+	// 	request.open('GET', filename, true);
+	// 	request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER; //'arraybuffer';
+	// 	request.onload = function (e) {
+	// 		trace('kkp read start ${filename}');
+	// 		var arrayBuffer:ArrayBuffer = request.response; 	
+	// 		if (arrayBuffer == null || arrayBuffer.byteLength < 1000) {
+	// 			trace('kkp buffer is null');
+	// 			return;
+	// 		}
+	// 		var dataview:DataView = new DataView(arrayBuffer);
+	// 		var bytesData = new BytesData(dataview.byteLength);
+	// 		final byteSize = 4;
+	// 		var p:Int = 0;
+	// 		for (i in 0...Types.SQ_NB){
+	// 			for (j in 0...Types.SQ_NB){
+	// 				for (m in 0...fe_end){
+	// 					for(k in 0...2){
+	// 						kkp[i][j][m][k] = dataview.getInt32(p*byteSize, true);// 4byte, littleEdian
+	// 						p++;
+	// 					}
+	// 				}
+	// 			}
+	// 		} 
+	// 		trace('kkp read end p = ${p}');//20M
+	// 	};		
+	// 	request.send(null);
+	// }
+	// private static function load_eval_kpp(){
+	// 	var filename = 'bin/KPP_synthesized.bin';
+	// 	var request:XMLHttpRequest = new XMLHttpRequest();
+	// 	request.open('GET', filename, true);
+	// 	request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER;
+	// 	request.onload = function (e) {
+	// 		trace('kpp read start');
+	// 		var arrayBuffer:ArrayBuffer = request.response; 	
+	// 		if (arrayBuffer == null || arrayBuffer.byteLength < 1000) {
+	// 			trace('kpp buffer is null');
+	// 			return;
+	// 		}
+	// 		var dataview:DataView = new DataView(arrayBuffer);
+	// 		var bytesData = new BytesData(dataview.byteLength);
+	// 		final byteSize = 2;
+	// 		var p:Int = 0;
+	// 		for (i in 0...Types.SQ_NB){
+	// 			for (j in 0...fe_end){
+	// 				for(k in 0...fe_end){
+	// 					kpp[i][j][k] = dataview.getInt16(p*byteSize, true);// 2byte, littleEdian
+	// 					p++;
+	// 				}
+	// 			}
+	// 		} 
+	// 		trace('kpp read end p = ${p}');//
+	// 	};		
+	// 	request.send(null);
+	// }
 
 	// 評価関数。全計算。(駒割りは差分)
 	// 返し値は持たず、計算結果としてpos.state()->sumに値を代入する。
 	private static function compute_eval_impl(pos:Position) {
 		var sq_bk:Int = pos.king_square(Types.BLACK);
 		var sq_wk:Int = pos.king_square(Types.WHITE);
-		var ppkppb:Vector<Vector<Int>> = kpp[sq_bk];// bkの位置のKPP配列
-		var ppkppw:Vector<Vector<Int>> = kpp[Types.Inv(sq_wk)];// wkの位置のKPP配列
+		// var ppkppb:Vector<Vector<Int>> = kpp[sq_bk];// bkの位置のKPP配列
+		// var ppkppw:Vector<Vector<Int>> = kpp[Types.Inv(sq_wk)];// wkの位置のKPP配列
 		var pos_ = pos;
 		var length:Int = pos_.eval_list().length();//// 駒リストの長さ // 38固定
 		var list_fb = pos_.eval_list().piece_list_fb();// 先手のBonaPiece配列
@@ -444,15 +444,15 @@ class Evaluate {
 		for (i in  0...length) {
 			k0 = list_fb[i];// 先手のBonaPieceを取得
 			k1 = list_fw[i];// 後手のBonaPieceを取得
-			var pkppb:Vector<Int> = ppkppb[k0];// 先手のBPの位置のKPP配列
-			var pkppw:Vector<Int> = ppkppw[k1];// 後手のBPの位置のKPP配列
-			for (j in 0...i) {
-				l0 = list_fb[j];
-				l1 = list_fw[j];
-				// KPP
-				sum.p[0][0] += pkppb[l0];
-				sum.p[1][0] += pkppw[l1];
-			}
+			// var pkppb:Vector<Int> = ppkppb[k0];// 先手のBPの位置のKPP配列
+			// var pkppw:Vector<Int> = ppkppw[k1];// 後手のBPの位置のKPP配列
+			// for (j in 0...i) {
+			// 	l0 = list_fb[j];
+			// 	l1 = list_fw[j];
+			// 	// KPP
+			// 	sum.p[0][0] += pkppb[l0];
+			// 	sum.p[1][0] += pkppw[l1];
+			// }
 			// KKP T
 			sum.p[2][0] += kkp[sq_bk][sq_wk][k0][0];
 			sum.p[2][1] += kkp[sq_bk][sq_wk][k1][1];// sum.p[2] += kkp[sq_bk][sq_wk][k0];

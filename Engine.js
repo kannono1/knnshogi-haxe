@@ -726,148 +726,16 @@ class Evaluate {
 				}
 			}
 		}
-		let this3 = new Array(81);
-		Evaluate.kpp = this3;
-		let _g2 = 0;
-		while(_g2 < 81) {
-			let i = _g2++;
-			let this1 = Evaluate.kpp;
-			let this2 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
-			this1[i] = this2;
-			let _g = 0;
-			let _g1 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
-			while(_g < _g1) {
-				let j = _g++;
-				let this1 = Evaluate.kpp[i];
-				let this2 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
-				this1[j] = this2;
-				let _g1 = 0;
-				let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
-				while(_g1 < _g2) {
-					let k = _g1++;
-					Evaluate.kpp[i][j][k] = 0;
-				}
-			}
-		}
 		Evaluate.load_eval();
 	}
 	static load_eval() {
 		Evaluate.load_eval_impl();
 	}
 	static load_eval_impl() {
-		Evaluate.load_eval_kk();
-		Evaluate.load_eval_kkp();
-	}
-	static load_eval_kk() {
-		let filename = "bin/KK_synthesized.bin";
-		let request = new XMLHttpRequest();
-		request.open("GET",filename,true);
-		request.responseType = "arraybuffer";
-		request.onload = function(e) {
-			haxe_Log.trace("kk read start",{ fileName : "Evaluate.hx", lineNumber : 346, className : "Evaluate", methodName : "load_eval_kk"});
-			let arrayBuffer = request.response;
-			if(arrayBuffer == null || arrayBuffer.byteLength < 1000) {
-				haxe_Log.trace("kk buffer is null",{ fileName : "Evaluate.hx", lineNumber : 349, className : "Evaluate", methodName : "load_eval_kk"});
-				return;
-			}
-			let dataview = new DataView(arrayBuffer);
-			let bytesData = new ArrayBuffer(dataview.byteLength);
-			let byteSize = 4;
-			let p = 0;
-			let _g = 0;
-			while(_g < 81) {
-				let i = _g++;
-				let _g1 = 0;
-				while(_g1 < 81) {
-					let j = _g1++;
-					Evaluate.kk[i][j][0] = dataview.getInt32(p * byteSize,true);
-					++p;
-					Evaluate.kk[i][j][1] = dataview.getInt32(p * byteSize,true);
-					++p;
-				}
-			}
-			haxe_Log.trace("kk read end",{ fileName : "Evaluate.hx", lineNumber : 364, className : "Evaluate", methodName : "load_eval_kk"});
-		};
-		request.send(null);
-	}
-	static load_eval_kkp() {
-		let filename = "bin/KKP_synthesized.bin";
-		let request = new XMLHttpRequest();
-		request.open("GET",filename,true);
-		request.responseType = "arraybuffer";
-		request.onload = function(e) {
-			haxe_Log.trace("kkp read start " + filename,{ fileName : "Evaluate.hx", lineNumber : 374, className : "Evaluate", methodName : "load_eval_kkp"});
-			let arrayBuffer = request.response;
-			if(arrayBuffer == null || arrayBuffer.byteLength < 1000) {
-				haxe_Log.trace("kkp buffer is null",{ fileName : "Evaluate.hx", lineNumber : 377, className : "Evaluate", methodName : "load_eval_kkp"});
-				return;
-			}
-			let dataview = new DataView(arrayBuffer);
-			let bytesData = new ArrayBuffer(dataview.byteLength);
-			let byteSize = 4;
-			let p = 0;
-			let _g = 0;
-			while(_g < 81) {
-				let i = _g++;
-				let _g1 = 0;
-				while(_g1 < 81) {
-					let j = _g1++;
-					let _g = 0;
-					let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
-					while(_g < _g2) {
-						let m = _g++;
-						Evaluate.kkp[i][j][m][0] = dataview.getInt32(p * byteSize,true);
-						++p;
-						Evaluate.kkp[i][j][m][1] = dataview.getInt32(p * byteSize,true);
-						++p;
-					}
-				}
-			}
-			haxe_Log.trace("kkp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 394, className : "Evaluate", methodName : "load_eval_kkp"});
-		};
-		request.send(null);
-	}
-	static load_eval_kpp() {
-		let filename = "bin/KPP_synthesized.bin";
-		let request = new XMLHttpRequest();
-		request.open("GET",filename,true);
-		request.responseType = "arraybuffer";
-		request.onload = function(e) {
-			haxe_Log.trace("kpp read start",{ fileName : "Evaluate.hx", lineNumber : 404, className : "Evaluate", methodName : "load_eval_kpp"});
-			let arrayBuffer = request.response;
-			if(arrayBuffer == null || arrayBuffer.byteLength < 1000) {
-				haxe_Log.trace("kpp buffer is null",{ fileName : "Evaluate.hx", lineNumber : 407, className : "Evaluate", methodName : "load_eval_kpp"});
-				return;
-			}
-			let dataview = new DataView(arrayBuffer);
-			let bytesData = new ArrayBuffer(dataview.byteLength);
-			let byteSize = 2;
-			let p = 0;
-			let _g = 0;
-			while(_g < 81) {
-				let i = _g++;
-				let _g1 = 0;
-				let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
-				while(_g1 < _g2) {
-					let j = _g1++;
-					let _g = 0;
-					let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
-					while(_g < _g2) {
-						let k = _g++;
-						Evaluate.kpp[i][j][k] = dataview.getInt16(p * byteSize,true);
-						++p;
-					}
-				}
-			}
-			haxe_Log.trace("kpp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 422, className : "Evaluate", methodName : "load_eval_kpp"});
-		};
-		request.send(null);
 	}
 	static compute_eval_impl(pos) {
 		let sq_bk = pos.king_square(0);
 		let sq_wk = pos.king_square(1);
-		let ppkppb = Evaluate.kpp[sq_bk];
-		let ppkppw = Evaluate.kpp[Types.Inv(sq_wk)];
 		let pos_ = pos;
 		let length = pos_.eval_list().length();
 		let list_fb = pos_.eval_list().piece_list_fb();
@@ -886,17 +754,6 @@ class Evaluate {
 			let i = _g++;
 			k0 = list_fb[i];
 			k1 = list_fw[i];
-			let pkppb = ppkppb[k0];
-			let pkppw = ppkppw[k1];
-			let _g1 = 0;
-			let _g2 = i;
-			while(_g1 < _g2) {
-				let j = _g1++;
-				l0 = list_fb[j];
-				l1 = list_fw[j];
-				sum.p[0][0] += pkppb[l0];
-				sum.p[1][0] += pkppw[l1];
-			}
 			sum.p[2][0] += Evaluate.kkp[sq_bk][sq_wk][k0][0];
 			sum.p[2][1] += Evaluate.kkp[sq_bk][sq_wk][k1][1];
 		}
