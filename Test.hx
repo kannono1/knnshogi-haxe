@@ -13,7 +13,7 @@ class Test {
 		trace('Test main');
 		pos = new Position();
 		Init();
-		doThink('startpos');
+		Assert('平手開始局面', doThink('startpos') != new Move(0));
 	}
 
 	static private function Init() {
@@ -23,16 +23,23 @@ class Test {
 		Search.Init();
 	}
 
-	static private function doThink(msg:String):String {
-		trace('doThink start: :${msg}');
-		pos.setPosition(msg);
+	static private function doThink(sfen:String):Move {
+		trace('doThink start: :${sfen}');
+		pos.setPosition(sfen);
 		pos.printBoard();
-		trace('Test::doThink pos.c: ${pos.SideToMove()}');
+		trace('doThink pos.c: ${pos.SideToMove()}');
 		Search.Reset(pos);
 		Search.Think();
 		var moveResult:Move = Search.rootMoves[0].pv[0];
-		var res = 'bestmove ${Types.Move_To_String(moveResult)}';
-		trace(res);
-		return res;
+		trace('bestmove ${Types.Move_To_String(moveResult)}');
+		return moveResult;
+	}
+
+	static private function Assert(msg:String, expected:Bool) {
+		trace('Assert ${msg} start');
+		if(!expected){
+			throw('AssertionError');
+		}
+		trace('Assert ${msg} OK !!');
 	}
 }

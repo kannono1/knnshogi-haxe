@@ -2139,7 +2139,8 @@ class Test {
 		haxe_Log.trace("Test main",{ fileName : "Test.hx", lineNumber : 13, className : "Test", methodName : "main"});
 		Test.pos = new Position();
 		Test.Init();
-		Test.doThink("startpos");
+		let this1 = 0;
+		Test.Assert("平手開始局面",Test.doThink("startpos") != this1);
 	}
 	static Init() {
 		BB.Init();
@@ -2147,17 +2148,23 @@ class Test {
 		Evaluate.Init();
 		Search.Init();
 	}
-	static doThink(msg) {
-		haxe_Log.trace("doThink start: :" + msg,{ fileName : "Test.hx", lineNumber : 27, className : "Test", methodName : "doThink"});
-		Test.pos.setPosition(msg);
+	static doThink(sfen) {
+		haxe_Log.trace("doThink start: :" + sfen,{ fileName : "Test.hx", lineNumber : 27, className : "Test", methodName : "doThink"});
+		Test.pos.setPosition(sfen);
 		Test.pos.printBoard();
-		haxe_Log.trace("Test::doThink pos.c: " + Test.pos.SideToMove(),{ fileName : "Test.hx", lineNumber : 30, className : "Test", methodName : "doThink"});
+		haxe_Log.trace("doThink pos.c: " + Test.pos.SideToMove(),{ fileName : "Test.hx", lineNumber : 30, className : "Test", methodName : "doThink"});
 		Search.Reset(Test.pos);
 		Search.Think();
 		let moveResult = Search.rootMoves[0].pv[0];
-		let res = "bestmove " + Types.Move_To_String(moveResult);
-		haxe_Log.trace(res,{ fileName : "Test.hx", lineNumber : 35, className : "Test", methodName : "doThink"});
-		return res;
+		haxe_Log.trace("bestmove " + Types.Move_To_String(moveResult),{ fileName : "Test.hx", lineNumber : 34, className : "Test", methodName : "doThink"});
+		return moveResult;
+	}
+	static Assert(msg,expected) {
+		haxe_Log.trace("Assert " + msg + " start",{ fileName : "Test.hx", lineNumber : 39, className : "Test", methodName : "Assert"});
+		if(!expected) {
+			throw haxe_Exception.thrown("AssertionError");
+		}
+		haxe_Log.trace("Assert " + msg + " OK !!",{ fileName : "Test.hx", lineNumber : 43, className : "Test", methodName : "Assert"});
 	}
 }
 Test.__name__ = true;
@@ -2521,6 +2528,28 @@ class Types {
 	}
 }
 Types.__name__ = true;
+class haxe_Exception extends Error {
+	constructor(message,previous,native) {
+		super(message);
+		this.message = message;
+		this.__previousException = previous;
+		this.__nativeException = native != null ? native : this;
+	}
+	get_native() {
+		return this.__nativeException;
+	}
+	static thrown(value) {
+		if(((value) instanceof haxe_Exception)) {
+			return value.get_native();
+		} else if(((value) instanceof Error)) {
+			return value;
+		} else {
+			let e = new haxe_ValueException(value);
+			return e;
+		}
+	}
+}
+haxe_Exception.__name__ = true;
 class haxe_Log {
 	static formatOutput(v,infos) {
 		let str = Std.string(v);
@@ -2547,6 +2576,13 @@ class haxe_Log {
 	}
 }
 haxe_Log.__name__ = true;
+class haxe_ValueException extends haxe_Exception {
+	constructor(value,previous,native) {
+		super(String(value),previous,native);
+		this.value = value;
+	}
+}
+haxe_ValueException.__name__ = true;
 class haxe_iterators_ArrayIterator {
 	constructor(array) {
 		this.current = 0;
