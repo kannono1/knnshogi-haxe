@@ -303,7 +303,7 @@ class MoveList {
 			var ksq = pos.king_square(pos.SideToMove());
 			var i:Int = 0;
 			while (i < moveCount) { // Legalの時は王の自殺手をチェックしてカウントをマイナスする。末尾の手で上書きする。
-				if ((Types.Move_FromSq(mlist[i].move) == ksq) && pos.Legal(mlist[i].move) == false) {
+				if ((Types.move_from(mlist[i].move) == ksq) && pos.legal(mlist[i].move) == false) {
 					moveCount--;
 					mlist[i].move = mlist[moveCount].move;
 				} else {

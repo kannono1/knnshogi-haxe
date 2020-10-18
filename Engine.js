@@ -1095,7 +1095,7 @@ class MoveList {
 			}
 			let ksq = pos.king_square(pos.SideToMove());
 			let i = 0;
-			while(i < this.moveCount) if(Types.Move_FromSq(this.mlist[i].move) == ksq && pos.Legal(this.mlist[i].move) == false) {
+			while(i < this.moveCount) if(Types.move_from(this.mlist[i].move) == ksq && pos.legal(this.mlist[i].move) == false) {
 				this.moveCount--;
 				this.mlist[i].move = this.mlist[this.moveCount].move;
 			} else {
@@ -1238,7 +1238,7 @@ class Position {
 		this.pieceList[1][14] = [];
 		this.st = new StateInfo();
 	}
-	AttacksFromPawn(sq,c) {
+	pawn_effect(sq,c) {
 		return BB.stepAttacksBB[Types.Make_Piece(c,1)][sq];
 	}
 	AttackersToSq(sq) {
@@ -1250,14 +1250,14 @@ class Position {
 	king_square(c) {
 		return this.pieceList[c][8][0];
 	}
-	Legal(m) {
-		if(Types.Is_Drop(m)) {
+	legal(m) {
+		if(Types.is_drop(m)) {
 			return true;
 		}
 		let us = this.sideToMove;
-		let from = Types.Move_FromSq(m);
+		let from = Types.move_from(m);
 		if(Types.TypeOf_Piece(this.PieceOn(from)) == 8) {
-			if(this.AttackersToSq(Types.Move_ToSq(m)).newAND(this.PiecesColour(Types.OppColour(us))).IsZero()) {
+			if(this.AttackersToSq(Types.move_to(m)).newAND(this.PiecesColour(Types.OppColour(us))).IsZero()) {
 				return true;
 			}
 			return false;
@@ -1300,8 +1300,8 @@ class Position {
 		this.doMoveFull(move,newSt);
 	}
 	doMoveFull(move,newSt) {
-		let from = Types.Move_FromSq(move);
-		let to = Types.Move_ToSq(move);
+		let from = Types.move_from(move);
+		let to = Types.move_to(move);
 		let us = this.sideToMove;
 		let them = Types.OppColour(us);
 		let pc = this.MovedPieceAfter(move);
@@ -1311,7 +1311,7 @@ class Position {
 		newSt.Copy(this.st);
 		newSt.previous = this.st;
 		this.st = newSt;
-		if(Types.Is_Drop(move)) {
+		if(Types.is_drop(move)) {
 			this.st.dirtyPiece.dirty_num = 1;
 			this.PutPiece(to,us,pt);
 			let piece_no = this.piece_no_of(pr);
@@ -1350,15 +1350,15 @@ class Position {
 		this.changeSideToMove();
 		let us = this.sideToMove;
 		let them = Types.OppColour(us);
-		let to = Types.Move_ToSq(move);
+		let to = Types.move_to(move);
 		let pc = this.MovedPieceAfter(move);
 		let pr = Types.RawTypeOf(pc);
 		let pt = Types.TypeOf_Piece(this.PieceOn(to));
-		if(Types.Is_Drop(move)) {
+		if(Types.is_drop(move)) {
 			this.AddHand(us,pr);
 			this.RemovePiece(to,us,pt);
 		} else {
-			let from = Types.Move_FromSq(move);
+			let from = Types.move_from(move);
 			let captured = this.st.capturedType;
 			let capturedRaw = Types.RawTypeOf(captured);
 			if(Types.Move_Type(move) == 32768) {
@@ -1443,8 +1443,8 @@ class Position {
 		return this.hand[c][pr];
 	}
 	AttackersTo(s,occ) {
-		let attBB = this.AttacksFromPawn(s,0).newAND(this.PiecesColourType(1,1));
-		attBB.OR(this.AttacksFromPawn(s,1).newAND(this.PiecesColourType(0,1)));
+		let attBB = this.pawn_effect(s,0).newAND(this.PiecesColourType(1,1));
+		attBB.OR(this.pawn_effect(s,1).newAND(this.PiecesColourType(0,1)));
 		attBB.OR(this.AttacksFromPTypeSQ(s,19).newAND(this.PiecesColourType(0,3)));
 		attBB.OR(this.AttacksFromPTypeSQ(s,3).newAND(this.PiecesColourType(1,3)));
 		attBB.OR(this.AttacksFromPTypeSQ(s,18).newAND(this.PiecesColourType(0,2)));
@@ -1468,11 +1468,11 @@ class Position {
 		return attBB;
 	}
 	MovedPieceAfter(m) {
-		if(Types.Is_Drop(m)) {
+		if(Types.is_drop(m)) {
 			let this1 = m >>> 7 & 127;
 			return this1;
 		} else {
-			return this.PieceOn(Types.Move_FromSq(m));
+			return this.PieceOn(Types.move_from(m));
 		}
 	}
 	setPosition(sfen) {
@@ -1811,10 +1811,10 @@ class Position {
 			s += HxOverrides.substr("  " + this.board[sq],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 435, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 476, className : "Position", methodName : "printBoard"});
 	}
 	printHand() {
-		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 439, className : "Position", methodName : "printHand"});
+		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 480, className : "Position", methodName : "printHand"});
 	}
 	printPieceNo() {
 		this.evalList.printPieceNo();
@@ -2074,6 +2074,9 @@ class Search {
 			if(!(move != 0)) {
 				break;
 			}
+			if(!pos.legal(move)) {
+				continue;
+			}
 			pos.doMove(move,st);
 			value = depth - 1 < 1 ? -Search.Qsearch(pos,-beta,-alpha,depth) : -Search.Search(pos,-beta,-alpha,depth - 1,2);
 			pos.undoMove(move);
@@ -2094,7 +2097,7 @@ class Search {
 				alpha = value;
 			}
 		}
-		haxe_Log.trace("Search bestValue:" + alpha,{ fileName : "Search.hx", lineNumber : 157, className : "Search", methodName : "Search"});
+		haxe_Log.trace("Search bestValue:" + alpha,{ fileName : "Search.hx", lineNumber : 159, className : "Search", methodName : "Search"});
 		return alpha;
 	}
 }
@@ -2260,10 +2263,10 @@ class Types {
 	static Char_To_Rank(a) {
 		return HxOverrides.cca(a,0) - 97;
 	}
-	static Move_FromSq(m) {
+	static move_from(m) {
 		return m >>> 7 & 127;
 	}
-	static Move_ToSq(m) {
+	static move_to(m) {
 		return m & 127;
 	}
 	static Move_Dropped_Piece(m) {
@@ -2274,15 +2277,15 @@ class Types {
 		return m & 49152;
 	}
 	static Move_To_String(m) {
-		if(Types.Is_Drop(m)) {
+		if(Types.is_drop(m)) {
 			let this1 = Types.Move_Dropped_Piece(m);
 			let pc = Types.PieceToChar(this1);
-			let str = Types.Square_To_String(Types.Move_ToSq(m));
+			let str = Types.Square_To_String(Types.move_to(m));
 			return "" + pc + "*" + str;
 		} else if(Types.Is_Promote(m)) {
-			return Types.Square_To_String(Types.Move_FromSq(m)) + Types.Square_To_String(Types.Move_ToSq(m)) + "+";
+			return Types.Square_To_String(Types.move_from(m)) + Types.Square_To_String(Types.move_to(m)) + "+";
 		} else {
-			return Types.Square_To_String(Types.Move_FromSq(m)) + Types.Square_To_String(Types.Move_ToSq(m));
+			return Types.Square_To_String(Types.move_from(m)) + Types.Square_To_String(Types.move_to(m));
 		}
 	}
 	static Move_To_StringLong(m) {
@@ -2329,12 +2332,12 @@ class Types {
 		}
 	}
 	static Is_Move_OK(m) {
-		return Types.Move_FromSq(m) != Types.Move_ToSq(m);
+		return Types.move_from(m) != Types.move_to(m);
 	}
 	static Is_Promote(m) {
 		return (m & 32768) != 0;
 	}
-	static Is_Drop(m) {
+	static is_drop(m) {
 		return (m & 16384) != 0;
 	}
 	static RankString_Of(s) {

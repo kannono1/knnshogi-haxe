@@ -15,7 +15,7 @@ class BB {
 	public static var enemyField2:Array<Bitboard> = []; // 敵陣の2段目BB[color]
 	public static var enemyField3:Array<Bitboard> = []; // 敵陣の3段目BB[color]
 	public static var pawnLineBB:Array<Bitboard> = []; // 二歩チェック要。pawnがある列のBitが立つ[color]
-	public static var pseudoAttacks:Array<Array<Bitboard>> = []; // [pt][sq] 飛車と角の利き
+	public static var pseudoAttacks:Array<Array<Bitboard>> = []; // [pt][sq] 飛車と角の利き 擬似合法手。合法手もどき。)と呼ぶ。ちなみにpseudoの頭文字のpは読まない(黙字)で、「すーだ」に近い発音をする。
 	public static var pseudoQueenAttacks:Array<Bitboard> = []; // [sq]
 	private static var initialized:Bool = false;
 	static private var steps:Array<Array<Int>> = [

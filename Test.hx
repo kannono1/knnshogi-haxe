@@ -17,6 +17,8 @@ class Test {
 	}
 
 	static private function TestAll(){
+		AssertFn('王の近くに馬', 'rnslkslnb/1g5g1/ppppB+Lppp/9/9/9/PPPPPPPPP/7R1/LNSGKGSN1 w - 1'
+			, (bm)-> bm != new Move(0));
 		AssertFn('王手回避', 'rnslklsnb/1g5g1/ppppLpppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSN1 w - 1'
 			, (bm:Move)->[Types.Make_Move(36, 46), Types.Make_Move(36, 28)].indexOf(bm) != -1);
 		AssertFn('平手開始局面','startpos', (bm)-> bm != new Move(0));

@@ -126,6 +126,8 @@ class Search {
 		var st = new StateInfo();
 		mp.InitA(pos);
 		while ((move = mp.NextMove()) != Types.MOVE_NONE) {// この局面の全指し手を探索
+			if (!pos.legal(move))
+				continue;
 			// trace('depth:${depth}', Types.Move_To_StringLong(move), 'nodeType:${nodeType} rootNode:${rootNode}');
 			pos.doMove(move, st);
 			value = depth - Types.ONE_PLY < Types.ONE_PLY 

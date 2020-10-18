@@ -70,7 +70,7 @@ class Position {
 		st = new StateInfo();
 	}
 
-	public function AttacksFromPawn(sq:Int, c:Int):Bitboard {
+	public function pawn_effect(sq:Int, c:Int):Bitboard {
 		return BB.stepAttacksBB[Types.Make_Piece(c, Types.PAWN)][sq];
 	}
 
@@ -88,14 +88,14 @@ class Position {
 		return pieceList[c][Types.KING][0];
 	}
 
-	public function Legal(m:Move):Bool {
-		if (Types.Is_Drop(m)) {
+	public function legal(m:Move):Bool {
+		if (Types.is_drop(m)) {
 			return true;
 		}
 		var us:Int = sideToMove;
-		var from:Int = Types.Move_FromSq(m);
+		var from:Int = Types.move_from(m);
 		if (Types.TypeOf_Piece(PieceOn(from)) == Types.KING) {
-			if (AttackersToSq(Types.Move_ToSq(m)).newAND(PiecesColour(Types.OppColour(us))).IsZero()) {
+			if (AttackersToSq(Types.move_to(m)).newAND(PiecesColour(Types.OppColour(us))).IsZero()) {
 				return true;
 			}
 			return false;
@@ -146,13 +146,54 @@ class Position {
 		sideToMove = (sideToMove + 1) % 2;
 	}
 
+	// // sに利きのあるc側の駒を列挙する。
+	// // (occが指定されていなければ現在の盤面において。occが指定されていればそれをoccupied bitboardとして)
+	// private function attackers_to(c:Int, sq:Int, occ:Bitboard) Bitboard {
+	// 	// ASSERT_LV3(is_ok(c) && sq <= SQ_NB);
+	// 	var them = ~c;
+	// 	// sの地点に敵駒ptをおいて、その利きに自駒のptがあればsに利いているということだ。
+	// 	// 香の利きを求めるコストが惜しいのでrookEffect()を利用する。
+	// 	return
+	// 	(     (pawnEffect(them, sq)		&  pieces(PAWN)        )
+	// 		| (knightEffect(them, sq)	&  pieces(KNIGHT)      )
+	// 		| (silverEffect(them, sq)	&  pieces(SILVER_HDK)  )
+	// 		| (goldEffect(them, sq)		&  pieces(GOLDS_HDK)   )
+	// 		| (bishopEffect(sq, occ)	&  pieces(BISHOP_HORSE))
+	// 		| (rookEffect(sq, occ)		& (
+	// 				pieces(ROOK_DRAGON)
+	// 			|  (lanceStepEffect(them,sq) & pieces(LANCE))
+	// 		  ))
+	// 	//  | (kingEffect(sq) & pieces(c, HDK));
+	// 	// →　HDKは、銀と金のところに含めることによって、参照するテーブルを一個減らして高速化しようというAperyのアイデア。
+	// 		) & pieces(c); // 先後混在しているのでc側の駒だけ最後にマスクする。
+	// 	;
+	// }
+
+	// // kingSqを除いた効きのチェック
+	// private function effected_to_king(c:Int, sq:Int, kingSq:Int) Bool { 
+	// 	return attackers_to(c, sq, pieces() ^ kingSq);
+	// }
+
+	// private function legal(m:Move):Bool {
+	// 	if (Types.is_drop(m)) return true; // 打ち歩詰めは指し手生成で除外されている。
+	// 	var us = sideToMove;
+	// 	var from = move_from(m);
+	// 	// もし移動させる駒が玉であるなら、行き先の升に相手側の利きがないかをチェックする。
+	// 	if (type_of(piece_on(from)) == Types.KING)
+	// 		return !effected_to_king(~us, Types.move_to(m), from);
+	// 	// blockers_for_king()は、pinされている駒(自駒・敵駒)を表現するが、fromにある駒は自駒であることは
+	// 	// わかっているのでこれで良い。 Todo
+	// 	// return   !(blockers_for_king(us) & from)
+	// 	// 	|| aligned(from, to_sq(m), square<KING>(us));
+	// }
+
 	public function doMove(move:Move, newSt:StateInfo) {
 		doMoveFull(move, newSt);
 	}
 
 	private function doMoveFull(move:Move, newSt:StateInfo) {
-		var from = Types.Move_FromSq(move);
-		var to = Types.Move_ToSq(move);
+		var from = Types.move_from(move);
+		var to = Types.move_to(move);
 		var us = sideToMove;
 		var them:Int = Types.OppColour(us);
 		var pc:PC = MovedPieceAfter(move);
@@ -162,7 +203,7 @@ class Position {
 		newSt.Copy(st);
 		newSt.previous = st;
 		st = newSt;
-		if (Types.Is_Drop(move)) {
+		if (Types.is_drop(move)) {
 			st.dirtyPiece.dirty_num = 1;
 			PutPiece(to, us, pt);
 			var piece_no:PieceNumber  = piece_no_of(pr);
@@ -200,15 +241,15 @@ class Position {
 		changeSideToMove(); // sideToMove =Types.OppColour(sideToMove);
 		var us:Int = sideToMove;
 		var them:Int = Types.OppColour(us);
-		var to:Int = Types.Move_ToSq(move);
+		var to:Int = Types.move_to(move);
 		var pc:PC = MovedPieceAfter(move);
 		var pr:PR = Types.RawTypeOf(pc);
 		var pt:PT = Types.TypeOf_Piece(PieceOn(to));
-		if (Types.Is_Drop(move)) {
+		if (Types.is_drop(move)) {
 			AddHand(us, pr);
 			RemovePiece(to, us, pt);
 		} else {
-			var from:Int = Types.Move_FromSq(move);
+			var from:Int = Types.move_from(move);
 			var captured:PT = st.capturedType;
 			var capturedRaw:PR = Types.RawTypeOf(captured);
 			if (Types.Move_Type(move) == Types.MOVE_PROMO) {
@@ -296,8 +337,8 @@ class Position {
 	// Sでの移動範囲 - 相手番での駒種位置
 	// 移動が上下対称じゃない場合は両方の登録が必要...
 	public function AttackersTo(s:Int, occ:Bitboard):Bitboard {
-		var attBB:Bitboard = AttacksFromPawn(s, Types.BLACK).newAND(PiecesColourType(Types.WHITE, Types.PAWN));
-		attBB.OR(AttacksFromPawn(s, Types.WHITE).newAND(PiecesColourType(Types.BLACK, Types.PAWN)));
+		var attBB:Bitboard = pawn_effect(s, Types.BLACK).newAND(PiecesColourType(Types.WHITE, Types.PAWN));
+		attBB.OR(pawn_effect(s, Types.WHITE).newAND(PiecesColourType(Types.BLACK, Types.PAWN)));
 		attBB.OR(AttacksFromPTypeSQ(s, Types.W_KNIGHT).newAND(PiecesColourType(Types.BLACK, Types.KNIGHT)));
 		attBB.OR(AttacksFromPTypeSQ(s, Types.B_KNIGHT).newAND(PiecesColourType(Types.WHITE, Types.KNIGHT)));
 		attBB.OR(AttacksFromPTypeSQ(s, Types.W_LANCE).newAND(PiecesColourType(Types.BLACK, Types.LANCE)));
@@ -322,10 +363,10 @@ class Position {
 	}
 
 	public function MovedPieceAfter(m:Move):PC {
-		if (Types.Is_Drop(m)) {
+		if (Types.is_drop(m)) {
 			return new PC((m >>> 7) & 0x7F);
 		} else { // この瞬間はPromoteは気にしなくて良い
-			return PieceOn(Types.Move_FromSq(m));
+			return PieceOn(Types.move_from(m));
 		}
 	}
 

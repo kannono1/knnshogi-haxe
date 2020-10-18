@@ -224,11 +224,11 @@ class Types {
 		return a.charCodeAt(0) - 97;
 	}
 
-	public static function Move_FromSq(m:Move):Int {
+	public static function move_from(m:Move):Int {
 		return (m >>> 7) & 0x7F;
 	}
 
-	public static function Move_ToSq(m:Move):Int {
+	public static function move_to(m:Move):Int {
 		return m & 0x7F;
 	}
 
@@ -241,14 +241,14 @@ class Types {
 	}
 
 	public static function Move_To_String(m:Move):String {
-		if (Is_Drop(m)) {
+		if (is_drop(m)) {
 			var pc = PieceToChar(new PC(Move_Dropped_Piece(m)));
-			var str = Square_To_String(Move_ToSq(m));
+			var str = Square_To_String(move_to(m));
 			return '$pc*$str';
 		} else if (Is_Promote(m)) {
-			return Square_To_String(Move_FromSq(m)) + Square_To_String(Move_ToSq(m)) + '+';
+			return Square_To_String(move_from(m)) + Square_To_String(move_to(m)) + '+';
 		} else { // move
-			return Square_To_String(Move_FromSq(m)) + Square_To_String(Move_ToSq(m));
+			return Square_To_String(move_from(m)) + Square_To_String(move_to(m));
 		}
 	}
 
@@ -299,14 +299,14 @@ class Types {
 	}
 
 	public static function Is_Move_OK(m:Move):Bool {
-		return (Move_FromSq(m) != Move_ToSq(m));
+		return (move_from(m) != move_to(m));
 	}
 
 	public static function Is_Promote(m:Move):Bool {
 		return (m & MOVE_PROMO) != 0;
 	}
 
-	public static function Is_Drop(m:Move):Bool {
+	public static function is_drop(m:Move):Bool {
 		return (m & MOVE_DROP) != 0;
 	}
 
