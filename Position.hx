@@ -84,6 +84,10 @@ class Position {
 		return st.checkersBB;
 	}
 
+	public function in_check():Bool {
+		return Checkers().IsNonZero();
+	}
+
 	public function king_square(c:Int):Int {
 		return pieceList[c][Types.KING][0];
 	}
@@ -210,6 +214,7 @@ class Position {
 			evalList.put_piece(piece_no , to, pc);
 			SubHand(us, pr);
 			materialDiff = 0; // 駒打ちなので駒割りの変動なし。
+			st.checkersBB = AttackersToSq(king_square(sideToMove)).newAND(PiecesColour(Types.OppColour(sideToMove)));
 			changeSideToMove();
 			return;
 		}
@@ -234,6 +239,7 @@ class Position {
 		st.capturedType = captured;
 		materialDiff += Evaluate.capturePieceValue[captured];
 		st.materialValue = st.previous.materialValue + (us == Types.BLACK ? materialDiff : -materialDiff);
+		st.checkersBB = AttackersToSq(king_square(sideToMove)).newAND(PiecesColour(Types.OppColour(sideToMove)));
 		changeSideToMove();
 	}
 

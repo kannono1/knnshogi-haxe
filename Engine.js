@@ -761,8 +761,12 @@ class Evaluate {
 			let i = _g++;
 			k0 = list_fb[i];
 			k1 = list_fw[i];
-			sum.p[2][0] += Evaluate.kkp[sq_bk][sq_wk][k0][0];
-			sum.p[2][1] += Evaluate.kkp[sq_bk][sq_wk][k1][1];
+			if((k0 | 0) < (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 | 0)) {
+				sum.p[2][0] += Evaluate.kkp[sq_bk][sq_wk][k0][0];
+			}
+			if((k1 | 0) < (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 | 0)) {
+				sum.p[2][1] += Evaluate.kkp[sq_bk][sq_wk][k1][1];
+			}
 		}
 		let st = pos.state();
 		sum.p[2][0] += st.materialValue * 32;
@@ -1127,7 +1131,11 @@ class MovePicker {
 	}
 	GenerateNext() {
 		this.cur = 0;
-		this.moves.Generate(this.pos,5);
+		if(this.stage == 6) {
+			this.moves.Generate(this.pos,3);
+		} else {
+			this.moves.Generate(this.pos,5);
+		}
 		this.end = this.moves.moveCount;
 		this.stage++;
 	}
@@ -1247,6 +1255,9 @@ class Position {
 	Checkers() {
 		return this.st.checkersBB;
 	}
+	in_check() {
+		return this.Checkers().IsNonZero();
+	}
 	king_square(c) {
 		return this.pieceList[c][8][0];
 	}
@@ -1318,6 +1329,9 @@ class Position {
 			this.evalList.put_piece(piece_no,to,pc);
 			this.SubHand(us,pr);
 			materialDiff = 0;
+			let tmp = this.AttackersToSq(this.king_square(this.sideToMove));
+			let tmp1 = this.PiecesColour(Types.OppColour(this.sideToMove));
+			this.st.checkersBB = tmp.newAND(tmp1);
 			this.changeSideToMove();
 			return;
 		}
@@ -1344,6 +1358,9 @@ class Position {
 		this.st.capturedType = captured;
 		materialDiff += Evaluate.capturePieceValue[captured];
 		this.st.materialValue = this.st.previous.materialValue + (us == 0 ? materialDiff : -materialDiff);
+		let tmp = this.AttackersToSq(this.king_square(this.sideToMove));
+		let tmp1 = this.PiecesColour(Types.OppColour(this.sideToMove));
+		this.st.checkersBB = tmp.newAND(tmp1);
 		this.changeSideToMove();
 	}
 	undoMove(move) {
@@ -1811,10 +1828,10 @@ class Position {
 			s += HxOverrides.substr("  " + this.board[sq],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 476, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 482, className : "Position", methodName : "printBoard"});
 	}
 	printHand() {
-		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 480, className : "Position", methodName : "printHand"});
+		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 486, className : "Position", methodName : "printHand"});
 	}
 	printPieceNo() {
 		this.evalList.printPieceNo();
@@ -1986,7 +2003,7 @@ class Search {
 		let alpha = -30001;
 		let beta = 30001;
 		let delta = 30001;
-		while(++depth < 3) {
+		while(++depth < 4) {
 			haxe_Log.trace("Search::IDLoop depth=" + depth,{ fileName : "Search.hx", lineNumber : 58, className : "Search", methodName : "IDLoop"});
 			alpha = -30001;
 			beta = 30001;
@@ -2097,7 +2114,6 @@ class Search {
 				alpha = value;
 			}
 		}
-		haxe_Log.trace("Search bestValue:" + alpha,{ fileName : "Search.hx", lineNumber : 159, className : "Search", methodName : "Search"});
 		return alpha;
 	}
 }
@@ -2807,7 +2823,7 @@ Types.SQ_NONE = 81;
 Types.FILE_NB = 9;
 Types.RANK_NB = 9;
 Types.MAX_MOVES = 600;
-Types.MAX_PLY = 3;
+Types.MAX_PLY = 4;
 Types.DELTA_N = -1;
 Types.DELTA_E = -9;
 Types.DELTA_S = 1;

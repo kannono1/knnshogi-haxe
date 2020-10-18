@@ -48,7 +48,12 @@ class MovePicker {
 
 	public function GenerateNext() {
 		cur = 0;
-		moves.Generate(pos, MoveList.LEGAL);
+		if(stage == EVASION){
+			moves.Generate(pos, MoveList.EVASIONS);
+		}
+		else{
+			moves.Generate(pos, MoveList.LEGAL);
+		}
 		end = moves.moveCount;
 		stage++;
 	}

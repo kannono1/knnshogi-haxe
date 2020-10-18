@@ -156,7 +156,6 @@ class Search {
 				// 	}
 			}
 		}
-		trace('Search bestValue:${alpha}');
 		return alpha;
 	}
 }

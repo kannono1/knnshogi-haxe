@@ -723,8 +723,12 @@ class Evaluate {
 			let i = _g++;
 			k0 = list_fb[i];
 			k1 = list_fw[i];
-			sum.p[2][0] += Evaluate.kkp[sq_bk][sq_wk][k0][0];
-			sum.p[2][1] += Evaluate.kkp[sq_bk][sq_wk][k1][1];
+			if((k0 | 0) < (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 | 0)) {
+				sum.p[2][0] += Evaluate.kkp[sq_bk][sq_wk][k0][0];
+			}
+			if((k1 | 0) < (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 | 0)) {
+				sum.p[2][1] += Evaluate.kkp[sq_bk][sq_wk][k1][1];
+			}
 		}
 		let st = pos.state();
 		sum.p[2][0] += st.materialValue * 32;
@@ -1089,7 +1093,11 @@ class MovePicker {
 	}
 	GenerateNext() {
 		this.cur = 0;
-		this.moves.Generate(this.pos,5);
+		if(this.stage == 6) {
+			this.moves.Generate(this.pos,3);
+		} else {
+			this.moves.Generate(this.pos,5);
+		}
 		this.end = this.moves.moveCount;
 		this.stage++;
 	}
@@ -1209,6 +1217,9 @@ class Position {
 	Checkers() {
 		return this.st.checkersBB;
 	}
+	in_check() {
+		return this.Checkers().IsNonZero();
+	}
 	king_square(c) {
 		return this.pieceList[c][8][0];
 	}
@@ -1280,6 +1291,9 @@ class Position {
 			this.evalList.put_piece(piece_no,to,pc);
 			this.SubHand(us,pr);
 			materialDiff = 0;
+			let tmp = this.AttackersToSq(this.king_square(this.sideToMove));
+			let tmp1 = this.PiecesColour(Types.OppColour(this.sideToMove));
+			this.st.checkersBB = tmp.newAND(tmp1);
 			this.changeSideToMove();
 			return;
 		}
@@ -1306,6 +1320,9 @@ class Position {
 		this.st.capturedType = captured;
 		materialDiff += Evaluate.capturePieceValue[captured];
 		this.st.materialValue = this.st.previous.materialValue + (us == 0 ? materialDiff : -materialDiff);
+		let tmp = this.AttackersToSq(this.king_square(this.sideToMove));
+		let tmp1 = this.PiecesColour(Types.OppColour(this.sideToMove));
+		this.st.checkersBB = tmp.newAND(tmp1);
 		this.changeSideToMove();
 	}
 	undoMove(move) {
@@ -1773,10 +1790,10 @@ class Position {
 			s += HxOverrides.substr("  " + this.board[sq],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 476, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 482, className : "Position", methodName : "printBoard"});
 	}
 	printHand() {
-		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 480, className : "Position", methodName : "printHand"});
+		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 486, className : "Position", methodName : "printHand"});
 	}
 	printPieceNo() {
 		this.evalList.printPieceNo();
@@ -1948,7 +1965,7 @@ class Search {
 		let alpha = -30001;
 		let beta = 30001;
 		let delta = 30001;
-		while(++depth < 3) {
+		while(++depth < 4) {
 			haxe_Log.trace("Search::IDLoop depth=" + depth,{ fileName : "Search.hx", lineNumber : 58, className : "Search", methodName : "IDLoop"});
 			alpha = -30001;
 			beta = 30001;
@@ -2059,7 +2076,6 @@ class Search {
 				alpha = value;
 			}
 		}
-		haxe_Log.trace("Search bestValue:" + alpha,{ fileName : "Search.hx", lineNumber : 159, className : "Search", methodName : "Search"});
 		return alpha;
 	}
 }
@@ -2151,7 +2167,11 @@ class Test {
 		Test.TestAll();
 	}
 	static TestAll() {
-		Test.AssertFn("王の近くに馬","rnslkslnb/1g5g1/ppppB+Lppp/9/9/9/PPPPPPPPP/7R1/LNSGKGSN1 w - 1",function(bm) {
+		Test.AssertFn("探索内での先手玉の王手回避(後手角成で王手がかかる)","lnsgkgsnl/1r5b1/pppppp1pp/6p2/7P1/9/PPPPPPP1P/1B5R1/LNSGKGSNL w - 1",function(bm) {
+			let this1 = 0;
+			return bm != this1;
+		});
+		Test.AssertFn("王の近くに馬(王の自殺手チェック)","rnslkslnb/1g5g1/ppppB+Lppp/9/9/9/PPPPPPPPP/7R1/LNSGKGSN1 w - 1",function(bm) {
 			let this1 = 0;
 			return bm != this1;
 		});
@@ -2170,32 +2190,32 @@ class Test {
 		Search.Init();
 	}
 	static doThink(sfen) {
-		haxe_Log.trace("doThink start: :" + sfen,{ fileName : "Test.hx", lineNumber : 35, className : "Test", methodName : "doThink"});
+		haxe_Log.trace("doThink start: :" + sfen,{ fileName : "Test.hx", lineNumber : 37, className : "Test", methodName : "doThink"});
 		Test.pos.setPosition(sfen);
 		Test.pos.printBoard();
-		haxe_Log.trace("doThink pos.c: " + Test.pos.SideToMove(),{ fileName : "Test.hx", lineNumber : 38, className : "Test", methodName : "doThink"});
+		haxe_Log.trace("doThink pos.c: " + Test.pos.SideToMove(),{ fileName : "Test.hx", lineNumber : 40, className : "Test", methodName : "doThink"});
 		Search.Reset(Test.pos);
 		Search.Think();
 		let moveResult = Search.rootMoves[0].pv[0];
-		haxe_Log.trace("bestmove " + Types.Move_To_String(moveResult),{ fileName : "Test.hx", lineNumber : 42, className : "Test", methodName : "doThink"});
+		haxe_Log.trace("bestmove " + Types.Move_To_String(moveResult),{ fileName : "Test.hx", lineNumber : 44, className : "Test", methodName : "doThink"});
 		return moveResult;
 	}
 	static Assert(msg,expected) {
-		haxe_Log.trace("Assert " + msg + " start",{ fileName : "Test.hx", lineNumber : 47, className : "Test", methodName : "Assert"});
+		haxe_Log.trace("Assert " + msg + " start",{ fileName : "Test.hx", lineNumber : 49, className : "Test", methodName : "Assert"});
 		if(!expected) {
 			throw haxe_Exception.thrown("AssertionError");
 		}
-		haxe_Log.trace("Assert " + msg + " OK !!",{ fileName : "Test.hx", lineNumber : 51, className : "Test", methodName : "Assert"});
+		haxe_Log.trace("Assert " + msg + " OK !!",{ fileName : "Test.hx", lineNumber : 53, className : "Test", methodName : "Assert"});
 	}
 	static AssertFn(msg,sfen,fn) {
-		haxe_Log.trace("AssertFn " + msg + " start",{ fileName : "Test.hx", lineNumber : 55, className : "Test", methodName : "AssertFn"});
+		haxe_Log.trace("AssertFn " + msg + " start",{ fileName : "Test.hx", lineNumber : 57, className : "Test", methodName : "AssertFn"});
 		let bm = Test.doThink(sfen);
 		let expected = fn(bm);
 		if(!expected) {
 			throw haxe_Exception.thrown("AssertionFnError " + msg + " " + sfen + " bm:" + bm);
 		}
-		haxe_Log.trace("Assert " + msg + " OK !!",{ fileName : "Test.hx", lineNumber : 61, className : "Test", methodName : "AssertFn"});
-		haxe_Log.trace("+++++++++++++++++++++++++++++++++++",{ fileName : "Test.hx", lineNumber : 62, className : "Test", methodName : "AssertFn"});
+		haxe_Log.trace("Assert " + msg + " OK !!",{ fileName : "Test.hx", lineNumber : 63, className : "Test", methodName : "AssertFn"});
+		haxe_Log.trace("+++++++++++++++++++++++++++++++++++",{ fileName : "Test.hx", lineNumber : 64, className : "Test", methodName : "AssertFn"});
 	}
 }
 Test.__name__ = true;
@@ -2856,7 +2876,7 @@ Types.SQ_NONE = 81;
 Types.FILE_NB = 9;
 Types.RANK_NB = 9;
 Types.MAX_MOVES = 600;
-Types.MAX_PLY = 3;
+Types.MAX_PLY = 4;
 Types.DELTA_N = -1;
 Types.DELTA_E = -9;
 Types.DELTA_S = 1;

@@ -52,7 +52,7 @@ enum abstract BonaPiece(Int) from Int to Int {
 	var f_dragon = e_rook + 81;
 	var e_dragon = f_dragon + 81;
 	var fe_old_end = e_dragon + 81;
-	var fe_end = fe_old_end;
+	var fe_end = fe_old_end;// 1548 
 	// fe_end がKPP配列などのPの値の終端と考えられる。
 	// 例) kpp[SQ_NB][fe_end][fe_end];
 	// 王も一意な駒番号を付与。これは2駒関係をするときに王に一意な番号が必要なための拡張
@@ -463,8 +463,12 @@ class Evaluate {
 			// 	sum.p[1][0] += pkppw[l1];
 			// }
 			// KKP T
-			sum.p[2][0] += kkp[sq_bk][sq_wk][k0][0];
-			sum.p[2][1] += kkp[sq_bk][sq_wk][k1][1];// sum.p[2] += kkp[sq_bk][sq_wk][k0];
+			if(Std.int(k0) < Std.int(fe_end)){
+				sum.p[2][0] += kkp[sq_bk][sq_wk][k0][0];
+			}
+			if(Std.int(k1) < Std.int(fe_end)){
+				sum.p[2][1] += kkp[sq_bk][sq_wk][k1][1];// sum.p[2] += kkp[sq_bk][sq_wk][k0];
+			}
 		}
 		var st = pos.state();
 		sum.p[2][0] += st.materialValue * FV_SCALE;
