@@ -164,6 +164,8 @@ class Types {
 	];
 
 	public static function Inv(sq:Int):Int { return (SQ_NB - 1) - sq; }
+	// ply手で詰まされるときのスコア
+	public static function mated_in(ply:Int) {  return (-VALUE_MATE + ply);}
 
 	public static function hasLongEffect(pt:PT):Bool {
 		switch (pt) {

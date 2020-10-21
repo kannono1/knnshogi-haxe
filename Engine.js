@@ -1129,6 +1129,20 @@ class MovePicker {
 		}
 		this.GenerateNext();
 	}
+	InitB(p) {
+		this.pos = p;
+		this.moves.Reset();
+		this.cur = 0;
+		this.end = 0;
+		this.stage = 6;
+		let us = this.pos.SideToMove();
+		let them = Types.OppColour(us);
+		let ksq = this.pos.king_square(them);
+		let target = this.pos.PiecesColour(them).newCOPY();
+		target.SetBit(ksq);
+		target.ClrBit(ksq);
+		this.moves.GenerateAll(this.pos,us,target,0);
+	}
 	GenerateNext() {
 		this.cur = 0;
 		if(this.stage == 6) {
@@ -1139,7 +1153,7 @@ class MovePicker {
 		this.end = this.moves.moveCount;
 		this.stage++;
 	}
-	NextMove() {
+	next_move() {
 		if(this.moves.moveCount == 0) {
 			return 0;
 		}
@@ -1307,7 +1321,7 @@ class Position {
 	changeSideToMove() {
 		this.sideToMove = (this.sideToMove + 1) % 2;
 	}
-	doMove(move,newSt) {
+	do_move(move,newSt) {
 		this.doMoveFull(move,newSt);
 	}
 	doMoveFull(move,newSt) {
@@ -1363,7 +1377,7 @@ class Position {
 		this.st.checkersBB = tmp.newAND(tmp1);
 		this.changeSideToMove();
 	}
-	undoMove(move) {
+	undo_move(move) {
 		this.changeSideToMove();
 		let us = this.sideToMove;
 		let them = Types.OppColour(us);
@@ -1654,7 +1668,7 @@ class Position {
 		let _g34 = moves.length;
 		while(_g33 < _g34) {
 			let i = _g33++;
-			this.doMove(moves[i],new StateInfo());
+			this.do_move(moves[i],new StateInfo());
 		}
 		let tmp = this.AttackersToSq(this.king_square(this.sideToMove));
 		let tmp1 = this.PiecesColour(Types.OppColour(this.sideToMove));
@@ -2073,9 +2087,52 @@ class Search {
 		}
 	}
 	static Qsearch(pos,alpha,beta,depth) {
+		let ply_from_root = (4 - depth / 1 | 0) + 1;
+		let InCheck = pos.in_check();
 		let value = 0;
-		value = Evaluate.DoEvaluate(pos,false);
-		return value;
+		if(InCheck) {
+			alpha = -30001;
+			if(depth < -9) {
+				return Evaluate.DoEvaluate(pos,false);
+			}
+		} else {
+			value = Evaluate.DoEvaluate(pos,false);
+			if(alpha < value) {
+				alpha = value;
+				if(alpha >= beta) {
+					return alpha;
+				}
+			}
+			if(depth < -3) {
+				return alpha;
+			}
+		}
+		let mp = new MovePicker();
+		mp.InitB(pos);
+		let move;
+		let si = new StateInfo();
+		while(true) {
+			move = mp.next_move();
+			if(!(move != 0)) {
+				break;
+			}
+			if(!pos.legal(move)) {
+				continue;
+			}
+			pos.do_move(move,si);
+			value = -Search.Qsearch(pos,-beta,-alpha,depth - 1);
+			pos.undo_move(move);
+			if(value > alpha) {
+				alpha = value;
+				if(alpha >= beta) {
+					return alpha;
+				}
+			}
+		}
+		if(InCheck && alpha == -30001) {
+			return Types.mated_in(ply_from_root);
+		}
+		return alpha;
 	}
 	static Search(pos,alpha,beta,depth,nodeType) {
 		let pvMove = true;
@@ -2087,16 +2144,16 @@ class Search {
 		let st = new StateInfo();
 		mp.InitA(pos);
 		while(true) {
-			move = mp.NextMove();
+			move = mp.next_move();
 			if(!(move != 0)) {
 				break;
 			}
 			if(!pos.legal(move)) {
 				continue;
 			}
-			pos.doMove(move,st);
+			pos.do_move(move,st);
 			value = depth - 1 < 1 ? -Search.Qsearch(pos,-beta,-alpha,depth) : -Search.Search(pos,-beta,-alpha,depth - 1,2);
-			pos.undoMove(move);
+			pos.undo_move(move);
 			if(rootNode) {
 				let rm;
 				let _g = 0;
@@ -2112,6 +2169,9 @@ class Search {
 			}
 			if(value > alpha) {
 				alpha = value;
+				if(alpha >= beta) {
+					break;
+				}
 			}
 		}
 		return alpha;
@@ -2221,6 +2281,9 @@ class PC {
 class Types {
 	static Inv(sq) {
 		return 80 - sq;
+	}
+	static mated_in(ply) {
+		return -30000 + ply;
 	}
 	static hasLongEffect(pt) {
 		switch(pt) {

@@ -34,22 +34,22 @@ class Game extends Position {
 
 	public function doPlayerMove(from:Int, to:Int, promote:Bool) {
 		if (promote) {
-			doMove(Types.Make_Move_Promote(from, to), new StateInfo());
+			do_move(Types.Make_Move_Promote(from, to), new StateInfo());
 		} else {
-			doMove(Types.Make_Move(from, to), new StateInfo());
+			do_move(Types.Make_Move(from, to), new StateInfo());
 		}
 	}
 
 	public function doPlayerPut(pr:PR, to:Int) {
 		trace('Game::doPlayerPut pr: $pr to: $to');
 		var move:Move = Types.Make_Move_Drop(pr, to);
-		doMove(move, new StateInfo());
+		do_move(move, new StateInfo());
 	}
 
-	override public function doMove(move:Move, newSt:StateInfo) {
-		trace('Game::doMove ${Types.Move_To_String(move)}');
+	override public function do_move(move:Move, newSt:StateInfo) {
+		trace('Game::do_move ${Types.Move_To_String(move)}');
 		moves.push(move);
-		super.doMove(move, newSt);
+		super.do_move(move, newSt);
 		// printBoard();
 		// printPieceNo();
 		// trace('hand $hand');
@@ -107,7 +107,7 @@ class Game extends Position {
 		if (move == 0) {
 			endGame();
 		} else {
-			doMove(move, new StateInfo());
+			do_move(move, new StateInfo());
 			ui.onEnemyMoved();
 		}
 	}

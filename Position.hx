@@ -19,8 +19,8 @@ class Position {
 	public var board:Array<Int> = [];
 	public var sideToMove:Int = Types.BLACK;
 	public var hand:Array<Array<Int>> = [];//[color][count]
-	public var byTypeBB:Array<Bitboard> = [];
-	public var byColorBB:Array<Bitboard> = [];
+	public var byTypeBB:Array<Bitboard> = [];//駒種類ごとのBB
+	public var byColorBB:Array<Bitboard> = [];//先後のBB
 	public var index:Array<Int> = []; // [sq]=pieceCount[c][pt]
 	public var pieceCount:Array<Array<Int>> = []; // [c][pt]=count
 	public var pieceList:Array<Array<Array<Int>>> = []; // [c][pt][index]=sq
@@ -191,7 +191,7 @@ class Position {
 	// 	// 	|| aligned(from, to_sq(m), square<KING>(us));
 	// }
 
-	public function doMove(move:Move, newSt:StateInfo) {
+	public function do_move(move:Move, newSt:StateInfo) {
 		doMoveFull(move, newSt);
 	}
 
@@ -243,7 +243,7 @@ class Position {
 		changeSideToMove();
 	}
 
-	public function undoMove(move:Move) {
+	public function undo_move(move:Move) {
 		changeSideToMove(); // sideToMove =Types.OppColour(sideToMove);
 		var us:Int = sideToMove;
 		var them:Int = Types.OppColour(us);
@@ -412,7 +412,7 @@ class Position {
 		// st.materialValue = Evaluate.material(this);
 		var moves = sf.getMoves();
 		for (i in 0...moves.length) {
-			doMove(moves[i], new StateInfo());
+			do_move(moves[i], new StateInfo());
 		}
 		st.checkersBB = AttackersToSq(king_square(sideToMove)).newAND(PiecesColour(Types.OppColour(sideToMove)));
 	}

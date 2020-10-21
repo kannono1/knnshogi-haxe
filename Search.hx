@@ -103,18 +103,51 @@ class Search {
 		}
 	}
 
+	// Qsearchの時はdepthがマイナスになる
 	private static function Qsearch(pos:Position, alpha:Int, beta:Int, depth:Int):Int {
-		var value = 0;
-		value = Evaluate.DoEvaluate(pos, false);
-		// trace('Qsearch depth:${depth} alpha:${alpha} beta:${beta} value:${bestValue}');
-		// if (value > alpha) // update alpha?
-		// {
-		// 	alpha = value;
-		// 	if (alpha >= beta) {
-		// 		return alpha; // beta cut
-		// 	}
-		// }
-		return value;
+		// 現在のnodeのrootからの手数。これカウンターが必要。
+		// nanoだとこのカウンター持ってないので適当にごまかす。
+		var ply_from_root:Int = Std.int(Types.MAX_PLY - depth / Types.ONE_PLY) + 1;// 詰みの時に手数を返すため
+		var InCheck = pos.in_check(); // この局面で王手がかかっているのか
+		var value:Int = 0;
+		if (InCheck) {
+			alpha = -Types.VALUE_INFINITE;
+			if (depth < -9 * Types.ONE_PLY){
+				return Evaluate.DoEvaluate(pos, false); // knn ittan
+			}
+		} else {
+			// この局面で何も指さないときのスコア。recaptureすると損をする変化もあるのでこのスコアを基準に考える。
+			value = Evaluate.DoEvaluate(pos, false);
+			if (alpha < value) {
+				alpha = value;
+				if (alpha >= beta){
+					return alpha; // beta cut
+				}
+			}
+			// 探索深さが-3以下ならこれ以上延長しない。
+			if (depth < -3 * Types.ONE_PLY) return alpha;
+		}
+		// 取り合いの指し手だけ生成する
+		var mp:MovePicker = new MovePicker();
+		mp.InitB(pos);
+		var move:Move;
+		var si:StateInfo = new StateInfo();
+		while ((move = mp.next_move()) != Types.MOVE_NONE) {
+			if (!pos.legal(move)) continue;
+			pos.do_move(move, si);//, pos.gives_check(move)
+			value = -Qsearch(pos, -beta, -alpha, depth - Types.ONE_PLY);
+			pos.undo_move(move);
+			// if (Signals.stop) return VALUE_ZERO;
+			if (value > alpha) { // update alpha?
+				alpha = value;
+				if (alpha >= beta){
+					return alpha; // beta cut
+				}
+			}
+		}
+		// 王手がかかっている状況ですべての指し手を調べたということだから、これは詰みである
+		if (InCheck && alpha == -Types.VALUE_INFINITE) return Types.mated_in(ply_from_root);
+		return alpha;
 	}
 
 	private static function Search(pos:Position, alpha:Int, beta:Int, depth:Int, nodeType:Int):Int {
@@ -125,15 +158,15 @@ class Search {
 		var value = 0;
 		var st = new StateInfo();
 		mp.InitA(pos);
-		while ((move = mp.NextMove()) != Types.MOVE_NONE) {// この局面の全指し手を探索
+		while ((move = mp.next_move()) != Types.MOVE_NONE) {// この局面の全指し手を探索
 			if (!pos.legal(move))
 				continue;
 			// trace('depth:${depth}', Types.Move_To_StringLong(move), 'nodeType:${nodeType} rootNode:${rootNode}');
-			pos.doMove(move, st);
+			pos.do_move(move, st);
 			value = depth - Types.ONE_PLY < Types.ONE_PLY 
 				? -Qsearch(pos, -beta, -alpha, depth) // depthが0になったら静止探索をする。
 				: -Search(pos, -beta, -alpha, depth - Types.ONE_PLY, NodeNonPV);// depth0になるまで再帰
-			pos.undoMove(move);
+			pos.undo_move(move);
 			if (rootNode) {
 				var rm:SearchRootMove; // root move
 				for (k in 0...numRootMoves) {
@@ -150,10 +183,10 @@ class Search {
 			}
 			if (value > alpha) {// 下限値を更新
 				alpha = value;
-				// 	// bestMove = move;
-				// 	if (alpha >= beta) {
-				// 		break;
-				// 	}
+				// bestMove = move;
+				if (alpha >= beta) {
+					break;
+				}
 			}
 		}
 		return alpha;

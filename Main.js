@@ -957,7 +957,7 @@ class Position {
 	changeSideToMove() {
 		this.sideToMove = (this.sideToMove + 1) % 2;
 	}
-	doMove(move,newSt) {
+	do_move(move,newSt) {
 		this.doMoveFull(move,newSt);
 	}
 	doMoveFull(move,newSt) {
@@ -1013,7 +1013,7 @@ class Position {
 		this.st.checkersBB = tmp.newAND(tmp1);
 		this.changeSideToMove();
 	}
-	undoMove(move) {
+	undo_move(move) {
 		this.changeSideToMove();
 		let us = this.sideToMove;
 		let them = Types.OppColour(us);
@@ -1304,7 +1304,7 @@ class Position {
 		let _g34 = moves.length;
 		while(_g33 < _g34) {
 			let i = _g33++;
-			this.doMove(moves[i],new StateInfo());
+			this.do_move(moves[i],new StateInfo());
 		}
 		let tmp = this.AttackersToSq(this.king_square(this.sideToMove));
 		let tmp1 = this.PiecesColour(Types.OppColour(this.sideToMove));
@@ -1690,6 +1690,9 @@ class PC {
 class Types {
 	static Inv(sq) {
 		return 80 - sq;
+	}
+	static mated_in(ply) {
+		return -30000 + ply;
 	}
 	static hasLongEffect(pt) {
 		switch(pt) {
@@ -2153,20 +2156,20 @@ class ui_Game extends Position {
 	}
 	doPlayerMove(from,to,promote) {
 		if(promote) {
-			this.doMove(Types.Make_Move_Promote(from,to),new StateInfo());
+			this.do_move(Types.Make_Move_Promote(from,to),new StateInfo());
 		} else {
-			this.doMove(Types.Make_Move(from,to),new StateInfo());
+			this.do_move(Types.Make_Move(from,to),new StateInfo());
 		}
 	}
 	doPlayerPut(pr,to) {
 		haxe_Log.trace("Game::doPlayerPut pr: " + pr + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 44, className : "ui.Game", methodName : "doPlayerPut"});
 		let move = Types.Make_Move_Drop(pr,to);
-		this.doMove(move,new StateInfo());
+		this.do_move(move,new StateInfo());
 	}
-	doMove(move,newSt) {
-		haxe_Log.trace("Game::doMove " + Types.Move_To_String(move),{ fileName : "ui/Game.hx", lineNumber : 50, className : "ui.Game", methodName : "doMove"});
+	do_move(move,newSt) {
+		haxe_Log.trace("Game::do_move " + Types.Move_To_String(move),{ fileName : "ui/Game.hx", lineNumber : 50, className : "ui.Game", methodName : "do_move"});
 		this.moves.push(move);
-		super.doMove(move,newSt);
+		super.do_move(move,newSt);
 		if(this.isEnemyTurn()) {
 			this.startThink();
 		}
@@ -2214,7 +2217,7 @@ class ui_Game extends Position {
 		if(move == 0) {
 			this.endGame();
 		} else {
-			this.doMove(move,new StateInfo());
+			this.do_move(move,new StateInfo());
 			this.ui.onEnemyMoved();
 		}
 	}

@@ -45,6 +45,20 @@ class MovePicker {
 		}
 		GenerateNext(); // ittan
 	}
+	public function InitB(p:Position) {
+		pos = p;
+		moves.Reset();
+		cur = 0;
+		end = 0;
+		stage = EVASION;
+		var us = pos.SideToMove();
+		var them = Types.OppColour(us);
+		var ksq = pos.king_square(them);
+		var target:Bitboard = pos.PiecesColour(them).newCOPY();
+		target.SetBit(ksq);
+		target.ClrBit(ksq);
+		moves.GenerateAll(pos, us, target, MoveList.CAPTURES); // ittan
+	}
 
 	public function GenerateNext() {
 		cur = 0;
@@ -58,7 +72,7 @@ class MovePicker {
 		stage++;
 	}
 
-	public function NextMove():Move {
+	public function next_move():Move {
 		// if (generated) {
 		// 	GenerateNext();
 		// 	generated = true; // knn
