@@ -1,7 +1,13 @@
 package;
 
 import Types.Move;
+import haxe.Timer;
 import util.MathUtil;
+
+class Signals {
+	public static var stop:Bool = false;
+	public static var startTime:Float = 0;
+}
 
 class Search {
 	private static inline var NodeRoot:Int = 0;
@@ -54,8 +60,10 @@ class Search {
 		var alpha:Int = -Types.VALUE_INFINITE; // 評価値が小さくなって打ち切ることをαカットといいます。
 		var beta:Int = Types.VALUE_INFINITE;
 		var delta:Int = Types.VALUE_INFINITE;
-		while (++depth < Types.MAX_PLY) { // depth loop
-			trace('Search::IDLoop depth=$depth');
+		Signals.stop = false;
+		Signals.startTime = Timer.stamp();
+		while (++depth < Types.MAX_PLY && !Signals.stop) { // depth loop
+			trace('Search::IDLoop depth=${depth} ');
 			alpha = -Types.VALUE_INFINITE; // 評価値が小さくなって打ち切ることをαカットといいます。
 			beta = Types.VALUE_INFINITE;
 			bestValue = Search(pos, alpha, beta, depth, NodeRoot);
@@ -137,7 +145,10 @@ class Search {
 			pos.do_move(move, si);//, pos.gives_check(move)
 			value = -Qsearch(pos, -beta, -alpha, depth - Types.ONE_PLY);
 			pos.undo_move(move);
-			// if (Signals.stop) return VALUE_ZERO;
+			if (Signals.stop){
+				trace('qsearch Signals.stop !');
+ 				return Types.VALUE_ZERO;
+			}
 			if (value > alpha) { // update alpha?
 				alpha = value;
 				if (alpha >= beta){
@@ -167,6 +178,16 @@ class Search {
 				? -Qsearch(pos, -beta, -alpha, depth) // depthが0になったら静止探索をする。
 				: -Search(pos, -beta, -alpha, depth - Types.ONE_PLY, NodeNonPV);// depth0になるまで再帰
 			pos.undo_move(move);
+			if (Signals.stop){
+				trace('search Signals.stop !');
+ 				return Types.VALUE_ZERO;
+			}
+			var sa = Timer.stamp() - Signals.startTime;
+			if(sa > 5){
+				trace('Time Over ...');
+				Signals.stop = true;
+ 				return Types.VALUE_ZERO;
+			}
 			if (rootNode) {
 				var rm:SearchRootMove; // root move
 				for (k in 0...numRootMoves) {

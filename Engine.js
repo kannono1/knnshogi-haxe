@@ -1972,11 +1972,14 @@ class SFEN {
 	}
 }
 SFEN.__name__ = true;
+class Signals {
+}
+Signals.__name__ = true;
 class Search {
 	constructor() {
 	}
 	static Init() {
-		haxe_Log.trace("Search::Init",{ fileName : "Search.hx", lineNumber : 20, className : "Search", methodName : "Init"});
+		haxe_Log.trace("Search::Init",{ fileName : "Search.hx", lineNumber : 26, className : "Search", methodName : "Init"});
 		let _g = 0;
 		while(_g < 600) {
 			let i = _g++;
@@ -1984,7 +1987,7 @@ class Search {
 		}
 	}
 	static Reset(pos) {
-		haxe_Log.trace("Search::Reset",{ fileName : "Search.hx", lineNumber : 27, className : "Search", methodName : "Reset"});
+		haxe_Log.trace("Search::Reset",{ fileName : "Search.hx", lineNumber : 33, className : "Search", methodName : "Reset"});
 		let _g = 0;
 		while(_g < 600) {
 			let i = _g++;
@@ -2003,58 +2006,60 @@ class Search {
 		}
 	}
 	static Think() {
-		haxe_Log.trace("Search::Think",{ fileName : "Search.hx", lineNumber : 42, className : "Search", methodName : "Think"});
+		haxe_Log.trace("Search::Think",{ fileName : "Search.hx", lineNumber : 48, className : "Search", methodName : "Think"});
 		Search.maxPly = 0;
 		Search.rootColor = Search.rootPos.SideToMove();
 		Evaluate.evalRootColour = Search.rootColor;
 		Search.IDLoop(Search.rootPos);
 	}
 	static IDLoop(pos) {
-		haxe_Log.trace("====================",{ fileName : "Search.hx", lineNumber : 50, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("Search::IDLoop start",{ fileName : "Search.hx", lineNumber : 51, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("====================",{ fileName : "Search.hx", lineNumber : 56, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("Search::IDLoop start",{ fileName : "Search.hx", lineNumber : 57, className : "Search", methodName : "IDLoop"});
 		let depth = 0;
 		let bestValue = -30001;
 		let alpha = -30001;
 		let beta = 30001;
 		let delta = 30001;
-		while(++depth < 4) {
-			haxe_Log.trace("Search::IDLoop depth=" + depth,{ fileName : "Search.hx", lineNumber : 58, className : "Search", methodName : "IDLoop"});
+		Signals.stop = false;
+		Signals.startTime = HxOverrides.now() / 1000;
+		while(++depth < 4 && !Signals.stop) {
+			haxe_Log.trace("Search::IDLoop depth=" + depth + " ",{ fileName : "Search.hx", lineNumber : 66, className : "Search", methodName : "IDLoop"});
 			alpha = -30001;
 			beta = 30001;
 			bestValue = Search.Search(pos,alpha,beta,depth,0);
 			Search.StableSort(Search.rootMoves,0,Search.numRootMoves - 1);
 		}
-		haxe_Log.trace("Search::IDLoop end",{ fileName : "Search.hx", lineNumber : 73, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 0 + " " + Types.Move_To_String(Search.rootMoves[0].pv[0]) + " " + Search.rootMoves[0].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 1 + " " + Types.Move_To_String(Search.rootMoves[1].pv[0]) + " " + Search.rootMoves[1].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 2 + " " + Types.Move_To_String(Search.rootMoves[2].pv[0]) + " " + Search.rootMoves[2].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 3 + " " + Types.Move_To_String(Search.rootMoves[3].pv[0]) + " " + Search.rootMoves[3].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 4 + " " + Types.Move_To_String(Search.rootMoves[4].pv[0]) + " " + Search.rootMoves[4].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 5 + " " + Types.Move_To_String(Search.rootMoves[5].pv[0]) + " " + Search.rootMoves[5].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 6 + " " + Types.Move_To_String(Search.rootMoves[6].pv[0]) + " " + Search.rootMoves[6].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 7 + " " + Types.Move_To_String(Search.rootMoves[7].pv[0]) + " " + Search.rootMoves[7].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 8 + " " + Types.Move_To_String(Search.rootMoves[8].pv[0]) + " " + Search.rootMoves[8].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 9 + " " + Types.Move_To_String(Search.rootMoves[9].pv[0]) + " " + Search.rootMoves[9].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 10 + " " + Types.Move_To_String(Search.rootMoves[10].pv[0]) + " " + Search.rootMoves[10].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 11 + " " + Types.Move_To_String(Search.rootMoves[11].pv[0]) + " " + Search.rootMoves[11].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 12 + " " + Types.Move_To_String(Search.rootMoves[12].pv[0]) + " " + Search.rootMoves[12].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 13 + " " + Types.Move_To_String(Search.rootMoves[13].pv[0]) + " " + Search.rootMoves[13].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 14 + " " + Types.Move_To_String(Search.rootMoves[14].pv[0]) + " " + Search.rootMoves[14].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 15 + " " + Types.Move_To_String(Search.rootMoves[15].pv[0]) + " " + Search.rootMoves[15].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 16 + " " + Types.Move_To_String(Search.rootMoves[16].pv[0]) + " " + Search.rootMoves[16].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 17 + " " + Types.Move_To_String(Search.rootMoves[17].pv[0]) + " " + Search.rootMoves[17].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 18 + " " + Types.Move_To_String(Search.rootMoves[18].pv[0]) + " " + Search.rootMoves[18].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 19 + " " + Types.Move_To_String(Search.rootMoves[19].pv[0]) + " " + Search.rootMoves[19].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 20 + " " + Types.Move_To_String(Search.rootMoves[20].pv[0]) + " " + Search.rootMoves[20].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 21 + " " + Types.Move_To_String(Search.rootMoves[21].pv[0]) + " " + Search.rootMoves[21].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 22 + " " + Types.Move_To_String(Search.rootMoves[22].pv[0]) + " " + Search.rootMoves[22].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 23 + " " + Types.Move_To_String(Search.rootMoves[23].pv[0]) + " " + Search.rootMoves[23].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 24 + " " + Types.Move_To_String(Search.rootMoves[24].pv[0]) + " " + Search.rootMoves[24].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 25 + " " + Types.Move_To_String(Search.rootMoves[25].pv[0]) + " " + Search.rootMoves[25].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 26 + " " + Types.Move_To_String(Search.rootMoves[26].pv[0]) + " " + Search.rootMoves[26].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 27 + " " + Types.Move_To_String(Search.rootMoves[27].pv[0]) + " " + Search.rootMoves[27].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 28 + " " + Types.Move_To_String(Search.rootMoves[28].pv[0]) + " " + Search.rootMoves[28].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
-		haxe_Log.trace("rootMoves" + 29 + " " + Types.Move_To_String(Search.rootMoves[29].pv[0]) + " " + Search.rootMoves[29].score,{ fileName : "Search.hx", lineNumber : 75, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("Search::IDLoop end",{ fileName : "Search.hx", lineNumber : 81, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 0 + " " + Types.Move_To_String(Search.rootMoves[0].pv[0]) + " " + Search.rootMoves[0].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 1 + " " + Types.Move_To_String(Search.rootMoves[1].pv[0]) + " " + Search.rootMoves[1].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 2 + " " + Types.Move_To_String(Search.rootMoves[2].pv[0]) + " " + Search.rootMoves[2].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 3 + " " + Types.Move_To_String(Search.rootMoves[3].pv[0]) + " " + Search.rootMoves[3].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 4 + " " + Types.Move_To_String(Search.rootMoves[4].pv[0]) + " " + Search.rootMoves[4].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 5 + " " + Types.Move_To_String(Search.rootMoves[5].pv[0]) + " " + Search.rootMoves[5].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 6 + " " + Types.Move_To_String(Search.rootMoves[6].pv[0]) + " " + Search.rootMoves[6].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 7 + " " + Types.Move_To_String(Search.rootMoves[7].pv[0]) + " " + Search.rootMoves[7].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 8 + " " + Types.Move_To_String(Search.rootMoves[8].pv[0]) + " " + Search.rootMoves[8].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 9 + " " + Types.Move_To_String(Search.rootMoves[9].pv[0]) + " " + Search.rootMoves[9].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 10 + " " + Types.Move_To_String(Search.rootMoves[10].pv[0]) + " " + Search.rootMoves[10].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 11 + " " + Types.Move_To_String(Search.rootMoves[11].pv[0]) + " " + Search.rootMoves[11].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 12 + " " + Types.Move_To_String(Search.rootMoves[12].pv[0]) + " " + Search.rootMoves[12].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 13 + " " + Types.Move_To_String(Search.rootMoves[13].pv[0]) + " " + Search.rootMoves[13].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 14 + " " + Types.Move_To_String(Search.rootMoves[14].pv[0]) + " " + Search.rootMoves[14].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 15 + " " + Types.Move_To_String(Search.rootMoves[15].pv[0]) + " " + Search.rootMoves[15].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 16 + " " + Types.Move_To_String(Search.rootMoves[16].pv[0]) + " " + Search.rootMoves[16].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 17 + " " + Types.Move_To_String(Search.rootMoves[17].pv[0]) + " " + Search.rootMoves[17].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 18 + " " + Types.Move_To_String(Search.rootMoves[18].pv[0]) + " " + Search.rootMoves[18].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 19 + " " + Types.Move_To_String(Search.rootMoves[19].pv[0]) + " " + Search.rootMoves[19].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 20 + " " + Types.Move_To_String(Search.rootMoves[20].pv[0]) + " " + Search.rootMoves[20].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 21 + " " + Types.Move_To_String(Search.rootMoves[21].pv[0]) + " " + Search.rootMoves[21].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 22 + " " + Types.Move_To_String(Search.rootMoves[22].pv[0]) + " " + Search.rootMoves[22].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 23 + " " + Types.Move_To_String(Search.rootMoves[23].pv[0]) + " " + Search.rootMoves[23].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 24 + " " + Types.Move_To_String(Search.rootMoves[24].pv[0]) + " " + Search.rootMoves[24].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 25 + " " + Types.Move_To_String(Search.rootMoves[25].pv[0]) + " " + Search.rootMoves[25].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 26 + " " + Types.Move_To_String(Search.rootMoves[26].pv[0]) + " " + Search.rootMoves[26].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 27 + " " + Types.Move_To_String(Search.rootMoves[27].pv[0]) + " " + Search.rootMoves[27].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 28 + " " + Types.Move_To_String(Search.rootMoves[28].pv[0]) + " " + Search.rootMoves[28].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("rootMoves" + 29 + " " + Types.Move_To_String(Search.rootMoves[29].pv[0]) + " " + Search.rootMoves[29].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
 	}
 	static StableSort(moves,begin,end) {
 		if(begin == end) {
@@ -2122,6 +2127,10 @@ class Search {
 			pos.do_move(move,si);
 			value = -Search.Qsearch(pos,-beta,-alpha,depth - 1);
 			pos.undo_move(move);
+			if(Signals.stop) {
+				haxe_Log.trace("qsearch Signals.stop !",{ fileName : "Search.hx", lineNumber : 149, className : "Search", methodName : "Qsearch"});
+				return 0;
+			}
 			if(value > alpha) {
 				alpha = value;
 				if(alpha >= beta) {
@@ -2154,6 +2163,16 @@ class Search {
 			pos.do_move(move,st);
 			value = depth - 1 < 1 ? -Search.Qsearch(pos,-beta,-alpha,depth) : -Search.Search(pos,-beta,-alpha,depth - 1,2);
 			pos.undo_move(move);
+			if(Signals.stop) {
+				haxe_Log.trace("search Signals.stop !",{ fileName : "Search.hx", lineNumber : 182, className : "Search", methodName : "Search"});
+				return 0;
+			}
+			let sa = HxOverrides.now() / 1000 - Signals.startTime;
+			if(sa > 5) {
+				haxe_Log.trace("Time Over ...",{ fileName : "Search.hx", lineNumber : 187, className : "Search", methodName : "Search"});
+				Signals.stop = true;
+				return 0;
+			}
 			if(rootNode) {
 				let rm;
 				let _g = 0;
@@ -2813,6 +2832,8 @@ PSQTable.psqT = [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 Position.psq = [];
 Position.pieceValue = [0,90,315,405,495,855,990,540,15000,540,540,540,540,945,1395];
 SFEN.startpos = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1";
+Signals.stop = false;
+Signals.startTime = 0;
 Search.NodeRoot = 0;
 Search.NodePV = 1;
 Search.NodeNonPV = 2;
