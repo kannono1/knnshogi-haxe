@@ -46,13 +46,17 @@ class UI {
 
 	private function isPromotable(sq:Int, pc:PC):Bool {
 		trace('isPromotable sq:$sq pc:$pc');
-		if (pc % 16 > Types.PIECE_PROMOTE) {
-			return false; // 成駒だったらFalse
-		} else if (Types.Rank_Of(sq) < 3) {
+		var pt = Types.TypeOf_Piece(pc);
+		if (Std.int(pt) >= Std.int(Types.GOLD)) {
+			return false; // 金、王、成駒だったらFalse
+		}
+		if (Types.Rank_Of(sq) < 3) {
 			return true;
-		} else if (Types.Rank_Of(selectedSq) < 3) {
+		}
+		if (Types.Rank_Of(selectedSq) < 3) {
 			return true;
-		} else {
+		}
+		else {
 			return false;
 		}
 	}

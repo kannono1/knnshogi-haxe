@@ -2272,18 +2272,21 @@ class ui_UI {
 	}
 	isPromotable(sq,pc) {
 		haxe_Log.trace("isPromotable sq:" + sq + " pc:" + pc,{ fileName : "ui/UI.hx", lineNumber : 48, className : "ui.UI", methodName : "isPromotable"});
-		if(pc % 16 > 8) {
+		let pt = Types.TypeOf_Piece(pc);
+		if((pt | 0) >= (7 | 0)) {
 			return false;
-		} else if(Types.Rank_Of(sq) < 3) {
+		}
+		if(Types.Rank_Of(sq) < 3) {
 			return true;
-		} else if(Types.Rank_Of(this.selectedSq) < 3) {
+		}
+		if(Types.Rank_Of(this.selectedSq) < 3) {
 			return true;
 		} else {
 			return false;
 		}
 	}
 	onClickCell(sq) {
-		haxe_Log.trace("on clickCell:",{ fileName : "ui/UI.hx", lineNumber : 61, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
+		haxe_Log.trace("on clickCell:",{ fileName : "ui/UI.hx", lineNumber : 65, className : "ui.UI", methodName : "onClickCell", customParams : [sq]});
 		switch(this.operationMode) {
 		case 0:
 			this.selectedSq = sq;
@@ -2307,14 +2310,14 @@ class ui_UI {
 		}
 	}
 	onClickHand(pr) {
-		haxe_Log.trace("on clickHand:",{ fileName : "ui/UI.hx", lineNumber : 83, className : "ui.UI", methodName : "onClickHand", customParams : [pr]});
+		haxe_Log.trace("on clickHand:",{ fileName : "ui/UI.hx", lineNumber : 87, className : "ui.UI", methodName : "onClickHand", customParams : [pr]});
 		if(this.operationMode == 0) {
 			this.selectedHand = pr;
 			this.updateUi(2);
 		}
 	}
 	onEnemyMoved() {
-		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 93, className : "ui.UI", methodName : "onEnemyMoved"});
+		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 97, className : "ui.UI", methodName : "onEnemyMoved"});
 		this.updateUi(0);
 	}
 	onEndGame(winner) {
