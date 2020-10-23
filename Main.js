@@ -804,6 +804,7 @@ class Position {
 		this._hx_constructor();
 	}
 	_hx_constructor() {
+		this.nodes = 0;
 		this.evalList = new EvalList();
 		this.materialValue = 0;
 		this.pieceList = [];
@@ -902,6 +903,9 @@ class Position {
 	AttackersToSq(sq) {
 		return this.AttackersTo(sq,this.byTypeBB[0]);
 	}
+	Nodes() {
+		return this.nodes;
+	}
 	Checkers() {
 		return this.st.checkersBB;
 	}
@@ -969,6 +973,7 @@ class Position {
 		let pr = Types.RawTypeOf(pc);
 		let pt = Types.TypeOf_Piece(pc);
 		let materialDiff = 0;
+		this.nodes++;
 		newSt.Copy(this.st);
 		newSt.previous = this.st;
 		this.st = newSt;
@@ -1332,6 +1337,7 @@ class Position {
 		}
 	}
 	Clear() {
+		this.nodes = 0;
 		let _g = 0;
 		while(_g < 81) {
 			let i = _g++;
@@ -1478,10 +1484,10 @@ class Position {
 			s += HxOverrides.substr("  " + this.board[sq],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 482, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 487, className : "Position", methodName : "printBoard"});
 	}
 	printHand() {
-		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 486, className : "Position", methodName : "printHand"});
+		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 491, className : "Position", methodName : "printHand"});
 	}
 	printPieceNo() {
 		this.evalList.printPieceNo();

@@ -82,6 +82,10 @@ class Search {
 		for (i in 0...30) {
 			trace('rootMoves${i} ${Types.Move_To_String(rootMoves[i].pv[0])} ${rootMoves[i].score}');
 		}
+		var elapsed = Timer.stamp() - Signals.startTime;
+		var nps:Int = Std.int(pos.Nodes() / elapsed);
+		var ereg = ~/\B(?=(\d\d\d)+(?!\d))/g;
+		trace('nps:${ereg.replace('${nps}', ",")} nodes :${pos.Nodes()} elapsed:${elapsed}');
 	}
 
 	private static function StableSort(moves:Array<SearchRootMove>, begin:Int, end:Int) {

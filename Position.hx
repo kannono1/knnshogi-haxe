@@ -28,6 +28,7 @@ class Position {
 
 	private var st:StateInfo;// undoのときに使用する
 	private var evalList:EvalList = new EvalList();
+	private var nodes:Int = 0;// count of domove
 
 	public function new() {
 		InitBB();
@@ -78,6 +79,8 @@ class Position {
 	public function AttackersToSq(sq:Int):Bitboard {
 		return AttackersTo(sq, byTypeBB[Types.ALL_PIECES]);
 	}
+
+	public function Nodes():Int return nodes;
 
 	// 王手をかけている駒のBBを返す
 	public function Checkers():Bitboard {
@@ -204,6 +207,7 @@ class Position {
 		var pr:PR = Types.RawTypeOf(pc);
 		var pt = Types.TypeOf_Piece(pc);
 		var materialDiff:Int = 0;
+		nodes++;
 		newSt.Copy(st);
 		newSt.previous = st;
 		st = newSt;
@@ -443,6 +447,7 @@ class Position {
 	}
 
 	private function Clear() {
+		nodes = 0;
 		for (i in 0...Types.SQ_NB) {
 			board[i] = 0;
 			index[i] = 0;

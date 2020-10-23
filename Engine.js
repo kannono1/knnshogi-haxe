@@ -1168,6 +1168,7 @@ class PSQTable {
 PSQTable.__name__ = true;
 class Position {
 	constructor() {
+		this.nodes = 0;
 		this.evalList = new EvalList();
 		this.materialValue = 0;
 		this.pieceList = [];
@@ -1266,6 +1267,9 @@ class Position {
 	AttackersToSq(sq) {
 		return this.AttackersTo(sq,this.byTypeBB[0]);
 	}
+	Nodes() {
+		return this.nodes;
+	}
 	Checkers() {
 		return this.st.checkersBB;
 	}
@@ -1333,6 +1337,7 @@ class Position {
 		let pr = Types.RawTypeOf(pc);
 		let pt = Types.TypeOf_Piece(pc);
 		let materialDiff = 0;
+		this.nodes++;
 		newSt.Copy(this.st);
 		newSt.previous = this.st;
 		this.st = newSt;
@@ -1696,6 +1701,7 @@ class Position {
 		}
 	}
 	Clear() {
+		this.nodes = 0;
 		let _g = 0;
 		while(_g < 81) {
 			let i = _g++;
@@ -1842,10 +1848,10 @@ class Position {
 			s += HxOverrides.substr("  " + this.board[sq],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 482, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 487, className : "Position", methodName : "printBoard"});
 	}
 	printHand() {
-		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 486, className : "Position", methodName : "printHand"});
+		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 491, className : "Position", methodName : "printHand"});
 	}
 	printPieceNo() {
 		this.evalList.printPieceNo();
@@ -2060,6 +2066,10 @@ class Search {
 		haxe_Log.trace("rootMoves" + 27 + " " + Types.Move_To_String(Search.rootMoves[27].pv[0]) + " " + Search.rootMoves[27].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
 		haxe_Log.trace("rootMoves" + 28 + " " + Types.Move_To_String(Search.rootMoves[28].pv[0]) + " " + Search.rootMoves[28].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
 		haxe_Log.trace("rootMoves" + 29 + " " + Types.Move_To_String(Search.rootMoves[29].pv[0]) + " " + Search.rootMoves[29].score,{ fileName : "Search.hx", lineNumber : 83, className : "Search", methodName : "IDLoop"});
+		let elapsed = HxOverrides.now() / 1000 - Signals.startTime;
+		let nps = pos.Nodes() / elapsed | 0;
+		let ereg_r = new RegExp("\\B(?=(\\d\\d\\d)+(?!\\d))","g".split("u").join(""));
+		haxe_Log.trace("nps:" + ("" + nps).replace(ereg_r,",") + " nodes :" + pos.Nodes() + " elapsed:" + elapsed,{ fileName : "Search.hx", lineNumber : 88, className : "Search", methodName : "IDLoop"});
 	}
 	static StableSort(moves,begin,end) {
 		if(begin == end) {
@@ -2128,7 +2138,7 @@ class Search {
 			value = -Search.Qsearch(pos,-beta,-alpha,depth - 1);
 			pos.undo_move(move);
 			if(Signals.stop) {
-				haxe_Log.trace("qsearch Signals.stop !",{ fileName : "Search.hx", lineNumber : 149, className : "Search", methodName : "Qsearch"});
+				haxe_Log.trace("qsearch Signals.stop !",{ fileName : "Search.hx", lineNumber : 153, className : "Search", methodName : "Qsearch"});
 				return 0;
 			}
 			if(value > alpha) {
@@ -2164,12 +2174,12 @@ class Search {
 			value = depth - 1 < 1 ? -Search.Qsearch(pos,-beta,-alpha,depth) : -Search.Search(pos,-beta,-alpha,depth - 1,2);
 			pos.undo_move(move);
 			if(Signals.stop) {
-				haxe_Log.trace("search Signals.stop !",{ fileName : "Search.hx", lineNumber : 182, className : "Search", methodName : "Search"});
+				haxe_Log.trace("search Signals.stop !",{ fileName : "Search.hx", lineNumber : 186, className : "Search", methodName : "Search"});
 				return 0;
 			}
 			let sa = HxOverrides.now() / 1000 - Signals.startTime;
 			if(sa > 5) {
-				haxe_Log.trace("Time Over ...",{ fileName : "Search.hx", lineNumber : 187, className : "Search", methodName : "Search"});
+				haxe_Log.trace("Time Over ...",{ fileName : "Search.hx", lineNumber : 191, className : "Search", methodName : "Search"});
 				Signals.stop = true;
 				return 0;
 			}
