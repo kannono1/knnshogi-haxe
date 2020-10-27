@@ -1122,7 +1122,7 @@ class MovePicker {
 		this.moves.Reset();
 		this.cur = 0;
 		this.end = 0;
-		if(p.Checkers().IsNonZero()) {
+		if(p.in_check()) {
 			this.stage = 6;
 		} else {
 			this.stage = 0;
@@ -1141,7 +1141,11 @@ class MovePicker {
 		let target = this.pos.PiecesColour(them).newCOPY();
 		target.SetBit(ksq);
 		target.ClrBit(ksq);
-		this.moves.GenerateAll(this.pos,us,target,0);
+		if(p.in_check()) {
+			this.GenerateNext();
+		} else {
+			this.moves.GenerateAll(this.pos,us,target,0);
+		}
 	}
 	GenerateNext() {
 		this.cur = 0;
@@ -1348,8 +1352,8 @@ class Position {
 			this.evalList.put_piece(piece_no,to,pc);
 			this.SubHand(us,pr);
 			materialDiff = 0;
-			let tmp = this.AttackersToSq(this.king_square(this.sideToMove));
-			let tmp1 = this.PiecesColour(Types.OppColour(this.sideToMove));
+			let tmp = this.AttackersToSq(this.king_square(them));
+			let tmp1 = this.PiecesColour(us);
 			this.st.checkersBB = tmp.newAND(tmp1);
 			this.changeSideToMove();
 			return;
@@ -1377,8 +1381,8 @@ class Position {
 		this.st.capturedType = captured;
 		materialDiff += Evaluate.capturePieceValue[captured];
 		this.st.materialValue = this.st.previous.materialValue + (us == 0 ? materialDiff : -materialDiff);
-		let tmp = this.AttackersToSq(this.king_square(this.sideToMove));
-		let tmp1 = this.PiecesColour(Types.OppColour(this.sideToMove));
+		let tmp = this.AttackersToSq(this.king_square(them));
+		let tmp1 = this.PiecesColour(us);
 		this.st.checkersBB = tmp.newAND(tmp1);
 		this.changeSideToMove();
 	}
@@ -2028,7 +2032,7 @@ class Search {
 		let delta = 30001;
 		Signals.stop = false;
 		Signals.startTime = HxOverrides.now() / 1000;
-		while(++depth < 4 && !Signals.stop) {
+		while(++depth < 5 && !Signals.stop) {
 			haxe_Log.trace("Search::IDLoop depth=" + depth + " ",{ fileName : "Search.hx", lineNumber : 66, className : "Search", methodName : "IDLoop"});
 			alpha = -30001;
 			beta = 30001;
@@ -2102,7 +2106,7 @@ class Search {
 		}
 	}
 	static Qsearch(pos,alpha,beta,depth) {
-		let ply_from_root = (4 - depth / 1 | 0) + 1;
+		let ply_from_root = (5 - depth / 1 | 0) + 1;
 		let InCheck = pos.in_check();
 		let value = 0;
 		if(InCheck) {
@@ -2118,7 +2122,7 @@ class Search {
 					return alpha;
 				}
 			}
-			if(depth < -3) {
+			if(depth < -9) {
 				return alpha;
 			}
 		}
@@ -2138,7 +2142,7 @@ class Search {
 			value = -Search.Qsearch(pos,-beta,-alpha,depth - 1);
 			pos.undo_move(move);
 			if(Signals.stop) {
-				haxe_Log.trace("qsearch Signals.stop !",{ fileName : "Search.hx", lineNumber : 153, className : "Search", methodName : "Qsearch"});
+				haxe_Log.trace("qsearch Signals.stop !",{ fileName : "Search.hx", lineNumber : 154, className : "Search", methodName : "Qsearch"});
 				return 0;
 			}
 			if(value > alpha) {
@@ -2174,12 +2178,12 @@ class Search {
 			value = depth - 1 < 1 ? -Search.Qsearch(pos,-beta,-alpha,depth) : -Search.Search(pos,-beta,-alpha,depth - 1,2);
 			pos.undo_move(move);
 			if(Signals.stop) {
-				haxe_Log.trace("search Signals.stop !",{ fileName : "Search.hx", lineNumber : 186, className : "Search", methodName : "Search"});
+				haxe_Log.trace("search Signals.stop !",{ fileName : "Search.hx", lineNumber : 187, className : "Search", methodName : "Search"});
 				return 0;
 			}
 			let sa = HxOverrides.now() / 1000 - Signals.startTime;
 			if(sa > 5) {
-				haxe_Log.trace("Time Over ...",{ fileName : "Search.hx", lineNumber : 191, className : "Search", methodName : "Search"});
+				haxe_Log.trace("Time Over ...",{ fileName : "Search.hx", lineNumber : 192, className : "Search", methodName : "Search"});
 				Signals.stop = true;
 				return 0;
 			}
@@ -2852,6 +2856,7 @@ Search.numRootMoves = 0;
 Search.rootColor = 0;
 Search.maxPly = 0;
 Search.pvSize = 1;
+Search.MAX_DEPTH = -9;
 Types.INT32_MAX = 2147483647;
 Types.VALUE_NOT_EVALUATED = 2147483647;
 Types.ONE_PLY = 1;
@@ -2917,7 +2922,7 @@ Types.SQ_NONE = 81;
 Types.FILE_NB = 9;
 Types.RANK_NB = 9;
 Types.MAX_MOVES = 600;
-Types.MAX_PLY = 4;
+Types.MAX_PLY = 5;
 Types.DELTA_N = -1;
 Types.DELTA_E = -9;
 Types.DELTA_S = 1;

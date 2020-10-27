@@ -17,6 +17,8 @@ class Test {
 	}
 
 	static private function TestAll(){
+		AssertFn('Depth4 err', 'ln1gk1snl/1sP4p1/pp1ppppg1/9/2L1s3p/2R6/PP1P1PP1+b/4G3b/L1SGK3+p w R2n3p 1'
+			, (bm)-> bm != new Move(0));
 		AssertFn('探索内での先手玉の王手回避(後手角成で王手がかかる)', 'lnsgkgsnl/1r5b1/pppppp1pp/6p2/7P1/9/PPPPPPP1P/1B5R1/LNSGKGSNL w - 1'
 			, (bm)-> bm != new Move(0));
 		AssertFn('王の近くに馬(王の自殺手チェック)', 'rnslkslnb/1g5g1/ppppB+Lppp/9/9/9/PPPPPPPPP/7R1/LNSGKGSN1 w - 1'

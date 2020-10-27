@@ -984,8 +984,8 @@ class Position {
 			this.evalList.put_piece(piece_no,to,pc);
 			this.SubHand(us,pr);
 			materialDiff = 0;
-			let tmp = this.AttackersToSq(this.king_square(this.sideToMove));
-			let tmp1 = this.PiecesColour(Types.OppColour(this.sideToMove));
+			let tmp = this.AttackersToSq(this.king_square(them));
+			let tmp1 = this.PiecesColour(us);
 			this.st.checkersBB = tmp.newAND(tmp1);
 			this.changeSideToMove();
 			return;
@@ -1013,8 +1013,8 @@ class Position {
 		this.st.capturedType = captured;
 		materialDiff += Evaluate.capturePieceValue[captured];
 		this.st.materialValue = this.st.previous.materialValue + (us == 0 ? materialDiff : -materialDiff);
-		let tmp = this.AttackersToSq(this.king_square(this.sideToMove));
-		let tmp1 = this.PiecesColour(Types.OppColour(this.sideToMove));
+		let tmp = this.AttackersToSq(this.king_square(them));
+		let tmp1 = this.PiecesColour(us);
 		this.st.checkersBB = tmp.newAND(tmp1);
 		this.changeSideToMove();
 	}
@@ -2603,7 +2603,7 @@ Types.SQ_NONE = 81;
 Types.FILE_NB = 9;
 Types.RANK_NB = 9;
 Types.MAX_MOVES = 600;
-Types.MAX_PLY = 4;
+Types.MAX_PLY = 5;
 Types.DELTA_N = -1;
 Types.DELTA_E = -9;
 Types.DELTA_S = 1;

@@ -116,6 +116,7 @@ class Search {
 	}
 
 	// Qsearchの時はdepthがマイナスになる
+	inline static var MAX_DEPTH = -9;
 	private static function Qsearch(pos:Position, alpha:Int, beta:Int, depth:Int):Int {
 		// 現在のnodeのrootからの手数。これカウンターが必要。
 		// nanoだとこのカウンター持ってないので適当にごまかす。
@@ -124,7 +125,7 @@ class Search {
 		var value:Int = 0;
 		if (InCheck) {
 			alpha = -Types.VALUE_INFINITE;
-			if (depth < -9 * Types.ONE_PLY){
+			if (depth < MAX_DEPTH * Types.ONE_PLY){
 				return Evaluate.DoEvaluate(pos, false); // knn ittan
 			}
 		} else {
@@ -137,7 +138,7 @@ class Search {
 				}
 			}
 			// 探索深さが-3以下ならこれ以上延長しない。
-			if (depth < -3 * Types.ONE_PLY) return alpha;
+			if (depth < MAX_DEPTH * Types.ONE_PLY) return alpha;
 		}
 		// 取り合いの指し手だけ生成する
 		var mp:MovePicker = new MovePicker();

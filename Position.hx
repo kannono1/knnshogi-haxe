@@ -218,7 +218,7 @@ class Position {
 			evalList.put_piece(piece_no , to, pc);
 			SubHand(us, pr);
 			materialDiff = 0; // 駒打ちなので駒割りの変動なし。
-			st.checkersBB = AttackersToSq(king_square(sideToMove)).newAND(PiecesColour(Types.OppColour(sideToMove)));
+			st.checkersBB = AttackersToSq(king_square(them)).newAND(PiecesColour(us));//相手玉への王手駒
 			changeSideToMove();
 			return;
 		}
@@ -243,7 +243,7 @@ class Position {
 		st.capturedType = captured;
 		materialDiff += Evaluate.capturePieceValue[captured];
 		st.materialValue = st.previous.materialValue + (us == Types.BLACK ? materialDiff : -materialDiff);
-		st.checkersBB = AttackersToSq(king_square(sideToMove)).newAND(PiecesColour(Types.OppColour(sideToMove)));
+		st.checkersBB = AttackersToSq(king_square(them)).newAND(PiecesColour(us));// 相手玉への王手駒
 		changeSideToMove();
 	}
 
