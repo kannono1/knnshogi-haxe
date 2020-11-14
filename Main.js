@@ -11,7 +11,7 @@ class BB {
 		return util_MathUtil.abs(Types.Rank_Of(s1) - Types.Rank_Of(s2));
 	}
 	static Init() {
-		haxe_Log.trace("Init::BB",{ fileName : "BB.hx", lineNumber : 55, className : "BB", methodName : "Init"});
+		haxe_Log.trace("Init::BB",{ fileName : "BB.hx", lineNumber : 58, className : "BB", methodName : "Init"});
 		if(BB.initialized) {
 			return;
 		}
@@ -79,6 +79,8 @@ class BB {
 			BB.pseudoAttacks[6][s] = BB.AttacksBB(s,new Bitboard(),6);
 			BB.pseudoAttacks[13][s] = BB.AttacksBB(s,new Bitboard(),13);
 			BB.pseudoAttacks[14][s] = BB.AttacksBB(s,new Bitboard(),14);
+			BB.RookStepEffectBB[s] = BB.pseudoAttacks[6][s].newOR(BB.squareBB[s]);
+			BB.BishopStepEffectBB[s] = BB.pseudoAttacks[5][s].newOR(BB.squareBB[s]);
 			BB.pseudoQueenAttacks[s] = new Bitboard();
 			BB.pseudoQueenAttacks[s].OR(BB.pseudoAttacks[5][s]);
 			BB.pseudoQueenAttacks[s].OR(BB.pseudoAttacks[6][s]);
@@ -127,12 +129,7 @@ class BB {
 					if(BB.steps[pt][k] == 0) {
 						continue;
 					}
-					let to = s;
-					if(c == 0) {
-						to += BB.steps[pt][k];
-					} else {
-						to -= BB.steps[pt][k];
-					}
+					let to = s + BB.steps[pt][k];
 					if(Types.Is_SqOK(to) == false) {
 						continue;
 					}
@@ -166,12 +163,7 @@ class BB {
 					if(BB.steps[pt][k] == 0) {
 						continue;
 					}
-					let to = s;
-					if(c1 == 0) {
-						to += BB.steps[pt][k];
-					} else {
-						to -= BB.steps[pt][k];
-					}
+					let to = s - BB.steps[pt][k];
 					if(Types.Is_SqOK(to) == false) {
 						continue;
 					}
@@ -189,10 +181,31 @@ class BB {
 				}
 			}
 		}
+		BB.LanceStepEffectBB[0] = [];
+		let _g13 = 0;
+		while(_g13 < 81) {
+			let s = _g13++;
+			BB.LanceStepEffectBB[0][s] = BB.stepAttacksBB[Types.Make_Piece(0,2)][s].newOR(BB.squareBB[s]).newAND(BB.RookStepEffectBB[s]);
+		}
+		BB.LanceStepEffectBB[1] = [];
+		let _g14 = 0;
+		while(_g14 < 81) {
+			let s = _g14++;
+			BB.LanceStepEffectBB[1][s] = BB.stepAttacksBB[Types.Make_Piece(1,2)][s].newOR(BB.squareBB[s]).newAND(BB.RookStepEffectBB[s]);
+		}
 		BB.initialized = true;
 	}
 	static getStepAttacksBB(pc,sq) {
 		return BB.stepAttacksBB[pc][sq];
+	}
+	static rookStepEffect(sq) {
+		return BB.RookStepEffectBB[sq];
+	}
+	static bishopStepEffect(sq) {
+		return BB.BishopStepEffectBB[sq];
+	}
+	static lanceStepEffect(c,sq) {
+		return BB.LanceStepEffectBB[c][sq];
 	}
 	static AttacksBB(sq,occ,pt) {
 		switch(pt) {
@@ -270,6 +283,9 @@ class BB {
 		let zero = new Bitboard();
 		return zero;
 	}
+	static ANDsq(b,sq) {
+		return b.newAND(BB.squareBB[sq]);
+	}
 }
 BB.__name__ = true;
 class Bitboard {
@@ -333,6 +349,12 @@ class Bitboard {
 		} else {
 			return (this.upper & 1 << sq - 54) != 0;
 		}
+	}
+	more_than_one() {
+		if((this.lower & this.lower - 1) != 0 || (this.middle & this.middle - 1) != 0 || (this.upper & this.upper - 1) != 0 || this.lower != 0 && this.upper != 0 || this.lower != 0 && this.middle != 0 || this.middle != 0 && this.upper != 0) {
+			return true;
+		}
+		return false;
 	}
 	LSB() {
 		if(this.lower != 0) {
@@ -912,6 +934,9 @@ class Position {
 	in_check() {
 		return this.Checkers().IsNonZero();
 	}
+	blockers_for_king(c) {
+		return this.st.blockersForKing[c];
+	}
 	king_square(c) {
 		return this.pieceList[c][8][0];
 	}
@@ -922,12 +947,15 @@ class Position {
 		let us = this.sideToMove;
 		let from = Types.move_from(m);
 		if(Types.TypeOf_Piece(this.PieceOn(from)) == 8) {
-			if(this.AttackersToSq(Types.move_to(m)).newAND(this.PiecesColour(Types.OppColour(us))).IsZero()) {
-				return true;
+			if(!this.AttackersToSq(Types.move_to(m)).newAND(this.PiecesColour(Types.OppColour(us))).IsZero()) {
+				return false;
 			}
-			return false;
 		}
-		return true;
+		if(this.blockers_for_king(us).isSet(from)) {
+			return Types.aligned(from,Types.to_sq(m),this.king_square(us));
+		} else {
+			return true;
+		}
 	}
 	PiecesAll() {
 		return this.byTypeBB[0];
@@ -942,8 +970,11 @@ class Position {
 		let this1 = this.board[sq];
 		return this1;
 	}
-	PiecesType(pt) {
+	piecesType(pt) {
 		return this.byTypeBB[pt];
+	}
+	between_bb(from,to) {
+		return BB.betweenBB[from][to];
 	}
 	bona_piece_of(c,pt) {
 		let ct = this.hand[c][pt];
@@ -960,6 +991,29 @@ class Position {
 	}
 	changeSideToMove() {
 		this.sideToMove = (this.sideToMove + 1) % 2;
+	}
+	set_check_info(si) {
+		si.blockersForKing[1] = this.slider_blockers(0,this.king_square(1),si.pinners[1]);
+		si.blockersForKing[0] = this.slider_blockers(1,this.king_square(0),si.pinners[0]);
+	}
+	slider_blockers(c,s,pinners) {
+		let us = Types.OppColour(c);
+		let blockers = new Bitboard();
+		let rook_dragons = this.piecesType(6).newOR(this.piecesType(14)).newAND(BB.rookStepEffect(s));
+		let bishop_horses = this.piecesType(5).newOR(this.piecesType(13)).newAND(BB.bishopStepEffect(s));
+		let lances = this.piecesType(2).newAND(BB.lanceStepEffect(us,s));
+		let snipers = rook_dragons.newOR(bishop_horses).newOR(lances).newAND(this.PiecesColour(c));
+		while(snipers.IsNonZero()) {
+			let sniperSq = snipers.PopLSB();
+			let b = this.between_bb(s,sniperSq).newAND(this.PiecesAll());
+			if(b.IsNonZero() && !b.more_than_one()) {
+				blockers.OR(b);
+				if(b.newAND(this.PiecesColour(us)).IsNonZero()) {
+					pinners.SetBit(sniperSq);
+				}
+			}
+		}
+		return blockers;
 	}
 	do_move(move,newSt) {
 		this.doMoveFull(move,newSt);
@@ -1017,6 +1071,7 @@ class Position {
 		let tmp1 = this.PiecesColour(us);
 		this.st.checkersBB = tmp.newAND(tmp1);
 		this.changeSideToMove();
+		this.set_check_info(this.st);
 	}
 	undo_move(move) {
 		this.changeSideToMove();
@@ -1136,7 +1191,7 @@ class Position {
 		attBB.OR(BB.AttacksBB(s,occ,6).newAND(this.PiecesTypes(6,14)));
 		attBB.OR(BB.AttacksBB(s,occ,5).newAND(this.PiecesTypes(5,13)));
 		attBB.OR(this.AttacksFromPTypeSQ(s,8).newAND(this.PiecesTypes(14,13)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,8).newAND(this.PiecesType(8)));
+		attBB.OR(this.AttacksFromPTypeSQ(s,8).newAND(this.piecesType(8)));
 		return attBB;
 	}
 	MovedPieceAfter(m) {
@@ -1484,10 +1539,10 @@ class Position {
 			s += HxOverrides.substr("  " + this.board[sq],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 487, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 489, className : "Position", methodName : "printBoard"});
 	}
 	printHand() {
-		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 491, className : "Position", methodName : "printHand"});
+		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 493, className : "Position", methodName : "printHand"});
 	}
 	printPieceNo() {
 		this.evalList.printPieceNo();
@@ -1620,7 +1675,13 @@ class StateInfo {
 		this.dirtyPiece = new DirtyPiece();
 		this.materialValue = 0;
 		this.capturedType = 0;
+		this.pinners = new Array(2);
+		this.blockersForKing = new Array(2);
 		this.checkersBB = new Bitboard();
+		this.blockersForKing[0] = new Bitboard();
+		this.pinners[0] = new Bitboard();
+		this.blockersForKing[1] = new Bitboard();
+		this.pinners[1] = new Bitboard();
 	}
 	Clear() {
 		this.checkersBB.Clear();
@@ -1694,6 +1755,9 @@ class PC {
 	}
 }
 class Types {
+	static aligned(sq1,sq2,sq3) {
+		return BB.ANDsq(BB.lineBB[sq1][sq2],sq3).IsNonZero();
+	}
 	static Inv(sq) {
 		return 80 - sq;
 	}
@@ -1759,6 +1823,9 @@ class Types {
 	}
 	static move_from(m) {
 		return m >>> 7 & 127;
+	}
+	static to_sq(m) {
+		return Types.move_to(m);
 	}
 	static move_to(m) {
 		return m & 127;
@@ -2521,6 +2588,9 @@ BB.enemyField3 = [];
 BB.pawnLineBB = [];
 BB.pseudoAttacks = [];
 BB.pseudoQueenAttacks = [];
+BB.RookStepEffectBB = [];
+BB.BishopStepEffectBB = [];
+BB.LanceStepEffectBB = [[]];
 BB.initialized = false;
 BB.steps = [[0,0,0,0,0,0,0,0,0],[-1,0,0,0,0,0,0,0,0],[-1,-2,-3,-4,-5,-6,-7,-8,0],[7,-11,0,0,0,0,0,0,0],[-1,8,10,-10,-8,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,10,-8,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[-1,8,9,1,-10,-9,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]];
 BB.rDeltas = [-1,-9,1,9];
@@ -2603,7 +2673,7 @@ Types.SQ_NONE = 81;
 Types.FILE_NB = 9;
 Types.RANK_NB = 9;
 Types.MAX_MOVES = 600;
-Types.MAX_PLY = 5;
+Types.MAX_PLY = 6;
 Types.DELTA_N = -1;
 Types.DELTA_E = -9;
 Types.DELTA_S = 1;

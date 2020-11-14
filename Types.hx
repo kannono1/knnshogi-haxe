@@ -105,7 +105,7 @@ class Types {
 	public static inline var FILE_NB:Int = 9;
 	public static inline var RANK_NB:Int = 9;
 	public static inline var MAX_MOVES:Int = 600;
-	public static inline var MAX_PLY:Int = 5; // 最大探索深度
+	public static inline var MAX_PLY:Int = 6; // 最大探索深度
 	public static inline var DELTA_N:Int = -1; // 飛び(上下左右)の方向のシフトビット
 	public static inline var DELTA_E:Int = -9;
 	public static inline var DELTA_S:Int = 1;
@@ -162,6 +162,14 @@ class Types {
 		79, 70, 61, 52, 43, 34, 25, 16,  7,
 		80, 71, 62, 53, 44, 35, 26, 17,  8,
 	];
+
+	// 与えられた3升が縦横斜めの1直線上にあるか。駒を移動させたときに開き王手になるかどうかを判定するのに使う。
+	// 例) 王がsq1, pinされている駒がsq2にあるときに、pinされている駒をsq3に移動させたときにaligned(sq1,sq2,sq3)であれば、
+	//  pinされている方向に沿った移動なので開き王手にはならないと判定できる。
+	// ただし玉はsq3として、sq1,sq2は同じ側にいるものとする。(玉を挟んでの一直線は一直線とはみなさない)
+	public static function aligned(sq1:Int, sq2:Int, sq3:Int/* is ksq */):Bool {
+		return ( BB.ANDsq( BB.lineBB[sq1][sq2], sq3 ).IsNonZero() );
+	}
 
 	public static function Inv(sq:Int):Int { return (SQ_NB - 1) - sq; }
 	// ply手で詰まされるときのスコア
@@ -230,6 +238,9 @@ class Types {
 		return (m >>> 7) & 0x7F;
 	}
 
+	public static function to_sq(m:Move):Int {
+		return move_to(m);
+	}
 	public static function move_to(m:Move):Int {
 		return m & 0x7F;
 	}

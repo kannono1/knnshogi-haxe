@@ -91,6 +91,11 @@ class Position {
 		return Checkers().IsNonZero();
 	}
 
+	// c側の玉に対してpinしている駒(その駒をc側の玉との直線上から動かしたときにc側の玉に王手となる)
+	public function blockers_for_king(c:Int):Bitboard {
+		return st.blockersForKing[c];
+	}
+
 	public function king_square(c:Int):Int {
 		return pieceList[c][Types.KING][0];
 	}
@@ -101,13 +106,17 @@ class Position {
 		}
 		var us:Int = sideToMove;
 		var from:Int = Types.move_from(m);
+		// 王の自殺手チェック
 		if (Types.TypeOf_Piece(PieceOn(from)) == Types.KING) {
-			if (AttackersToSq(Types.move_to(m)).newAND(PiecesColour(Types.OppColour(us))).IsZero()) {
-				return true;
+			if (!AttackersToSq(Types.move_to(m)).newAND(PiecesColour(Types.OppColour(us))).IsZero()) {
+				return false;
 			}
-			return false;
 		}
-		return true;
+		// 自玉への開き王手のチェック
+		// blockers_for_king()は、pinされている駒(自駒・敵駒)を表現するが、fromにある駒は自駒であることは
+		// わかっているのでこれで良い。
+		return   !(blockers_for_king(us).isSet(from))// 移動する駒がブロッカー
+			|| Types.aligned(from, Types.to_sq(m), king_square(us));// 移動先が王の直線上か
 	}
 
 	public function PiecesAll():Bitboard {
@@ -126,8 +135,12 @@ class Position {
 		return new PC(board[sq]);
 	}
 
-	public function PiecesType(pt:PT):Bitboard {
+	private function piecesType(pt:PT):Bitboard {
 		return byTypeBB[pt];
+	}
+
+	private function between_bb(from:Int, to:Int): Bitboard {
+		return BB.betweenBB[from][to];
 	}
 
 	// c側の手駒ptの最後の1枚のBonaPiece番号を返す
@@ -153,46 +166,34 @@ class Position {
 		sideToMove = (sideToMove + 1) % 2;
 	}
 
-	// // sに利きのあるc側の駒を列挙する。
-	// // (occが指定されていなければ現在の盤面において。occが指定されていればそれをoccupied bitboardとして)
-	// private function attackers_to(c:Int, sq:Int, occ:Bitboard) Bitboard {
-	// 	// ASSERT_LV3(is_ok(c) && sq <= SQ_NB);
-	// 	var them = ~c;
-	// 	// sの地点に敵駒ptをおいて、その利きに自駒のptがあればsに利いているということだ。
-	// 	// 香の利きを求めるコストが惜しいのでrookEffect()を利用する。
-	// 	return
-	// 	(     (pawnEffect(them, sq)		&  pieces(PAWN)        )
-	// 		| (knightEffect(them, sq)	&  pieces(KNIGHT)      )
-	// 		| (silverEffect(them, sq)	&  pieces(SILVER_HDK)  )
-	// 		| (goldEffect(them, sq)		&  pieces(GOLDS_HDK)   )
-	// 		| (bishopEffect(sq, occ)	&  pieces(BISHOP_HORSE))
-	// 		| (rookEffect(sq, occ)		& (
-	// 				pieces(ROOK_DRAGON)
-	// 			|  (lanceStepEffect(them,sq) & pieces(LANCE))
-	// 		  ))
-	// 	//  | (kingEffect(sq) & pieces(c, HDK));
-	// 	// →　HDKは、銀と金のところに含めることによって、参照するテーブルを一個減らして高速化しようというAperyのアイデア。
-	// 		) & pieces(c); // 先後混在しているのでc側の駒だけ最後にマスクする。
-	// 	;
-	// }
+	private function set_check_info(si:StateInfo) {
+		// 王手を遮断する駒の情報
+		si.blockersForKing[Types.WHITE] = slider_blockers(Types.BLACK, king_square(Types.WHITE), si.pinners[Types.WHITE]);
+		si.blockersForKing[Types.BLACK] = slider_blockers(Types.WHITE, king_square(Types.BLACK), si.pinners[Types.BLACK]);
+	}
 
-	// // kingSqを除いた効きのチェック
-	// private function effected_to_king(c:Int, sq:Int, kingSq:Int) Bool { 
-	// 	return attackers_to(c, sq, pieces() ^ kingSq);
-	// }
-
-	// private function legal(m:Move):Bool {
-	// 	if (Types.is_drop(m)) return true; // 打ち歩詰めは指し手生成で除外されている。
-	// 	var us = sideToMove;
-	// 	var from = move_from(m);
-	// 	// もし移動させる駒が玉であるなら、行き先の升に相手側の利きがないかをチェックする。
-	// 	if (type_of(piece_on(from)) == Types.KING)
-	// 		return !effected_to_king(~us, Types.move_to(m), from);
-	// 	// blockers_for_king()は、pinされている駒(自駒・敵駒)を表現するが、fromにある駒は自駒であることは
-	// 	// わかっているのでこれで良い。 Todo
-	// 	// return   !(blockers_for_king(us) & from)
-	// 	// 	|| aligned(from, to_sq(m), square<KING>(us));
-	// }
+	// return: blockers(飛び駒と玉の間にある駒（敵味方両方）)を返す。ついでにpinnersも更新する。
+	// c : 敵
+	// s : king square
+	private function slider_blockers(c:Int, s:Int , pinners:Bitboard):Bitboard {
+		var us = Types.OppColour(c);
+		var blockers = new Bitboard();
+		var rook_dragons:Bitboard = piecesType(Types.ROOK).newOR(piecesType(Types.DRAGON)).newAND(BB.rookStepEffect(s));	// 飛車・龍
+		var bishop_horses:Bitboard = piecesType(Types.BISHOP).newOR(piecesType(Types.HORSE)).newAND(BB.bishopStepEffect(s));	// 角・馬
+		var lances:Bitboard = piecesType(Types.LANCE).newAND(BB.lanceStepEffect(us, s));// 香に関しては攻撃駒が先手なら、玉より下側をサーチして、そこにある先手の香を探す。
+		var snipers:Bitboard = rook_dragons.newOR(bishop_horses).newOR(lances).newAND(PiecesColour(c));	// 王に効きを持つ飛び駒
+		while (snipers.IsNonZero()) {
+			var sniperSq:Int = snipers.PopLSB();	// スナイパーのsq
+			var b:Bitboard = between_bb(s, sniperSq).newAND(PiecesAll()); // occupancy // snipperと玉との間にある駒のBitboard
+			if (b.IsNonZero() && !b.more_than_one()) { // snipperと玉との間にある駒が1個であるなら。
+				blockers.OR(b);// blockersに追加
+				if (b.newAND(PiecesColour(us)).IsNonZero())
+					// sniperと玉に挟まれた駒が玉と同じ色の駒であるなら、pinnerに追加。
+					pinners.SetBit(sniperSq);
+			}
+		}
+		return blockers;
+	}
 
 	public function do_move(move:Move, newSt:StateInfo) {
 		doMoveFull(move, newSt);
@@ -245,6 +246,7 @@ class Position {
 		st.materialValue = st.previous.materialValue + (us == Types.BLACK ? materialDiff : -materialDiff);
 		st.checkersBB = AttackersToSq(king_square(them)).newAND(PiecesColour(us));// 相手玉への王手駒
 		changeSideToMove();
+		set_check_info(st);
 	}
 
 	public function undo_move(move:Move) {
@@ -368,7 +370,7 @@ class Position {
 		attBB.OR(BB.AttacksBB(s, occ, Types.ROOK).newAND(PiecesTypes(Types.ROOK, Types.DRAGON))); // 縦横の効き (まとめて高速化してる？)
 		attBB.OR(BB.AttacksBB(s, occ, Types.BISHOP).newAND(PiecesTypes(Types.BISHOP, Types.HORSE))); // 斜めの効き　
 		attBB.OR(AttacksFromPTypeSQ(s, Types.B_KING).newAND(PiecesTypes(Types.DRAGON, Types.HORSE))); // 上下左右
-		attBB.OR(AttacksFromPTypeSQ(s, Types.B_KING).newAND(PiecesType(Types.KING)));
+		attBB.OR(AttacksFromPTypeSQ(s, Types.B_KING).newAND(piecesType(Types.KING)));
 		return attBB;
 	}
 

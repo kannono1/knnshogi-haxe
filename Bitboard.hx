@@ -56,6 +56,19 @@ class Bitboard {
 		}
 	}
 
+	public function more_than_one():Bool {
+		if( (lower  & (lower  - 1)) != 0 || // 2進数の桁上りを利用して求める
+			(middle & (middle - 1)) != 0 ||
+			(upper 	& (upper  - 1)) != 0 ||
+		    (lower != 0 && upper != 0)   ||
+		    (lower != 0 && middle != 0)  ||
+		    (middle != 0 && upper != 0) )
+		{
+			return true;
+		}				
+		return false;
+	}
+
 	public function LSB():Int {
 		if (lower != 0) {
 			return LeastSB(lower);

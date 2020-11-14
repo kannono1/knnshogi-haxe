@@ -147,6 +147,9 @@ class Search {
 		var si:StateInfo = new StateInfo();
 		while ((move = mp.next_move()) != Types.MOVE_NONE) {
 			if (!pos.legal(move)) continue;
+			// DebugInfo.qmoves[depth] = move;
+			// DebugInfo.lastQMove = move;
+			// DebugInfo.inQChecks[depth] = pos.in_check();
 			pos.do_move(move, si);//, pos.gives_check(move)
 			value = -Qsearch(pos, -beta, -alpha, depth - Types.ONE_PLY);
 			pos.undo_move(move);
@@ -178,6 +181,10 @@ class Search {
 			if (!pos.legal(move))
 				continue;
 			// trace('depth:${depth}', Types.Move_To_StringLong(move), 'nodeType:${nodeType} rootNode:${rootNode}');
+			// DebugInfo.moves[depth] = move;
+			// DebugInfo.nodes[depth] = pos.Nodes();
+			// DebugInfo.lastMove = move;
+			// DebugInfo.inChecks[depth] = pos.in_check();
 			pos.do_move(move, st);
 			value = depth - Types.ONE_PLY < Types.ONE_PLY 
 				? -Qsearch(pos, -beta, -alpha, depth) // depthが0になったら静止探索をする。

@@ -7,7 +7,7 @@ class BB {
 	public static var filesBB:Array<Bitboard>;
 	public static var ranksBB:Array<Bitboard>;
 	public static var squareDistance:Array<Array<Int>> = [];
-	public static var stepAttacksBB:Array<Array<Bitboard>> = []; // [pc][sq] = BB
+	public static var stepAttacksBB:Array<Array<Bitboard>> = []; // [pc][sq] = BB	// 盤上の駒を考慮しない利き
 	public static var betweenBB:Array<Array<Bitboard>> = []; // [sq1][sq2] // 1と2の地点をつなぐ直線の効き
 	public static var lineBB:Array<Array<Bitboard>> = []; // [sq1][sq2] // 1と2の地点を通る直線の効き
 	public static var squareBB:Array<Bitboard> = [];
@@ -15,8 +15,11 @@ class BB {
 	public static var enemyField2:Array<Bitboard> = []; // 敵陣の2段目BB[color]
 	public static var enemyField3:Array<Bitboard> = []; // 敵陣の3段目BB[color]
 	public static var pawnLineBB:Array<Bitboard> = []; // 二歩チェック要。pawnがある列のBitが立つ[color]
-	public static var pseudoAttacks:Array<Array<Bitboard>> = []; // [pt][sq] 飛車と角の利き 擬似合法手。合法手もどき。)と呼ぶ。ちなみにpseudoの頭文字のpは読まない(黙字)で、「すーだ」に近い発音をする。
+	public static var pseudoAttacks:Array<Array<Bitboard>> = []; // [pt][sq] 飛車と角の利き.自駒のSQは含まない 擬似合法手。合法手もどき。)と呼ぶ。ちなみにpseudoの頭文字のpは読まない(黙字)で、「すーだ」に近い発音をする。
 	public static var pseudoQueenAttacks:Array<Bitboard> = []; // [sq]
+	private static var RookStepEffectBB:Array<Bitboard> = [];// [sq] 駒を無視した飛車の効き、自駒のSQを含む
+	private static var BishopStepEffectBB:Array<Bitboard> = [];// [sq] 駒を無視した飛車の効き、自駒のSQを含む
+	private static var LanceStepEffectBB:Array<Array<Bitboard>> = [[]];// [c][sq] 駒を無視した香車の効き、自駒のSQを含む
 	private static var initialized:Bool = false;
 	static private var steps:Array<Array<Int>> = [
 		// 駒の移動。のビットシフト。飛びの効きは0。
@@ -100,6 +103,8 @@ class BB {
 			pseudoAttacks[Types.ROOK][s] = AttacksBB(s, new Bitboard(), Types.ROOK);
 			pseudoAttacks[Types.HORSE][s] = AttacksBB(s, new Bitboard(), Types.HORSE);
 			pseudoAttacks[Types.DRAGON][s] = AttacksBB(s, new Bitboard(), Types.DRAGON);
+			RookStepEffectBB[s] = pseudoAttacks[Types.ROOK][s].newOR(squareBB[s]);
+			BishopStepEffectBB[s] = pseudoAttacks[Types.BISHOP][s].newOR(squareBB[s]);
 			pseudoQueenAttacks[s] = new Bitboard(); // 飛び駒の効きの判定に使用
 			pseudoQueenAttacks[s].OR(pseudoAttacks[Types.BISHOP][s]);
 			pseudoQueenAttacks[s].OR(pseudoAttacks[Types.ROOK][s]);
@@ -128,7 +133,7 @@ class BB {
 				}
 			}
 		}
-		var c = Types.BLACK; // JSだとLoopを分割しないとスルーされるかも
+		var c = Types.BLACK; // JSだとLoopが多いとスルーされるかもなので先後でループを分割してみた
 		for (p in Types.PAWN...Types.DRAGON) {
 			pt = new PT(p);
 			for (s in Types.SQ_A1...Types.SQ_NB) {
@@ -136,12 +141,7 @@ class BB {
 					if (steps[pt][k] == 0) {
 						continue;
 					}
-					var to:Int = s;
-					if (c == Types.BLACK) {
-						to += steps[pt][k];
-					} else {
-						to -= steps[pt][k];
-					}
+					var to:Int = s + steps[pt][k];
 					if (Types.Is_SqOK(to) == false) {
 						continue;
 					}
@@ -161,12 +161,7 @@ class BB {
 					if (steps[pt][k] == 0) {
 						continue;
 					}
-					var to:Int = s;
-					if (c == Types.BLACK) {
-						to += steps[pt][k];
-					} else {
-						to -= steps[pt][k];
-					}
+					var to:Int = s - steps[pt][k];
 					if (Types.Is_SqOK(to) == false) {
 						continue;
 					}
@@ -177,11 +172,29 @@ class BB {
 				}
 			}
 		}
+		for(c in Types.BLACK...Types.COLOR_NB){
+			LanceStepEffectBB[c] = [];
+			for(s in Types.SQ_A1...Types.SQ_NB){
+				LanceStepEffectBB[c][s] = stepAttacksBB[Types.Make_Piece(c, Types.LANCE)][s].newOR(squareBB[s]).newAND(RookStepEffectBB[s]);
+			}
+		}
 		initialized = true;
 	}
 
 	public static function getStepAttacksBB(pc:Int, sq:Int):Bitboard {
 		return stepAttacksBB[pc][sq];
+	}
+
+	public static function rookStepEffect(sq:Int):Bitboard {
+		return RookStepEffectBB[sq];
+	}
+
+	public static function bishopStepEffect(sq:Int):Bitboard {
+		return BishopStepEffectBB[sq];
+	}
+
+	public static function lanceStepEffect(c:Int, sq:Int):Bitboard {
+		return LanceStepEffectBB[c][sq];
 	}
 
 	public static function AttacksBB(sq:Int, occ:Bitboard, pt:PT):Bitboard {
@@ -258,5 +271,9 @@ class BB {
 		}
 		var zero:Bitboard = new Bitboard();
 		return zero;
+	}
+
+	public static function ANDsq( b:Bitboard, sq:Int ) : Bitboard {
+		return b.newAND( squareBB[sq] );
 	}
 }
