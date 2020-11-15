@@ -2,6 +2,7 @@ package ui;
 
 import js.Browser;
 import ui.Mode.OPERATION_MODE;
+import Types.Move;
 import Types.PC;
 import Types.PR;
 import Types.PT;
@@ -163,9 +164,22 @@ class UI {
 		}
 	}
 
+	private function isLastMove(sq:Int):Bool {
+		var isLastMove:Bool = false;
+		var lastMove:Move = game.getLastMove();
+		if(lastMove == null){
+			return false;
+		}
+		var to = Types.to_sq(lastMove);
+		return (sq == to);
+	}
+
 	private function setCell(sq:Int, pc:PC, linkable:Bool) {
 		var c = Types.getPieceColor(pc);
 		var s = '' + Types.getPieceLabel(Types.TypeOf_Piece(pc));
+		if(isLastMove(sq)){
+			s = '<b>${s}</b>';
+		}
 		if (linkable) {
 			s = '<a href="javascript:Main.onClickCell(' + sq + ')">' + s + '</a>';
 		}

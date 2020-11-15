@@ -26,6 +26,13 @@ class Game extends Position {
 		BB.Init();
 	}
 
+	public function getLastMove():Move {
+		if(moves.length == 0)
+			return null;
+		else
+			return moves[moves.length-1];
+	}
+
 	private function createWorker() {
 		trace('Game::createWorker');
 		worker = new Worker('Engine.js');
