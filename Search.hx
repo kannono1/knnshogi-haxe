@@ -66,6 +66,9 @@ class Search {
 			trace('Search::IDLoop depth=${depth} ');
 			alpha = -Types.VALUE_INFINITE; // 評価値が小さくなって打ち切ることをαカットといいます。
 			beta = Types.VALUE_INFINITE;
+			#if debug
+			DebugInfo.startDepth = depth;
+			#end
 			bestValue = Search(pos, alpha, beta, depth, NodeRoot);
 			StableSort(rootMoves, 0, numRootMoves - 1);
 			// if (bestValue <= alpha) {
@@ -146,10 +149,18 @@ class Search {
 		var move:Move;
 		var si:StateInfo = new StateInfo();
 		while ((move = mp.next_move()) != Types.MOVE_NONE) {
-			if (!pos.legal(move)) continue;
-			// DebugInfo.qmoves[depth] = move;
-			// DebugInfo.lastQMove = move;
-			// DebugInfo.inQChecks[depth] = pos.in_check();
+			if (!pos.legal(move)) {
+				pos.countNode();
+				continue;
+			}
+			#if debug
+			DebugInfo.qmoves[depth] = move;
+			DebugInfo.qnodes[depth] = pos.Nodes();
+			DebugInfo.qcolors[depth] = pos.side_to_move();
+			DebugInfo.lastQMove = move;
+			DebugInfo.inQChecks[depth] = pos.in_check();
+			DebugInfo.qdepth = depth;
+			#end
 			pos.do_move(move, si);//, pos.gives_check(move)
 			value = -Qsearch(pos, -beta, -alpha, depth - Types.ONE_PLY);
 			pos.undo_move(move);
@@ -178,13 +189,19 @@ class Search {
 		var st = new StateInfo();
 		mp.InitA(pos);
 		while ((move = mp.next_move()) != Types.MOVE_NONE) {// この局面の全指し手を探索
-			if (!pos.legal(move))
+			if (!pos.legal(move)) {
+				pos.countNode();
 				continue;
+			}
+			#if debug
 			// trace('depth:${depth}', Types.Move_To_StringLong(move), 'nodeType:${nodeType} rootNode:${rootNode}');
-			// DebugInfo.moves[depth] = move;
-			// DebugInfo.nodes[depth] = pos.Nodes();
-			// DebugInfo.lastMove = move;
-			// DebugInfo.inChecks[depth] = pos.in_check();
+			DebugInfo.moves[depth] = move;
+			DebugInfo.nodes[depth] = pos.Nodes();
+			DebugInfo.colors[depth] = pos.side_to_move();
+			DebugInfo.lastMove = move;
+			DebugInfo.inChecks[depth] = pos.in_check();
+			DebugInfo.depth = depth;
+			#end
 			pos.do_move(move, st);
 			value = depth - Types.ONE_PLY < Types.ONE_PLY 
 				? -Qsearch(pos, -beta, -alpha, depth) // depthが0になったら静止探索をする。

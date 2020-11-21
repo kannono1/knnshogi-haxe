@@ -18,23 +18,23 @@ class Position {
 
 	public var board:Array<Int> = [];
 	public var sideToMove:Int = Types.BLACK;
-	public var hand:Array<Array<Int>> = [];//[color][count]
-	public var byTypeBB:Array<Bitboard> = [];//駒種類ごとのBB
-	public var byColorBB:Array<Bitboard> = [];//先後のBB
+	public var hand:Array<Array<Int>> = []; // [color][count]
+	public var byTypeBB:Array<Bitboard> = []; // 駒種類ごとのBB
+	public var byColorBB:Array<Bitboard> = []; // 先後のBB
 	public var index:Array<Int> = []; // [sq]=pieceCount[c][pt]
 	public var pieceCount:Array<Array<Int>> = []; // [c][pt]=count
 	public var pieceList:Array<Array<Array<Int>>> = []; // [c][pt][index]=sq
-	public var materialValue:Int = 0;// 駒割
+	public var materialValue:Int = 0; // 駒割
 
-	private var st:StateInfo;// undoのときに使用する
+	private var st:StateInfo; // undoのときに使用する
 	private var evalList:EvalList = new EvalList();
-	private var nodes:Int = 0;// count of domove
+	private var nodes:Int = 0; // count of domove
 
 	public function new() {
 		InitBB();
 	}
 
-	public function eval_list():EvalList{
+	public function eval_list():EvalList {
 		return evalList;
 	}
 
@@ -47,7 +47,7 @@ class Position {
 			var v:Int = pieceValue[pt];
 			for (s in Types.SQ_A1...Types.SQ_NB) {
 				var sFlip:Int = Types.FlipSquare(s);
-				psq[Types.BLACK][pt][s]     =  (v + PSQTable.psqT[pt][s]);
+				psq[Types.BLACK][pt][s] = (v + PSQTable.psqT[pt][s]);
 				psq[Types.WHITE][pt][sFlip] = -(v + PSQTable.psqT[pt][s]);
 			}
 		}
@@ -80,7 +80,8 @@ class Position {
 		return AttackersTo(sq, byTypeBB[Types.ALL_PIECES]);
 	}
 
-	public function Nodes():Int return nodes;
+	public function Nodes():Int
+		return nodes;
 
 	// 王手をかけている駒のBBを返す
 	public function Checkers():Bitboard {
@@ -115,8 +116,8 @@ class Position {
 		// 自玉への開き王手のチェック
 		// blockers_for_king()は、pinされている駒(自駒・敵駒)を表現するが、fromにある駒は自駒であることは
 		// わかっているのでこれで良い。
-		return   !(blockers_for_king(us).isSet(from))// 移動する駒がブロッカー
-			|| Types.aligned(from, Types.to_sq(m), king_square(us));// 移動先が王の直線上か
+		return !(blockers_for_king(us).isSet(from)) /** 移動する駒がブロッカー **/
+			|| Types.aligned(from, Types.to_sq(m), king_square(us)); // 移動先が王の直線上か
 	}
 
 	public function PiecesAll():Bitboard {
@@ -139,7 +140,7 @@ class Position {
 		return byTypeBB[pt];
 	}
 
-	private function between_bb(from:Int, to:Int): Bitboard {
+	private function between_bb(from:Int, to:Int):Bitboard {
 		return BB.betweenBB[from][to];
 	}
 
@@ -153,6 +154,7 @@ class Position {
 	private function piece_no_of_hand(c:Int, pt:PT):PieceNumber {
 		return evalList.piece_no_of_hand(bona_piece_of(c, pt));
 	}
+
 	// 盤上のsqの升にある駒のPieceNumberを返す。
 	private function piece_no_of(sq:Int):PieceNumber {
 		return evalList.piece_no_of_board(sq);
@@ -175,24 +177,28 @@ class Position {
 	// return: blockers(飛び駒と玉の間にある駒（敵味方両方）)を返す。ついでにpinnersも更新する。
 	// c : 敵
 	// s : king square
-	private function slider_blockers(c:Int, s:Int , pinners:Bitboard):Bitboard {
+	private function slider_blockers(c:Int, s:Int, pinners:Bitboard):Bitboard {
 		var us = Types.OppColour(c);
 		var blockers = new Bitboard();
-		var rook_dragons:Bitboard = piecesType(Types.ROOK).newOR(piecesType(Types.DRAGON)).newAND(BB.rookStepEffect(s));	// 飛車・龍
-		var bishop_horses:Bitboard = piecesType(Types.BISHOP).newOR(piecesType(Types.HORSE)).newAND(BB.bishopStepEffect(s));	// 角・馬
-		var lances:Bitboard = piecesType(Types.LANCE).newAND(BB.lanceStepEffect(us, s));// 香に関しては攻撃駒が先手なら、玉より下側をサーチして、そこにある先手の香を探す。
-		var snipers:Bitboard = rook_dragons.newOR(bishop_horses).newOR(lances).newAND(PiecesColour(c));	// 王に効きを持つ飛び駒
+		var rook_dragons:Bitboard = piecesType(Types.ROOK).newOR(piecesType(Types.DRAGON)).newAND(BB.rookStepEffect(s)); // 飛車・龍
+		var bishop_horses:Bitboard = piecesType(Types.BISHOP).newOR(piecesType(Types.HORSE)).newAND(BB.bishopStepEffect(s)); // 角・馬
+		var lances:Bitboard = piecesType(Types.LANCE).newAND(BB.lanceStepEffect(us, s)); // 香に関しては攻撃駒が先手なら、玉より下側をサーチして、そこにある先手の香を探す。
+		var snipers:Bitboard = rook_dragons.newOR(bishop_horses).newOR(lances).newAND(PiecesColour(c)); // 王に効きを持つ飛び駒
 		while (snipers.IsNonZero()) {
-			var sniperSq:Int = snipers.PopLSB();	// スナイパーのsq
+			var sniperSq:Int = snipers.PopLSB(); // スナイパーのsq
 			var b:Bitboard = between_bb(s, sniperSq).newAND(PiecesAll()); // occupancy // snipperと玉との間にある駒のBitboard
 			if (b.IsNonZero() && !b.more_than_one()) { // snipperと玉との間にある駒が1個であるなら。
-				blockers.OR(b);// blockersに追加
-				if (b.newAND(PiecesColour(us)).IsNonZero())
-					// sniperと玉に挟まれた駒が玉と同じ色の駒であるなら、pinnerに追加。
-					pinners.SetBit(sniperSq);
+				blockers.OR(b); // blockersに追加
+				if (b.newAND(PiecesColour(us)).IsNonZero()) {
+					pinners.SetBit(b.LSB()); // sniperと玉に挟まれた駒が玉と同じ色の駒であるなら、pinnerに追加。
+				}
 			}
 		}
 		return blockers;
+	}
+
+	public function countNode() {
+		nodes++;
 	}
 
 	public function do_move(move:Move, newSt:StateInfo) {
@@ -208,18 +214,18 @@ class Position {
 		var pr:PR = Types.RawTypeOf(pc);
 		var pt = Types.TypeOf_Piece(pc);
 		var materialDiff:Int = 0;
-		nodes++;
+		countNode();
 		newSt.Copy(st);
 		newSt.previous = st;
 		st = newSt;
 		if (Types.is_drop(move)) {
 			st.dirtyPiece.dirty_num = 1;
 			PutPiece(to, us, pt);
-			var piece_no:PieceNumber  = piece_no_of(pr);
-			evalList.put_piece(piece_no , to, pc);
+			var piece_no:PieceNumber = piece_no_of(pr);
+			evalList.put_piece(piece_no, to, pc);
 			SubHand(us, pr);
 			materialDiff = 0; // 駒打ちなので駒割りの変動なし。
-			st.checkersBB = AttackersToSq(king_square(them)).newAND(PiecesColour(us));//相手玉への王手駒
+			st.checkersBB = AttackersToSq(king_square(them)).newAND(PiecesColour(us)); // 相手玉への王手駒
 			changeSideToMove();
 			return;
 		}
@@ -232,7 +238,7 @@ class Position {
 			AddHand(us, capturedRaw);
 			RemovePiece(capsq, them, captured);
 		}
-		var piece_no2:PieceNumber  = piece_no_of(from);
+		var piece_no2:PieceNumber = piece_no_of(from);
 		RemovePiece(from, us, pt);
 		MovePiece(from, to, us, pt);
 		evalList.put_piece(piece_no2, to, pc);
@@ -244,7 +250,7 @@ class Position {
 		st.capturedType = captured;
 		materialDiff += Evaluate.capturePieceValue[captured];
 		st.materialValue = st.previous.materialValue + (us == Types.BLACK ? materialDiff : -materialDiff);
-		st.checkersBB = AttackersToSq(king_square(them)).newAND(PiecesColour(us));// 相手玉への王手駒
+		st.checkersBB = AttackersToSq(king_square(them)).newAND(PiecesColour(us)); // 相手玉への王手駒
 		changeSideToMove();
 		set_check_info(st);
 	}
@@ -269,8 +275,7 @@ class Position {
 				pt = new PT(pt - Types.PIECE_PROMOTE);
 				RemovePiece(to, us, promotion);
 				PutPiece(from, us, pt);
-			}
-			else{
+			} else {
 				RemovePiece(to, us, pt);
 				PutPiece(from, us, pt);
 			}
@@ -315,7 +320,7 @@ class Position {
 		byTypeBB[Types.ALL_PIECES].ClrBit(sq);
 		byTypeBB[pt].ClrBit(sq);
 		pieceCount[c][Types.ALL_PIECES]--;
-		if(pieceCount[c][pt] > 0){
+		if (pieceCount[c][pt] > 0) {
 			pieceCount[c][pt]--;
 		}
 		var lastSquare:Int = pieceList[c][pt][pieceCount[c][pt]];
@@ -349,29 +354,39 @@ class Position {
 	// Sでの移動範囲 - 相手番での駒種位置
 	// 移動が上下対称じゃない場合は両方の登録が必要...
 	public function AttackersTo(s:Int, occ:Bitboard):Bitboard {
-		var attBB:Bitboard = pawn_effect(s, Types.BLACK).newAND(PiecesColourType(Types.WHITE, Types.PAWN));
-		attBB.OR(pawn_effect(s, Types.WHITE).newAND(PiecesColourType(Types.BLACK, Types.PAWN)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.W_KNIGHT).newAND(PiecesColourType(Types.BLACK, Types.KNIGHT)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.B_KNIGHT).newAND(PiecesColourType(Types.WHITE, Types.KNIGHT)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.W_LANCE).newAND(PiecesColourType(Types.BLACK, Types.LANCE)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.B_LANCE).newAND(PiecesColourType(Types.WHITE, Types.LANCE)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.W_SILVER).newAND(PiecesColourType(Types.BLACK, Types.SILVER)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.B_SILVER).newAND(PiecesColourType(Types.WHITE, Types.SILVER)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.W_GOLD).newAND(PiecesColourType(Types.BLACK, Types.GOLD)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.B_GOLD).newAND(PiecesColourType(Types.WHITE, Types.GOLD)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.W_PRO_PAWN).newAND(PiecesColourType(Types.BLACK, Types.PRO_PAWN)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.B_PRO_PAWN).newAND(PiecesColourType(Types.WHITE, Types.PRO_PAWN)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.W_PRO_LANCE).newAND(PiecesColourType(Types.BLACK, Types.PRO_LANCE)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.B_PRO_LANCE).newAND(PiecesColourType(Types.WHITE, Types.PRO_LANCE)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.W_PRO_KNIGHT).newAND(PiecesColourType(Types.BLACK, Types.PRO_KNIGHT)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.B_PRO_KNIGHT).newAND(PiecesColourType(Types.WHITE, Types.PRO_KNIGHT)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.W_PRO_SILVER).newAND(PiecesColourType(Types.BLACK, Types.PRO_SILVER)));
-		attBB.OR(AttacksFromPTypeSQ(s, Types.B_PRO_SILVER).newAND(PiecesColourType(Types.WHITE, Types.PRO_SILVER)));
-		attBB.OR(BB.AttacksBB(s, occ, Types.ROOK).newAND(PiecesTypes(Types.ROOK, Types.DRAGON))); // 縦横の効き (まとめて高速化してる？)
-		attBB.OR(BB.AttacksBB(s, occ, Types.BISHOP).newAND(PiecesTypes(Types.BISHOP, Types.HORSE))); // 斜めの効き　
-		attBB.OR(AttacksFromPTypeSQ(s, Types.B_KING).newAND(PiecesTypes(Types.DRAGON, Types.HORSE))); // 上下左右
-		attBB.OR(AttacksFromPTypeSQ(s, Types.B_KING).newAND(piecesType(Types.KING)));
-		return attBB;
+		#if debug
+		try {
+		#end
+			var attBB:Bitboard = pawn_effect(s, Types.BLACK).newAND(PiecesColourType(Types.WHITE, Types.PAWN));
+			attBB.OR(pawn_effect(s, Types.WHITE).newAND(PiecesColourType(Types.BLACK, Types.PAWN)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.W_KNIGHT).newAND(PiecesColourType(Types.BLACK, Types.KNIGHT)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.B_KNIGHT).newAND(PiecesColourType(Types.WHITE, Types.KNIGHT)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.W_LANCE).newAND(PiecesColourType(Types.BLACK, Types.LANCE)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.B_LANCE).newAND(PiecesColourType(Types.WHITE, Types.LANCE)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.W_SILVER).newAND(PiecesColourType(Types.BLACK, Types.SILVER)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.B_SILVER).newAND(PiecesColourType(Types.WHITE, Types.SILVER)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.W_GOLD).newAND(PiecesColourType(Types.BLACK, Types.GOLD)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.B_GOLD).newAND(PiecesColourType(Types.WHITE, Types.GOLD)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.W_PRO_PAWN).newAND(PiecesColourType(Types.BLACK, Types.PRO_PAWN)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.B_PRO_PAWN).newAND(PiecesColourType(Types.WHITE, Types.PRO_PAWN)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.W_PRO_LANCE).newAND(PiecesColourType(Types.BLACK, Types.PRO_LANCE)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.B_PRO_LANCE).newAND(PiecesColourType(Types.WHITE, Types.PRO_LANCE)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.W_PRO_KNIGHT).newAND(PiecesColourType(Types.BLACK, Types.PRO_KNIGHT)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.B_PRO_KNIGHT).newAND(PiecesColourType(Types.WHITE, Types.PRO_KNIGHT)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.W_PRO_SILVER).newAND(PiecesColourType(Types.BLACK, Types.PRO_SILVER)));
+			attBB.OR(AttacksFromPTypeSQ(s, Types.B_PRO_SILVER).newAND(PiecesColourType(Types.WHITE, Types.PRO_SILVER)));
+			attBB.OR(BB.AttacksBB(s, occ, Types.ROOK).newAND(PiecesTypes(Types.ROOK, Types.DRAGON))); // 縦横の効き (まとめて高速化してる？)
+			attBB.OR(BB.AttacksBB(s, occ, Types.BISHOP).newAND(PiecesTypes(Types.BISHOP, Types.HORSE))); // 斜めの効き　
+			attBB.OR(AttacksFromPTypeSQ(s, Types.B_KING).newAND(PiecesTypes(Types.DRAGON, Types.HORSE))); // 上下左右
+			attBB.OR(AttacksFromPTypeSQ(s, Types.B_KING).newAND(piecesType(Types.KING)));
+			return attBB;
+		#if debug
+		} catch (e) {
+			trace('ERR ${e}');
+			DebugInfo.print();
+			return null;
+		}
+		#end
 	}
 
 	public function MovedPieceAfter(m:Move):PC {
@@ -385,8 +400,10 @@ class Position {
 	public function setPosition(sfen:String) {
 		// PieceListを更新する上で、どの駒がどこにあるかを設定しなければならないが、
 		// それぞれの駒をどこまで使ったかのカウンター
-		var piece_no_count:Array<PieceNumber> = [ PIECE_NUMBER_ZERO,PIECE_NUMBER_PAWN,PIECE_NUMBER_LANCE,PIECE_NUMBER_KNIGHT,
-		PIECE_NUMBER_SILVER, PIECE_NUMBER_BISHOP, PIECE_NUMBER_ROOK,PIECE_NUMBER_GOLD ];
+		var piece_no_count:Array<PieceNumber> = [
+			  PIECE_NUMBER_ZERO,   PIECE_NUMBER_PAWN, PIECE_NUMBER_LANCE, PIECE_NUMBER_KNIGHT,
+			PIECE_NUMBER_SILVER, PIECE_NUMBER_BISHOP,  PIECE_NUMBER_ROOK,   PIECE_NUMBER_GOLD
+		];
 		InitBB();
 		Clear();
 		var sf:SFEN = new SFEN(sfen);
@@ -400,16 +417,14 @@ class Position {
 				continue;
 			}
 			PutPiece(sq, c, pt);
-			var piece_no:PieceNumber  =
-			(pc == Types.B_KING) ? PIECE_NUMBER_BKING : // 先手玉
-			(pc == Types.W_KING) ? PIECE_NUMBER_WKING : // 後手玉
-			piece_no_count[Types.raw_type_of(pc)]++; // それ以外
+			var piece_no:PieceNumber = (pc == Types.B_KING) ? PIECE_NUMBER_BKING : /** 先手玉 **/ (pc == Types.W_KING) ? PIECE_NUMBER_WKING : /** 後手玉 **/ piece_no_count[Types.raw_type_of(pc)]++; // それ以外
+
 			evalList.put_piece(piece_no, sq, pc); // sqの升にpcの駒を配置する // on sfen
 		}
 		hand = sf.getHand();
-		for(c in 0...Types.COLOR_NB){
-			for(rpc in 0...Types.PIECE_HAND_NB){
-				for(i in 0...hand[c][rpc]){
+		for (c in 0...Types.COLOR_NB) {
+			for (rpc in 0...Types.PIECE_HAND_NB) {
+				for (i in 0...hand[c][rpc]) {
 					var piece_no:PieceNumber = piece_no_count[rpc]++;
 					evalList.put_piece_hand(piece_no, c, new PT(rpc), i);
 				}
@@ -431,7 +446,7 @@ class Position {
 		return sideToMove;
 	}
 
-	public function state():StateInfo{
+	public function state():StateInfo {
 		return st;
 	}
 
@@ -475,7 +490,7 @@ class Position {
 		}
 	}
 
-	public function printBoard(msg:String="") {
+	public function printBoard(msg:String = "") {
 		var s = '+++ printBoard +++ : ${msg}';
 		for (r in 0...9) {
 			s += '\n';

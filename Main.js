@@ -562,6 +562,31 @@ class Bitboard {
 	}
 }
 Bitboard.__name__ = true;
+class DebugInfo {
+	constructor() {
+	}
+	static print() {
+		haxe_Log.trace("DebugInfo::print >>>",{ fileName : "DebugInfo.hx", lineNumber : 25, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("moves depth:" + 0 + " c:" + DebugInfo.colors[0] + " n:" + DebugInfo.nodes[0] + " " + Types.Move_To_StringLong(DebugInfo.moves[0]) + " inCheck:" + Std.string(DebugInfo.inChecks[0]),{ fileName : "DebugInfo.hx", lineNumber : 27, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("moves depth:" + 1 + " c:" + DebugInfo.colors[1] + " n:" + DebugInfo.nodes[1] + " " + Types.Move_To_StringLong(DebugInfo.moves[1]) + " inCheck:" + Std.string(DebugInfo.inChecks[1]),{ fileName : "DebugInfo.hx", lineNumber : 27, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("moves depth:" + 2 + " c:" + DebugInfo.colors[2] + " n:" + DebugInfo.nodes[2] + " " + Types.Move_To_StringLong(DebugInfo.moves[2]) + " inCheck:" + Std.string(DebugInfo.inChecks[2]),{ fileName : "DebugInfo.hx", lineNumber : 27, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("moves depth:" + 3 + " c:" + DebugInfo.colors[3] + " n:" + DebugInfo.nodes[3] + " " + Types.Move_To_StringLong(DebugInfo.moves[3]) + " inCheck:" + Std.string(DebugInfo.inChecks[3]),{ fileName : "DebugInfo.hx", lineNumber : 27, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("moves depth:" + 4 + " c:" + DebugInfo.colors[4] + " n:" + DebugInfo.nodes[4] + " " + Types.Move_To_StringLong(DebugInfo.moves[4]) + " inCheck:" + Std.string(DebugInfo.inChecks[4]),{ fileName : "DebugInfo.hx", lineNumber : 27, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("moves depth:" + 5 + " c:" + DebugInfo.colors[5] + " n:" + DebugInfo.nodes[5] + " " + Types.Move_To_StringLong(DebugInfo.moves[5]) + " inCheck:" + Std.string(DebugInfo.inChecks[5]),{ fileName : "DebugInfo.hx", lineNumber : 27, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("qmoves depth:" + 0 + " c:" + DebugInfo.qcolors[0] + " n:" + DebugInfo.qnodes[0] + " " + Types.Move_To_StringLong(DebugInfo.qmoves[0]) + " inCheck:" + Std.string(DebugInfo.inQChecks[0]),{ fileName : "DebugInfo.hx", lineNumber : 30, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("qmoves depth:" + 1 + " c:" + DebugInfo.qcolors[1] + " n:" + DebugInfo.qnodes[1] + " " + Types.Move_To_StringLong(DebugInfo.qmoves[1]) + " inCheck:" + Std.string(DebugInfo.inQChecks[1]),{ fileName : "DebugInfo.hx", lineNumber : 30, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("qmoves depth:" + 2 + " c:" + DebugInfo.qcolors[2] + " n:" + DebugInfo.qnodes[2] + " " + Types.Move_To_StringLong(DebugInfo.qmoves[2]) + " inCheck:" + Std.string(DebugInfo.inQChecks[2]),{ fileName : "DebugInfo.hx", lineNumber : 30, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("qmoves depth:" + 3 + " c:" + DebugInfo.qcolors[3] + " n:" + DebugInfo.qnodes[3] + " " + Types.Move_To_StringLong(DebugInfo.qmoves[3]) + " inCheck:" + Std.string(DebugInfo.inQChecks[3]),{ fileName : "DebugInfo.hx", lineNumber : 30, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("qmoves depth:" + 4 + " c:" + DebugInfo.qcolors[4] + " n:" + DebugInfo.qnodes[4] + " " + Types.Move_To_StringLong(DebugInfo.qmoves[4]) + " inCheck:" + Std.string(DebugInfo.inQChecks[4]),{ fileName : "DebugInfo.hx", lineNumber : 30, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("qmoves depth:" + 5 + " c:" + DebugInfo.qcolors[5] + " n:" + DebugInfo.qnodes[5] + " " + Types.Move_To_StringLong(DebugInfo.qmoves[5]) + " inCheck:" + Std.string(DebugInfo.inQChecks[5]),{ fileName : "DebugInfo.hx", lineNumber : 30, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("qmoves depth:" + 6 + " c:" + DebugInfo.qcolors[6] + " n:" + DebugInfo.qnodes[6] + " " + Types.Move_To_StringLong(DebugInfo.qmoves[6]) + " inCheck:" + Std.string(DebugInfo.inQChecks[6]),{ fileName : "DebugInfo.hx", lineNumber : 30, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("qmoves depth:" + 7 + " c:" + DebugInfo.qcolors[7] + " n:" + DebugInfo.qnodes[7] + " " + Types.Move_To_StringLong(DebugInfo.qmoves[7]) + " inCheck:" + Std.string(DebugInfo.inQChecks[7]),{ fileName : "DebugInfo.hx", lineNumber : 30, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("qmoves depth:" + 8 + " c:" + DebugInfo.qcolors[8] + " n:" + DebugInfo.qnodes[8] + " " + Types.Move_To_StringLong(DebugInfo.qmoves[8]) + " inCheck:" + Std.string(DebugInfo.inQChecks[8]),{ fileName : "DebugInfo.hx", lineNumber : 30, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("qmoves depth:" + 9 + " c:" + DebugInfo.qcolors[9] + " n:" + DebugInfo.qnodes[9] + " " + Types.Move_To_StringLong(DebugInfo.qmoves[9]) + " inCheck:" + Std.string(DebugInfo.inQChecks[9]),{ fileName : "DebugInfo.hx", lineNumber : 30, className : "DebugInfo", methodName : "print"});
+		haxe_Log.trace("DebugInfo::print <<<",{ fileName : "DebugInfo.hx", lineNumber : 32, className : "DebugInfo", methodName : "print"});
+	}
+}
+DebugInfo.__name__ = true;
 class EReg {
 	constructor(r,opt) {
 		this.r = new RegExp(r,opt.split("u").join(""));
@@ -598,9 +623,12 @@ ExtBonaPiece.__name__ = true;
 class EvalList {
 	constructor() {
 		this.piece_no_list_hand = [];
-		this.piece_no_list_board = new Array(82);
-		this.pieceListFw = new Array(40);
-		this.pieceListFb = new Array(40);
+		let this1 = new Array(82);
+		this.piece_no_list_board = this1;
+		let this11 = new Array(40);
+		this.pieceListFw = this11;
+		let this12 = new Array(40);
+		this.pieceListFb = this12;
 		this.kpp_hand_index = [[new ExtBonaPiece(0,0),new ExtBonaPiece(1,20),new ExtBonaPiece(39,44),new ExtBonaPiece(49,54),new ExtBonaPiece(59,64),new ExtBonaPiece(79,82),new ExtBonaPiece(85,88),new ExtBonaPiece(69,74)],[new ExtBonaPiece(0,0),new ExtBonaPiece(20,1),new ExtBonaPiece(44,39),new ExtBonaPiece(54,49),new ExtBonaPiece(64,59),new ExtBonaPiece(82,79),new ExtBonaPiece(88,85),new ExtBonaPiece(74,69)]];
 		this.kpp_board_index = [new ExtBonaPiece(0,0),new ExtBonaPiece(90,90 + 81),new ExtBonaPiece(90 + 81 + 81,90 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(0,0),new ExtBonaPiece(0,0),new ExtBonaPiece(90 + 81,90),new ExtBonaPiece(90 + 81 + 81 + 81,90 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81,90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),new ExtBonaPiece(0,0)];
 		let _g = 0;
@@ -666,7 +694,8 @@ EvalList.__name__ = true;
 class DirtyPiece {
 	constructor() {
 		this.dirty_num = 0;
-		this.pieceNo = new Array(2);
+		let this1 = new Array(2);
+		this.pieceNo = this1;
 	}
 }
 DirtyPiece.__name__ = true;
@@ -951,6 +980,11 @@ class Position {
 				return false;
 			}
 		}
+		if(this.nodes == 9573) {
+			haxe_Log.trace("legal n:" + this.nodes + " startDepth:" + DebugInfo.startDepth + " currentdepth:" + DebugInfo.depth + " \n\t\t\t qdepth:" + DebugInfo.qdepth + " " + Types.Move_To_StringLong(m),{ fileName : "Position.hx", lineNumber : 120, className : "Position", methodName : "legal"});
+			haxe_Log.trace("legal::blockers us:" + us + " " + this.blockers_for_king(us).toStringBB(),{ fileName : "Position.hx", lineNumber : 122, className : "Position", methodName : "legal"});
+			this.printBoard();
+		}
 		if(this.blockers_for_king(us).isSet(from)) {
 			return Types.aligned(from,Types.to_sq(m),this.king_square(us));
 		} else {
@@ -1009,11 +1043,18 @@ class Position {
 			if(b.IsNonZero() && !b.more_than_one()) {
 				blockers.OR(b);
 				if(b.newAND(this.PiecesColour(us)).IsNonZero()) {
-					pinners.SetBit(sniperSq);
+					pinners.SetBit(b.LSB());
 				}
 			}
 		}
+		if(this.nodes == 9573) {
+			haxe_Log.trace("blockers us:" + us + " " + blockers.toStringBB(),{ fileName : "Position.hx", lineNumber : 208, className : "Position", methodName : "slider_blockers"});
+			haxe_Log.trace("pinners us:" + us + " " + pinners.toStringBB(),{ fileName : "Position.hx", lineNumber : 209, className : "Position", methodName : "slider_blockers"});
+		}
 		return blockers;
+	}
+	countNode() {
+		this.nodes++;
 	}
 	do_move(move,newSt) {
 		this.doMoveFull(move,newSt);
@@ -1027,7 +1068,7 @@ class Position {
 		let pr = Types.RawTypeOf(pc);
 		let pt = Types.TypeOf_Piece(pc);
 		let materialDiff = 0;
-		this.nodes++;
+		this.countNode();
 		newSt.Copy(this.st);
 		newSt.previous = this.st;
 		this.st = newSt;
@@ -1170,29 +1211,36 @@ class Position {
 		return this.hand[c][pr];
 	}
 	AttackersTo(s,occ) {
-		let attBB = this.pawn_effect(s,0).newAND(this.PiecesColourType(1,1));
-		attBB.OR(this.pawn_effect(s,1).newAND(this.PiecesColourType(0,1)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,19).newAND(this.PiecesColourType(0,3)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,3).newAND(this.PiecesColourType(1,3)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,18).newAND(this.PiecesColourType(0,2)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,2).newAND(this.PiecesColourType(1,2)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,20).newAND(this.PiecesColourType(0,4)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,4).newAND(this.PiecesColourType(1,4)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,23).newAND(this.PiecesColourType(0,7)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,7).newAND(this.PiecesColourType(1,7)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,25).newAND(this.PiecesColourType(0,9)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,9).newAND(this.PiecesColourType(1,9)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,26).newAND(this.PiecesColourType(0,10)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,10).newAND(this.PiecesColourType(1,10)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,27).newAND(this.PiecesColourType(0,11)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,11).newAND(this.PiecesColourType(1,11)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,28).newAND(this.PiecesColourType(0,12)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,12).newAND(this.PiecesColourType(1,12)));
-		attBB.OR(BB.AttacksBB(s,occ,6).newAND(this.PiecesTypes(6,14)));
-		attBB.OR(BB.AttacksBB(s,occ,5).newAND(this.PiecesTypes(5,13)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,8).newAND(this.PiecesTypes(14,13)));
-		attBB.OR(this.AttacksFromPTypeSQ(s,8).newAND(this.piecesType(8)));
-		return attBB;
+		try {
+			let attBB = this.pawn_effect(s,0).newAND(this.PiecesColourType(1,1));
+			attBB.OR(this.pawn_effect(s,1).newAND(this.PiecesColourType(0,1)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,19).newAND(this.PiecesColourType(0,3)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,3).newAND(this.PiecesColourType(1,3)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,18).newAND(this.PiecesColourType(0,2)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,2).newAND(this.PiecesColourType(1,2)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,20).newAND(this.PiecesColourType(0,4)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,4).newAND(this.PiecesColourType(1,4)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,23).newAND(this.PiecesColourType(0,7)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,7).newAND(this.PiecesColourType(1,7)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,25).newAND(this.PiecesColourType(0,9)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,9).newAND(this.PiecesColourType(1,9)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,26).newAND(this.PiecesColourType(0,10)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,10).newAND(this.PiecesColourType(1,10)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,27).newAND(this.PiecesColourType(0,11)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,11).newAND(this.PiecesColourType(1,11)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,28).newAND(this.PiecesColourType(0,12)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,12).newAND(this.PiecesColourType(1,12)));
+			attBB.OR(BB.AttacksBB(s,occ,6).newAND(this.PiecesTypes(6,14)));
+			attBB.OR(BB.AttacksBB(s,occ,5).newAND(this.PiecesTypes(5,13)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,8).newAND(this.PiecesTypes(14,13)));
+			attBB.OR(this.AttacksFromPTypeSQ(s,8).newAND(this.piecesType(8)));
+			return attBB;
+		} catch( _g ) {
+			let e = haxe_Exception.caught(_g);
+			haxe_Log.trace("ERR " + Std.string(e),{ fileName : "Position.hx", lineNumber : 399, className : "Position", methodName : "AttackersTo"});
+			DebugInfo.print();
+			return null;
+		}
 	}
 	MovedPieceAfter(m) {
 		if(Types.is_drop(m)) {
@@ -1539,10 +1587,10 @@ class Position {
 			s += HxOverrides.substr("  " + this.board[sq],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 489, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 518, className : "Position", methodName : "printBoard"});
 	}
 	printHand() {
-		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 493, className : "Position", methodName : "printHand"});
+		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 522, className : "Position", methodName : "printHand"});
 	}
 	printPieceNo() {
 		this.evalList.printPieceNo();
@@ -1675,8 +1723,10 @@ class StateInfo {
 		this.dirtyPiece = new DirtyPiece();
 		this.materialValue = 0;
 		this.capturedType = 0;
-		this.pinners = new Array(2);
-		this.blockersForKing = new Array(2);
+		let this1 = new Array(2);
+		this.pinners = this1;
+		let this11 = new Array(2);
+		this.blockersForKing = this11;
 		this.checkersBB = new Bitboard();
 		this.blockersForKing[0] = new Bitboard();
 		this.pinners[0] = new Bitboard();
@@ -1689,12 +1739,23 @@ class StateInfo {
 		this.capturedType = this1;
 		this.materialValue = 0;
 		this.dirtyPiece = new DirtyPiece();
+		this.checkersBB = new Bitboard();
+		this.blockersForKing[0] = new Bitboard();
+		this.pinners[0] = new Bitboard();
+		this.blockersForKing[1] = new Bitboard();
+		this.pinners[1] = new Bitboard();
+		this.previous = null;
+		this.sum = new EvalSum();
 	}
 	Copy(other) {
 		this.checkersBB.Copy(other.checkersBB);
 		this.capturedType = other.capturedType;
 		this.materialValue = other.materialValue;
 		this.previous = other.previous;
+		this.blockersForKing[0].Copy(other.blockersForKing[0]);
+		this.pinners[0].Copy(other.pinners[0]);
+		this.blockersForKing[1].Copy(other.blockersForKing[1]);
+		this.pinners[1].Copy(other.pinners[1]);
 	}
 }
 StateInfo.__name__ = true;
@@ -2099,6 +2160,30 @@ class Types {
 	}
 }
 Types.__name__ = true;
+class haxe_Exception extends Error {
+	constructor(message,previous,native) {
+		super(message);
+		this.message = message;
+		this.__previousException = previous;
+		this.__nativeException = native != null ? native : this;
+	}
+	toString() {
+		return this.get_message();
+	}
+	get_message() {
+		return this.message;
+	}
+	static caught(value) {
+		if(((value) instanceof haxe_Exception)) {
+			return value;
+		} else if(((value) instanceof Error)) {
+			return new haxe_Exception(value.message,null,value);
+		} else {
+			return new haxe_ValueException(value,null,value);
+		}
+	}
+}
+haxe_Exception.__name__ = true;
 class haxe_Log {
 	static formatOutput(v,infos) {
 		let str = Std.string(v);
@@ -2125,6 +2210,13 @@ class haxe_Log {
 	}
 }
 haxe_Log.__name__ = true;
+class haxe_ValueException extends haxe_Exception {
+	constructor(value,previous,native) {
+		super(String(value),previous,native);
+		this.value = value;
+	}
+}
+haxe_ValueException.__name__ = true;
 class haxe_iterators_ArrayIterator {
 	constructor(array) {
 		this.current = 0;
@@ -2616,6 +2708,58 @@ BB.rDeltas = [-1,-9,1,9];
 BB.bDeltas = [-10,-8,10,8];
 Bitboard.NA = 27;
 Bitboard.NB = 54;
+DebugInfo.targetNode = 9573;
+DebugInfo.moves = (function($this) {
+	var $r;
+	let this1 = new Array(99);
+	$r = this1;
+	return $r;
+}(this));
+DebugInfo.colors = (function($this) {
+	var $r;
+	let this1 = new Array(99);
+	$r = this1;
+	return $r;
+}(this));
+DebugInfo.inChecks = (function($this) {
+	var $r;
+	let this1 = new Array(99);
+	$r = this1;
+	return $r;
+}(this));
+DebugInfo.nodes = (function($this) {
+	var $r;
+	let this1 = new Array(99);
+	$r = this1;
+	return $r;
+}(this));
+DebugInfo.qmoves = (function($this) {
+	var $r;
+	let this1 = new Array(99);
+	$r = this1;
+	return $r;
+}(this));
+DebugInfo.qcolors = (function($this) {
+	var $r;
+	let this1 = new Array(99);
+	$r = this1;
+	return $r;
+}(this));
+DebugInfo.inQChecks = (function($this) {
+	var $r;
+	let this1 = new Array(99);
+	$r = this1;
+	return $r;
+}(this));
+DebugInfo.qnodes = (function($this) {
+	var $r;
+	let this1 = new Array(99);
+	$r = this1;
+	return $r;
+}(this));
+DebugInfo.depth = 0;
+DebugInfo.qdepth = 0;
+DebugInfo.startDepth = 0;
 EvalList.MAX_LENGTH = 40;
 Evaluate.evalRootColour = 0;
 Evaluate.pieceValue = [0,90,315,405,495,855,990,540,15000,540,540,540,540,945,1395,0,0,-90,-315,-405,-495,-855,-990,-540,-15000,-540,-540,-540,-540,-945,-1395];
@@ -2731,3 +2875,5 @@ Types.flipSquare = [80,79,78,77,76,75,74,73,72,71,70,69,68,67,66,65,64,63,62,61,
 Types.bbToSquare = [72,63,54,45,36,27,18,9,0,73,64,55,46,37,28,19,10,1,74,65,56,47,38,29,20,11,2,75,66,57,48,39,30,21,12,3,76,67,58,49,40,31,22,13,4,77,68,59,50,41,32,23,14,5,78,69,60,51,42,33,24,15,6,79,70,61,52,43,34,25,16,7,80,71,62,53,44,35,26,17,8];
 Main.main();
 })(typeof exports != "undefined" ? exports : typeof window != "undefined" ? window : typeof self != "undefined" ? self : this, typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
+
+//# sourceMappingURL=Main.js.map

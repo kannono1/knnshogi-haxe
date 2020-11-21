@@ -26,6 +26,13 @@ class StateInfo {
 		capturedType = new PT(0);
 		materialValue = 0;
 		dirtyPiece = new DirtyPiece();
+		checkersBB = new Bitboard();
+		for(c in Types.BLACK...Types.COLOR_NB){
+			blockersForKing[c] = new Bitboard();
+			pinners[c] = new Bitboard();
+		}
+		previous = null;
+		sum = new EvalSum();
 	}
 
 	public function Copy(other:StateInfo) {
@@ -33,5 +40,9 @@ class StateInfo {
 		capturedType = other.capturedType;
 		materialValue = other.materialValue;
 		previous = other.previous;
+		for(c in Types.BLACK...Types.COLOR_NB){
+			blockersForKing[c].Copy(other.blockersForKing[c]);
+			pinners[c].Copy(other.pinners[c]);
+		}
 	}
 }

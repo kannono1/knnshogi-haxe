@@ -14,6 +14,16 @@
             "problemMatcher": []
         },
         {
+            "label": "debug",
+            "type": "shell",
+            "command": "haxe -js Main.js -main Main -debug -D js-es=6; haxe -js Engine.js -main Engine -debug -D js-es=6; haxe -js Test.js -main Test -debug -D js-es=6",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "main",
             "type": "shell",
             "command": "haxe -js Main.js -main Main -D js-es=6",
