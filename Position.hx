@@ -1,7 +1,11 @@
 package;
 
+import haxe.ds.Vector;
 import Evaluate.BonaPiece;
 import Evaluate.EvalList;
+import LongEffect.ByteBoard;
+import LongEffect.WordBoard;
+import LongEffect.LongEffect;
 import Types.PieceNumber;
 import Types.Move;
 import Types.PC;
@@ -25,17 +29,25 @@ class Position {
 	public var pieceCount:Array<Array<Int>> = []; // [c][pt]=count
 	public var pieceList:Array<Array<Array<Int>>> = []; // [c][pt][index]=sq
 	public var materialValue:Int = 0; // 駒割
+	public var board_effect:Vector<ByteBoard> = new Vector<ByteBoard>(Types.COLOR_NB); // 各升の利きの数
+	public var long_effect:WordBoard = new WordBoard(); // 長い利き(これは先後共用)
 
 	private var st:StateInfo; // undoのときに使用する
 	private var evalList:EvalList = new EvalList();
 	private var nodes:Int = 0; // count of domove
 
 	public function new() {
+		LongEffect.init(this);
 		InitBB();
 	}
 
 	public function eval_list():EvalList {
 		return evalList;
+	}
+
+	
+	public function ADD_BOARD_EFFECT(c, to, e1) {
+		board_effect[c].e[to] += e1;
 	}
 
 	public static function Init() {
@@ -45,7 +57,7 @@ class Position {
 			psq[Types.BLACK][pt] = [];
 			psq[Types.WHITE][pt] = [];
 			var v:Int = pieceValue[pt];
-			for (s in Types.SQ_A1...Types.SQ_NB) {
+			for (s in Types.SQ_11...Types.SQ_NB) {
 				var sFlip:Int = Types.FlipSquare(s);
 				psq[Types.BLACK][pt][s] = (v + PSQTable.psqT[pt][s]);
 				psq[Types.WHITE][pt][sFlip] = -(v + PSQTable.psqT[pt][s]);
@@ -108,7 +120,7 @@ class Position {
 		var us:Int = sideToMove;
 		var from:Int = Types.move_from(m);
 		// 王の自殺手チェック
-		if (Types.TypeOf_Piece(PieceOn(from)) == Types.KING) {
+		if (Types.TypeOf_Piece(piece_on(from)) == Types.KING) {
 			if (!AttackersToSq(Types.move_to(m)).newAND(PiecesColour(Types.OppColour(us))).IsZero()) {
 				return false;
 			}
@@ -118,6 +130,10 @@ class Position {
 		// わかっているのでこれで良い。
 		return !(blockers_for_king(us).isSet(from)) /** 移動する駒がブロッカー **/
 			|| Types.aligned(from, Types.to_sq(m), king_square(us)); // 移動先が王の直線上か
+	}
+
+	public function pieces():Bitboard {
+		return PiecesAll();
 	}
 
 	public function PiecesAll():Bitboard {
@@ -132,7 +148,7 @@ class Position {
 		return byColorBB[c].newAND(byTypeBB[pt]);
 	}
 
-	public function PieceOn(sq:Int):PC {
+	public function piece_on(sq:Int):PC {
 		return new PC(board[sq]);
 	}
 
@@ -213,6 +229,7 @@ class Position {
 		var pc:PC = MovedPieceAfter(move);
 		var pr:PR = Types.RawTypeOf(pc);
 		var pt = Types.TypeOf_Piece(pc);
+		var moved_after_pc:PC = (Types.Move_Type(move) == Types.MOVE_PROMO)?new PC(pc+Types.PIECE_PROMOTE):pc;
 		var materialDiff:Int = 0;
 		countNode();
 		newSt.Copy(st);
@@ -226,17 +243,26 @@ class Position {
 			SubHand(us, pr);
 			materialDiff = 0; // 駒打ちなので駒割りの変動なし。
 			st.checkersBB = AttackersToSq(king_square(them)).newAND(PiecesColour(us)); // 相手玉への王手駒
+			// 駒打ちによる利きの更新処理
+			LongEffect.update_by_dropping_piece(this, to, pc);
 			changeSideToMove();
 			return;
 		}
-		var captured:PT = Types.TypeOf_Piece(PieceOn(to));
+		var capturedPC:PC = piece_on(to);
+		var captured:PT = Types.TypeOf_Piece(capturedPC);
 		var capturedRaw:PR = Types.RawTypeOf(captured);
 		if (captured != 0) {
+			// 移動先で駒を捕獲するときの利きの更新
+			LongEffect.update_by_capturing_piece(this, from, to, pc, moved_after_pc, capturedPC);
 			var capsq:Int = to;
 			var piece_no:PieceNumber = piece_no_of(to);
 			evalList.put_piece_hand(piece_no, us, new PT(pr), HandCount(us, pr));
 			AddHand(us, capturedRaw);
 			RemovePiece(capsq, them, captured);
+		}
+		else{
+			// 移動先で駒を捕獲しないときの利きの更新
+			LongEffect.update_by_no_capturing_piece(this, from, to, pc, moved_after_pc);
 		}
 		var piece_no2:PieceNumber = piece_no_of(from);
 		RemovePiece(from, us, pt);
@@ -262,13 +288,17 @@ class Position {
 		var to:Int = Types.move_to(move);
 		var pc:PC = MovedPieceAfter(move);
 		var pr:PR = Types.RawTypeOf(pc);
-		var pt:PT = Types.TypeOf_Piece(PieceOn(to));
+		var pt:PT = Types.TypeOf_Piece(piece_on(to));
+		var moved_after_pc:PC = (Types.Move_Type(move) == Types.MOVE_PROMO)?new PC(pc+Types.PIECE_PROMOTE):pc;
 		if (Types.is_drop(move)) {
 			AddHand(us, pr);
 			RemovePiece(to, us, pt);
+			// 駒打ちのundoによる利きの復元
+			LongEffect.rewind_by_dropping_piece(this, to, moved_after_pc);
 		} else {
 			var from:Int = Types.move_from(move);
 			var captured:PT = st.capturedType;
+			var to_pc:PC = Types.Make_Piece(them, captured);
 			var capturedRaw:PR = Types.RawTypeOf(captured);
 			if (Types.Move_Type(move) == Types.MOVE_PROMO) {
 				var promotion:PT = pt;
@@ -283,6 +313,12 @@ class Position {
 				var capsq:Int = to;
 				SubHand(us, capturedRaw);
 				PutPiece(capsq, them, captured);
+				// 移動先で駒を捕獲するときの利きの更新
+				LongEffect.rewind_by_capturing_piece(this, from, to, pc, moved_after_pc, to_pc);
+			}
+			else{
+				// 移動先で駒を捕獲しないときの利きの更新
+				LongEffect.rewind_by_no_capturing_piece(this, from, to, pc, moved_after_pc);
 			}
 		}
 		st = st.previous;
@@ -297,7 +333,7 @@ class Position {
 		index[sq] = pieceCount[c][pt]++;
 		pieceList[c][pt][index[sq]] = sq;
 		if (pt == Types.PAWN) { // 二歩用BB更新
-			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(sq)]);
+			BB.pawnLineBB[c].OR(BB.filesBB[Types.file_of(sq)]);
 		}
 	}
 
@@ -310,7 +346,7 @@ class Position {
 		index[to] = index[from];
 		pieceList[c][pt][index[to]] = to;
 		if (pt == Types.PAWN) { // 二歩用BB更新
-			BB.pawnLineBB[c].OR(BB.filesBB[Types.File_Of(to)]);
+			BB.pawnLineBB[c].OR(BB.filesBB[Types.file_of(to)]);
 		}
 	}
 
@@ -328,7 +364,7 @@ class Position {
 		pieceList[c][pt][index[lastSquare]] = lastSquare;
 		pieceList[c][pt][pieceCount[c][pt]] = Types.SQ_NONE;
 		if (pt == Types.PAWN) { // 二歩用BB更新
-			BB.pawnLineBB[c].AND(BB.filesBB[Types.File_Of(sq)].newNOT());
+			BB.pawnLineBB[c].AND(BB.filesBB[Types.file_of(sq)].newNOT());
 		}
 	}
 
@@ -393,7 +429,7 @@ class Position {
 		if (Types.is_drop(m)) {
 			return new PC((m >>> 7) & 0x7F);
 		} else { // この瞬間はPromoteは気にしなくて良い
-			return PieceOn(Types.move_from(m));
+			return piece_on(Types.move_from(m));
 		}
 	}
 
@@ -410,7 +446,7 @@ class Position {
 		sideToMove = sf.SideToMove();
 		board = sf.getBoard();
 		for (sq in 0...81) {
-			var pc = PieceOn(sq);
+			var pc = piece_on(sq);
 			var pt = Types.TypeOf_Piece(pc);
 			var c = Types.getPieceColor(pc);
 			if (pc == 0) {
@@ -436,6 +472,7 @@ class Position {
 			do_move(moves[i], new StateInfo());
 		}
 		st.checkersBB = AttackersToSq(king_square(sideToMove)).newAND(PiecesColour(Types.OppColour(sideToMove)));
+		LongEffect.calc_effect(this);
 	}
 
 	public function side_to_move():Int {
@@ -511,4 +548,5 @@ class Position {
 	public function printPieceNo() {
 		evalList.printPieceNo();
 	}
+
 }

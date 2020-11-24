@@ -301,177 +301,45 @@ class Evaluate {
 	private static var kk:Vector<Vector<Vector<Int>>>;  //EvalValueKK.kk; //[[[]]];//[SQ_NB][SQ_NB][2];
 	private static var kkp:Vector<Vector<Vector<Vector<Int>>>>;//[SQ_NB][SQ_NB][fe_end][2];
 	// private static var kpp:Vector<Vector<Vector<Int>>>;//[SQ_NB][fe_end][fe_end];
+	// 王様からの距離に応じたある升の利きの価値。
+	private static var our_effect_value:Vector<Int> = new Vector(9);
+	private static var their_effect_value:Vector<Int> = new Vector(9);
 
 	public static function Init() {
 		trace('Evaluate::Init ${fe_end}');
-		kk = new Vector(Types.SQ_NB);
-		for (i in 0...Types.SQ_NB){
-			kk[i] = new Vector(Types.SQ_NB);
-			for (j in 0...Types.SQ_NB){
-				kk[i][j] = new Vector(2);
-				kk[i][j][0] = 0;
-				kk[i][j][1] = 0;
-			}
-		} 
-		kkp = new Vector(Types.SQ_NB);
-		for (i in 0...Types.SQ_NB){
-			kkp[i] = new Vector(Types.SQ_NB);
-			for (j in 0...Types.SQ_NB){
-				kkp[i][j] = new Vector(fe_end);
-				for (m in 0...fe_end){
-					kkp[i][j][m] = new Vector(2);
-					kkp[i][j][m][0] = 0;
-					kkp[i][j][m][1] = 0;
-				}
-			}
-		} 
-		// kpp = new Vector(Types.SQ_NB);
-		// for (i in 0...Types.SQ_NB){
-		// 	kpp[i] = new Vector(fe_end);
-		// 	for (j in 0...fe_end){
-		// 		kpp[i][j] = new Vector(fe_end);
-		// 		for (k in 0...fe_end){
-		// 			kpp[i][j][k] = 0;
-		// 		}
-		// 	}
-		// } 
-		load_eval();
+		for(i in 0...9) {
+			// 利きには、王様からの距離に反比例する価値がある。(と現段階では考えられる)
+			our_effect_value  [i] = Std.int(68 * 1024 / (i + 1));
+			their_effect_value[i] = Std.int(96 * 1024 / (i + 1));
+		}
 	}
-
-	private static function load_eval(){
-		load_eval_impl();
-	}
-	private static function load_eval_impl(){
-		// load_eval_kk();
-		// load_eval_kkp();
-		// load_eval_kpp();
-	}
-	// private static function load_eval_kk(){
-	// 	var filename = 'bin/KK_synthesized.bin';
-	// 	var request:XMLHttpRequest = new XMLHttpRequest();
-	// 	request.open('GET', filename, true);
-	// 	request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER; //'arraybuffer';
-	// 	request.onload = function (e) {
-	// 		trace('kk read start');
-	// 		var arrayBuffer:ArrayBuffer = request.response; 	
-	// 		if (arrayBuffer == null || arrayBuffer.byteLength < 1000) {
-	// 			trace('kk buffer is null');
-	// 			return;
-	// 		}
-	// 		var dataview:DataView = new DataView(arrayBuffer);
-	// 		var bytesData = new BytesData(dataview.byteLength);
-	// 		final byteSize = 4;
-	// 		var p:Int = 0;
-	// 		for (i in 0...Types.SQ_NB){
-	// 			for (j in 0...Types.SQ_NB){
-	// 				for(k in 0...2){
-	// 					kk[i][j][k] = dataview.getInt32(p*byteSize, true);// 4byte, littleEdian
-	// 					p++;
-	// 				}
-	// 			}
-	// 		} 
-	// 		trace('kk read end');
-	// 	};		
-	// 	request.send(null);
-	// }
-	// private static function load_eval_kkp(){
-	// 	var filename = 'bin/KKP_synthesized.bin';
-	// 	var request:XMLHttpRequest = new XMLHttpRequest();
-	// 	request.open('GET', filename, true);
-	// 	request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER; //'arraybuffer';
-	// 	request.onload = function (e) {
-	// 		trace('kkp read start ${filename}');
-	// 		var arrayBuffer:ArrayBuffer = request.response; 	
-	// 		if (arrayBuffer == null || arrayBuffer.byteLength < 1000) {
-	// 			trace('kkp buffer is null');
-	// 			return;
-	// 		}
-	// 		var dataview:DataView = new DataView(arrayBuffer);
-	// 		var bytesData = new BytesData(dataview.byteLength);
-	// 		final byteSize = 4;
-	// 		var p:Int = 0;
-	// 		for (i in 0...Types.SQ_NB){
-	// 			for (j in 0...Types.SQ_NB){
-	// 				for (m in 0...fe_end){
-	// 					for(k in 0...2){
-	// 						kkp[i][j][m][k] = dataview.getInt32(p*byteSize, true);// 4byte, littleEdian
-	// 						p++;
-	// 					}
-	// 				}
-	// 			}
-	// 		} 
-	// 		trace('kkp read end p = ${p}');//20M
-	// 	};		
-	// 	request.send(null);
-	// }
-	// private static function load_eval_kpp(){
-	// 	var filename = 'bin/KPP_synthesized.bin';
-	// 	var request:XMLHttpRequest = new XMLHttpRequest();
-	// 	request.open('GET', filename, true);
-	// 	request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER;
-	// 	request.onload = function (e) {
-	// 		trace('kpp read start');
-	// 		var arrayBuffer:ArrayBuffer = request.response; 	
-	// 		if (arrayBuffer == null || arrayBuffer.byteLength < 1000) {
-	// 			trace('kpp buffer is null');
-	// 			return;
-	// 		}
-	// 		var dataview:DataView = new DataView(arrayBuffer);
-	// 		var bytesData = new BytesData(dataview.byteLength);
-	// 		final byteSize = 2;
-	// 		var p:Int = 0;
-	// 		for (i in 0...Types.SQ_NB){
-	// 			for (j in 0...fe_end){
-	// 				for(k in 0...fe_end){
-	// 					kpp[i][j][k] = dataview.getInt16(p*byteSize, true);// 2byte, littleEdian
-	// 					p++;
-	// 				}
-	// 			}
-	// 		} 
-	// 		trace('kpp read end p = ${p}');//
-	// 	};		
-	// 	request.send(null);
-	// }
 
 	// 評価関数。全計算。(駒割りは差分)
 	// 返し値は持たず、計算結果としてpos.state()->sumに値を代入する。
 	private static function compute_eval_impl(pos:Position) {
-		var sq_bk:Int = pos.king_square(Types.BLACK);
-		var sq_wk:Int = pos.king_square(Types.WHITE);
-		// var ppkppb:Vector<Vector<Int>> = kpp[sq_bk];// bkの位置のKPP配列
-		// var ppkppw:Vector<Vector<Int>> = kpp[Types.Inv(sq_wk)];// wkの位置のKPP配列
-		var pos_ = pos;
-		var length:Int = pos_.eval_list().length();//// 駒リストの長さ // 38固定
-		var list_fb = pos_.eval_list().piece_list_fb();// 先手のBonaPiece配列
-		var list_fw = pos_.eval_list().piece_list_fw();// 後手のBonaPiece配列
-		var k0:BonaPiece, k1:BonaPiece, l0:BonaPiece, l1:BonaPiece;
 		var sum:EvalSum = new EvalSum(); // 評価値を管理するクラス
-		sum.p[0][0] = /*sum.p[0][1] =*/ sum.p[1][0] = /*sum.p[1][1] =*/ 0; // sum.p[0](BKPP)とsum.p[1](WKPP)をゼロクリア
-		// KK T
-		sum.p[2][0] = kk[sq_bk][sq_wk][0];
-		sum.p[2][1] = kk[sq_bk][sq_wk][1];// sum.p[2] = kk[sq_bk][sq_wk];
-		for (i in  0...length) {
-			k0 = list_fb[i];// 先手のBonaPieceを取得
-			k1 = list_fw[i];// 後手のBonaPieceを取得
-			// var pkppb:Vector<Int> = ppkppb[k0];// 先手のBPの位置のKPP配列
-			// var pkppw:Vector<Int> = ppkppw[k1];// 後手のBPの位置のKPP配列
-			// for (j in 0...i) {
-			// 	l0 = list_fb[j];
-			// 	l1 = list_fw[j];
-			// 	// KPP
-			// 	sum.p[0][0] += pkppb[l0];
-			// 	sum.p[1][0] += pkppw[l1];
-			// }
-			// KKP T
-			if(Std.int(k0) < Std.int(fe_end)){
-				sum.p[2][0] += kkp[sq_bk][sq_wk][k0][0];
-			}
-			if(Std.int(k1) < Std.int(fe_end)){
-				sum.p[2][1] += kkp[sq_bk][sq_wk][k1][1];// sum.p[2] += kkp[sq_bk][sq_wk][k0];
-			}
-		}
 		var st = pos.state();
-		sum.p[2][0] += st.materialValue * FV_SCALE;
+		var score:Int = st.materialValue;
+		sum.p[0][0] = /*sum.p[0][1] =*/ sum.p[1][0] = /*sum.p[1][1] =*/ 0; // sum.p[0](BKPP)とsum.p[1](WKPP)をゼロクリア
+		sum.p[2][0] = 0;
+		sum.p[2][1] = 0;
+		// この升の先手の利きの数、後手の利きの数
+		var effects:Vector<Int> = new Vector(2);
+		var sq = 0;// ittan
+		effects[0] = pos.board_effect[Types.BLACK].effect(sq);
+		effects[1] = pos.board_effect[Types.WHITE].effect(sq);
+		for (sq in  0...Types.SQ_NB) {
+			var pc:PC = pos.piece_on(sq);
+			if (pc == Types.NO_PIECE)
+				continue;
+			var piece_value:Int = pieceValue[pc];
+			/**
+				1/10引けば良いのですが、CPUにとって割り算は非常に遅い演算なのでこれを避けるためにちょっと工夫しています。割り算は、足し算・引き算の100倍ぐらい遅く、掛け算は、足し算・引き算の3倍ぐらいの遅さです。なので、割り算は掛け算に変形したいわけです。そこで、上式では1024倍してあります。1024での除算は、1024が2の10乗なので(いまどきのC++のコンパイラであれば)ビットシフトで行うコードが生成されます。なので1024での割り算は、生成されるコードは割り算ではありません。
+				あと102 / 1024 ではなく 104 / 1024　となっているのは、104にしたほうが強かったからです。
+			**/
+			score -= Std.int(piece_value * 4 / 1024);//
+		}
+		sum.p[2][0] += score * FV_SCALE;
 		st.sum = sum;
 	}
 

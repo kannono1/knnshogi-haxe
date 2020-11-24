@@ -1,9 +1,12 @@
 package;
 
+import Types.Direct;
+import Types.SquareWithWall;
 import util.MathUtil;
 import Types.PT;
 
 class BB {
+	public static var ZERO_BB = new Bitboard();
 	public static var filesBB:Array<Bitboard>;
 	public static var ranksBB:Array<Bitboard>;
 	public static var squareDistance:Array<Array<Int>> = [];
@@ -41,17 +44,20 @@ class BB {
 	];
 	public static var rDeltas:Array<Int> = [Types.DELTA_N, Types.DELTA_E, Types.DELTA_S, Types.DELTA_W]; // R
 	public static var bDeltas:Array<Int> = [Types.DELTA_NE, Types.DELTA_SE, Types.DELTA_SW, Types.DELTA_NW]; // B
+	public static var fDeltas:Array<Int> = [Types.DELTA_N,  Types.DELTA_S, 0, 0]; // 上下
+	public static var nDeltas:Array<Int> = [Types.DELTA_N,  0, 0, 0]; // 上
+	public static var sDeltas:Array<Int> = [Types.DELTA_S,  0, 0, 0]; // 下
 
 	public static function SquareDistance(s1:Int, s2:Int):Int {
 		return squareDistance[s1][s2];
 	}
 
 	public static function FileDistance(s1:Int, s2:Int):Int {
-		return MathUtil.abs(Types.File_Of(s1) - Types.File_Of(s2));
+		return MathUtil.abs(Types.file_of(s1) - Types.file_of(s2));
 	}
 
 	public static function RankDistance(s1:Int, s2:Int):Int {
-		return MathUtil.abs(Types.Rank_Of(s1) - Types.Rank_Of(s2));
+		return MathUtil.abs(Types.rank_of(s1) - Types.rank_of(s2));
 	}
 
 	static public function Init() {
@@ -75,13 +81,30 @@ class BB {
 		enemyField3[Types.BLACK] = enemyField2[Types.BLACK].newOR(ranksBB[2]);
 		pawnLineBB[Types.BLACK] = new Bitboard();
 		pawnLineBB[Types.WHITE] = new Bitboard();
-		for (sq in Types.SQ_A1...Types.SQ_NB) {
+		// 1) SquareWithWallテーブルの初期化。
+		for(sq in Types.SQ_11...Types.SQ_NB_PLUS1) {
+			Types.sqww_table[sq] = SquareWithWall.SQWW_11 + Types.file_of(sq) * SquareWithWall.SQWW_L + Types.rank_of(sq) * SquareWithWall.SQWW_D;
+		}
+		// 2) direct_tableの初期化
+		for (sq1 in Types.SQ_11...Types.SQ_NB) {
+			Types.direc_table[sq1] = [];
+			for(dir in Direct.DIRECT_ZERO...Direct.DIRECT_NB){// 0-7
+				// dirの方角に壁にぶつかる(盤外)まで延長していく。このとき、sq1から見てsq2のDirectionsは (1 << dir)である。
+				var delta:SquareWithWall = Types.DirectToDeltaWW(dir);
+				var sq2 = Std.int(Types.to_sqww(sq1)) + Std.int(delta);
+				while( Types.is_ok(sq2) ) {
+					Types.direc_table[sq1][Types.sqww_to_sq(sq2)] = Types.to_directions(dir);
+					sq2 += delta;
+				}
+			}
+		}
+		for (sq in Types.SQ_11...Types.SQ_NB) {
 			squareBB[sq] = new Bitboard();
 			squareBB[sq].SetBit(sq);
 		}
-		for (s1 in Types.SQ_A1...Types.SQ_NB) {
+		for (s1 in Types.SQ_11...Types.SQ_NB) {
 			squareDistance[s1] = [];
-			for (s2 in Types.SQ_A1...Types.SQ_NB) {
+			for (s2 in Types.SQ_11...Types.SQ_NB) {
 				squareDistance[s1][s2] = MathUtil.max(FileDistance(s1, s2), RankDistance(s1, s2));
 			}
 		}
@@ -89,7 +112,7 @@ class BB {
 		for (p in Types.NO_PIECE...Types.PIECE_NB) {
 			pt = new PT(p);
 			stepAttacksBB[pt] = [];
-			for (s1 in Types.SQ_A1...Types.SQ_NB) {
+			for (s1 in Types.SQ_11...Types.SQ_NB) {
 				stepAttacksBB[pt][s1] = new Bitboard();
 			}
 		}
@@ -97,7 +120,7 @@ class BB {
 		for (pt in Types.NO_PIECE_TYPE...Types.PIECE_TYPE_NB) {
 			pseudoAttacks[pt] = [];
 		}
-		for (s in Types.SQ_A1...Types.SQ_NB) {
+		for (s in Types.SQ_11...Types.SQ_NB) {
 			var a = AttacksBB(s, new Bitboard(), Types.BISHOP);
 			pseudoAttacks[Types.BISHOP][s] = AttacksBB(s, new Bitboard(), Types.BISHOP);
 			pseudoAttacks[Types.ROOK][s] = AttacksBB(s, new Bitboard(), Types.ROOK);
@@ -109,10 +132,10 @@ class BB {
 			pseudoQueenAttacks[s].OR(pseudoAttacks[Types.BISHOP][s]);
 			pseudoQueenAttacks[s].OR(pseudoAttacks[Types.ROOK][s]);
 		}
-		for (s1 in Types.SQ_A1...Types.SQ_NB) {
+		for (s1 in Types.SQ_11...Types.SQ_NB) {
 			betweenBB[s1] = [];
 			lineBB[s1] = [];
-			for (s2 in Types.SQ_A1...Types.SQ_NB) {
+			for (s2 in Types.SQ_11...Types.SQ_NB) {
 				betweenBB[s1][s2] = new Bitboard();
 				lineBB[s1][s2] = new Bitboard();
 				if (pseudoQueenAttacks[s1].newAND(squareBB[s2]).IsNonZero()) {// Queenのライン上にある
@@ -136,7 +159,7 @@ class BB {
 		var c = Types.BLACK; // JSだとLoopが多いとスルーされるかもなので先後でループを分割してみた
 		for (p in Types.PAWN...Types.DRAGON) {
 			pt = new PT(p);
-			for (s in Types.SQ_A1...Types.SQ_NB) {
+			for (s in Types.SQ_11...Types.SQ_NB) {
 				for (k in 0...9) { // 9=eps[0].length
 					if (steps[pt][k] == 0) {
 						continue;
@@ -156,7 +179,7 @@ class BB {
 		var c = Types.WHITE;
 		for (p in Types.PAWN...Types.DRAGON) {
 			pt = new PT(p);
-			for (s in Types.SQ_A1...Types.SQ_NB) {
+			for (s in Types.SQ_11...Types.SQ_NB) {
 				for (k in 0...9) { // 9=eps[0].length
 					if (steps[pt][k] == 0) {
 						continue;
@@ -174,7 +197,7 @@ class BB {
 		}
 		for(c in Types.BLACK...Types.COLOR_NB){
 			LanceStepEffectBB[c] = [];
-			for(s in Types.SQ_A1...Types.SQ_NB){
+			for(s in Types.SQ_11...Types.SQ_NB){
 				LanceStepEffectBB[c][s] = stepAttacksBB[Types.Make_Piece(c, Types.LANCE)][s].newOR(squareBB[s]).newAND(RookStepEffectBB[s]);
 			}
 		}
@@ -185,6 +208,63 @@ class BB {
 		return stepAttacksBB[pc][sq];
 	}
 
+	public static function kingEffect(sq:Int):Bitboard {
+		return stepAttacksBB[Types.KING][sq];
+	}
+
+	public static function pawnEffect(c:Int, sq:Int):Bitboard {
+		return stepAttacksBB[Types.Make_Piece(c, Types.PAWN)][sq];
+	}
+
+	public static function knightEffect(c:Int, sq:Int):Bitboard {
+		return stepAttacksBB[Types.Make_Piece(c, Types.KNIGHT)][sq];
+	}
+
+	public static function silverEffect(c:Int, sq:Int):Bitboard {
+		return stepAttacksBB[Types.Make_Piece(c, Types.SILVER)][sq];
+	}
+
+	public static function goldEffect(c:Int, sq:Int):Bitboard {
+		return stepAttacksBB[Types.Make_Piece(c, Types.GOLD)][sq];
+	}
+
+	// 縦横十字の利き 利き長さ=1升分。
+	public static function cross00StepEffect(sq:Int):Bitboard  {
+		return rookStepEffect(sq).newAND(kingEffect(sq));
+	}
+
+	// 斜め十字の利き 利き長さ=1升分。
+	public static function cross45StepEffect(sq:Int):Bitboard  {
+		return bishopStepEffect(sq).newAND(kingEffect(sq));
+	}
+
+	// 飛車の縦の利き(駒を考慮する)
+	public static function rookFileEffect(sq:Int, occupied:Bitboard):Bitboard {
+		return SlidingAttack(fDeltas, sq, occupied);
+	}
+
+	// 香 : occupied bitboardを考慮しながら香の利きを求める
+	public static function lanceEffect(c:Int, sq:Int, occupied:Bitboard):Bitboard {
+		return (c == Types.BLACK) ? SlidingAttack(nDeltas, sq, occupied) : SlidingAttack(sDeltas, sq, occupied);
+	}
+
+	public static function bishopEffect(sq:Int, occupied:Bitboard):Bitboard {
+		return SlidingAttack(bDeltas, sq, occupied);
+	}
+
+	public static function rookEffect(sq:Int, occupied:Bitboard):Bitboard {
+		return SlidingAttack(rDeltas, sq, occupied);
+	}
+
+	public static function horseEffect(sq:Int, occupied:Bitboard):Bitboard {
+		return SlidingGoldenAttack(bDeltas, sq, occupied);
+	}
+
+	public static function dragonEffect(sq:Int, occupied:Bitboard):Bitboard {
+		return SlidingGoldenAttack(rDeltas, sq, occupied);
+	}
+
+	// StepEffectは盤上の駒を考慮しない
 	public static function rookStepEffect(sq:Int):Bitboard {
 		return RookStepEffectBB[sq];
 	}

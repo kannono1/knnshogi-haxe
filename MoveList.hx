@@ -260,7 +260,7 @@ class MoveList {
 			do {
 				checkersCnt++;
 				checksq = b.PopLSB();
-				pc = pos.PieceOn(checksq);
+				pc = pos.piece_on(checksq);
 				pt = Types.TypeOf_Piece(pc);
 				if (pt == Types.BISHOP || pt == Types.ROOK || pt == Types.HORSE || pt == Types.DRAGON || pt == Types.LANCE) { // 飛び駒のとき // ksqとchecksqをつなぐQueenの効き - 王手をかけている駒位置
 					sliderAttacks.OR(BB.lineBB[checksq][ksq].newXOR(BB.squareBB[checksq]));

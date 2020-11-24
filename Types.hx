@@ -1,5 +1,39 @@
 package;
 
+// --------------------
+//   壁つきの升表現
+// --------------------
+
+// This trick is invented by yaneurao in 2016.
+
+// 長い利きを更新するときにある升からある方向に駒にぶつかるまでずっと利きを更新していきたいことがあるが、
+// sqの升が盤外であるかどうかを判定する簡単な方法がない。そこで、Squareの表現を拡張して盤外であることを検出
+// できるようにする。
+
+// bit 0..7   : Squareと同じ意味
+// bit 8      : Squareからのborrow用に1にしておく
+// bit 9..13  : いまの升から盤外まで何升右に升があるか(ここがマイナスになるとborrowでbit13が1になる)
+// bit 14..18 : いまの升から盤外まで何升上に(略
+// bit 19..23 : いまの升から盤外まで何升下に(略
+// bit 24..28 : いまの升から盤外まで何升左に(略
+enum abstract SquareWithWall(Int) from Int to Int {
+	// 相対移動するときの差分値
+	var SQWW_R = Types.SQ_R - (1 << 9) + (1 << 24);
+	var SQWW_U = Types.SQ_U - (1 << 14) + (1 << 19);
+	var SQWW_D = -SQWW_U;
+	var SQWW_L = -SQWW_R;
+	var SQWW_RU = Std.int(SQWW_R) + Std.int(SQWW_U);
+	var SQWW_RD = Std.int(SQWW_R) + Std.int(SQWW_D);
+	var SQWW_LU = Std.int(SQWW_L) + Std.int(SQWW_U);
+	var SQWW_LD = Std.int(SQWW_L) + Std.int(SQWW_D);
+
+	// SQ_11の地点に対応する値(他の升はこれ相対で事前に求めテーブルに格納)
+	var SQWW_11 = Types.SQ_11 | (1 << 8) /* bit8 is 1 */ | (0 << 9) /*右に0升*/ | (0 << 14) /*上に0升*/ | (8 << 19) /*下に8升*/ | (8 << 24) /*左に8升*/;
+
+	// SQWW_RIGHTなどを足して行ったときに盤外に行ったときのborrow bitの集合
+	var SQWW_BORROW_MASK = (1 << 13) | (1 << 18) | (1 << 23) | (1 << 28);
+}
+
 enum abstract PieceNumber(Int) from Int to Int {
 	var PIECE_NUMBER_PAWN; 
 	var PIECE_NUMBER_LANCE = 18;
@@ -13,6 +47,43 @@ enum abstract PieceNumber(Int) from Int to Int {
 	var PIECE_NUMBER_WKING = 39; // 先手、後手の玉の番号が必要な場合はこっちを用いる
 	var PIECE_NUMBER_ZERO = 0;
 	var PIECE_NUMBER_NB = 40;	
+}
+
+// 方角を表す。遠方駒の利きや、玉から見た方角を表すのに用いる。
+// bit0..右上、bit1..右、bit2..右下、bit3..上、bit4..下、bit5..左上、bit6..左、bit7..左下
+// 同時に複数のbitが1であることがありうる。
+enum abstract Directions(Int) from Int to Int {
+	var DIRECTIONS_ZERO  = 0;
+	var DIRECTIONS_RU = 1;
+	var DIRECTIONS_R = 2;
+	var DIRECTIONS_RD = 4;
+	var DIRECTIONS_U     = 8;
+	var DIRECTIONS_D = 16;
+	var DIRECTIONS_LU = 32;
+	var DIRECTIONS_L = 64;
+	var DIRECTIONS_LD = 128;
+	var DIRECTIONS_CROSS = DIRECTIONS_U  | DIRECTIONS_D  | DIRECTIONS_R  | DIRECTIONS_L;
+	var DIRECTIONS_DIAG  = DIRECTIONS_RU | DIRECTIONS_RD | DIRECTIONS_LU | DIRECTIONS_LD;
+}
+
+// Directionsをpopしたもの。複数の方角を同時に表すことはない。
+// おまけで桂馬の移動も追加しておく。
+enum abstract Direct(Int) from Int to Int {
+	var DIRECT_RU;
+	var DIRECT_R;
+	var DIRECT_RD;
+	var DIRECT_U;
+	var DIRECT_D;
+	var DIRECT_LU;
+	var DIRECT_L;
+	var DIRECT_LD;
+	var DIRECT_NB;
+	var DIRECT_ZERO = 0;
+	var DIRECT_RUU = 8;
+	var DIRECT_LUU;
+	var DIRECT_RDD;
+	var DIRECT_LDD;
+	var DIRECT_NB_PLUS4;
 }
 
 abstract Move(Int) to Int {
@@ -45,12 +116,11 @@ class Types {
 	static public inline var ONE_PLY:Int = 1;
 	static public inline var BLACK:Int = 0;
 	static public inline var WHITE:Int = 1;
-	public static inline var FILE_A:Int = 0;
-	public static inline var RANK_1:Int = 0;
 	static public inline var COLOR_NB:Int = 2;
 	public static inline var ALL_PIECES:Int = 0;
 	public static inline var PIECE_TYPE_NB:Int = 15;
-	public static inline var PIECE_PROMOTE:Int = 8;
+	public static inline var PIECE_PROMOTE:Int = 8;// 1000
+	public static inline var PIECE_WHITE:Int = 16;  // これを先手の駒に加算すると後手の駒になる。
 	public static inline var PIECE_HAND_NB:Int = 8;
 	public static inline var NO_PIECE_TYPE:PT = new PT(0);
 	public static inline var PAWN:PT = new PT(1);
@@ -97,12 +167,30 @@ class Types {
 	public static inline var W_HORSE:PC = new PC(29);
 	public static inline var W_DRAGON:PC = new PC(30);
 	public static inline var PIECE_NB:PC = new PC(31);
-	public static inline var SQ_A1:Int = 0;
+	public static inline var SQ_11:Int = 0;
 	public static inline var SQ_HB:Int = 80;
 	public static inline var SQ_NB:Int = 81;
 	public static inline var SQ_NB_PLUS1:Int = SQ_NB + 1; // 玉がいない場合、SQ_NBに移動したものとして扱うため、配列をSQ_NB+1で確保しないといけないときがあるのでこの定数を用いる。
 	public static inline var SQ_NONE:Int = 81;
+	public static inline var FILE_1:Int = 0;
+	public static inline var FILE_2:Int = 1;
+	public static inline var FILE_3:Int = 2;
+	public static inline var FILE_4:Int = 3;
+	public static inline var FILE_5:Int = 4;
+	public static inline var FILE_6:Int = 5;
+	public static inline var FILE_7:Int = 6;
+	public static inline var FILE_8:Int = 7;
+	public static inline var FILE_9:Int = 8;
 	public static inline var FILE_NB:Int = 9;
+	public static inline var RANK_1:Int = 0;
+	public static inline var RANK_2:Int = 1;
+	public static inline var RANK_3:Int = 2;
+	public static inline var RANK_4:Int = 3;
+	public static inline var RANK_5:Int = 4;
+	public static inline var RANK_6:Int = 5;
+	public static inline var RANK_7:Int = 6;
+	public static inline var RANK_8:Int = 7;
+	public static inline var RANK_9:Int = 8;
 	public static inline var RANK_NB:Int = 9;
 	public static inline var MAX_MOVES:Int = 600;
 	public static inline var MAX_PLY:Int = 6; // 最大探索深度
@@ -116,6 +204,12 @@ class Types {
 	public static inline var DELTA_SS:Int = DELTA_S + DELTA_S;
 	public static inline var DELTA_SW:Int = DELTA_S + DELTA_W;
 	public static inline var DELTA_NW:Int = DELTA_N + DELTA_W;
+	// 方角に関する定数。StockfishだとNORTH=北=盤面の下を意味するようだが、
+	// わかりにくいのでやねうら王ではストレートな命名に変更する。
+	public static inline var SQ_D:Int =  1; // 下(Down)
+	public static inline var SQ_R:Int = -9; // 右(Right)
+	public static inline var SQ_U:Int = -1; // 上(Up)
+	public static inline var SQ_L:Int =  9; // 左(Left)
 	public static inline var MOVE_NONE:Move = new Move(0);
 	public static inline var MOVE_NORMAL:Int = 0;
 	public static inline var MOVE_DROP:Int = 1 << 14;
@@ -162,6 +256,65 @@ class Types {
 		79, 70, 61, 52, 43, 34, 25, 16,  7,
 		80, 71, 62, 53, 44, 35, 26, 17,  8,
 	];
+	// 与えられたSquareに対応する筋を返すテーブル。file_of()で用いる。
+	private static var SquareToFile:Array<Int> = [//[SQ_NB_PLUS1] =
+		FILE_1, FILE_1, FILE_1, FILE_1, FILE_1, FILE_1, FILE_1, FILE_1, FILE_1,
+		FILE_2, FILE_2, FILE_2, FILE_2, FILE_2, FILE_2, FILE_2, FILE_2, FILE_2,
+		FILE_3, FILE_3, FILE_3, FILE_3, FILE_3, FILE_3, FILE_3, FILE_3, FILE_3,
+		FILE_4, FILE_4, FILE_4, FILE_4, FILE_4, FILE_4, FILE_4, FILE_4, FILE_4,
+		FILE_5, FILE_5, FILE_5, FILE_5, FILE_5, FILE_5, FILE_5, FILE_5, FILE_5,
+		FILE_6, FILE_6, FILE_6, FILE_6, FILE_6, FILE_6, FILE_6, FILE_6, FILE_6,
+		FILE_7, FILE_7, FILE_7, FILE_7, FILE_7, FILE_7, FILE_7, FILE_7, FILE_7,
+		FILE_8, FILE_8, FILE_8, FILE_8, FILE_8, FILE_8, FILE_8, FILE_8, FILE_8,
+		FILE_9, FILE_9, FILE_9, FILE_9, FILE_9, FILE_9, FILE_9, FILE_9, FILE_9,
+		FILE_NB, // 玉が盤上にないときにこの位置に移動させることがあるので
+	];
+	// 与えられたSquareに対応する段を返すテーブル。rank_of()で用いる。
+	private static var SquareToRank:Array<Int> = [//[SQ_NB_PLUS1] =
+		RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_9,
+		RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_9,
+		RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_9,
+		RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_9,
+		RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_9,
+		RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_9,
+		RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_9,
+		RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_9,
+		RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_9,
+		RANK_NB, // 玉が盤上にないときにこの位置に移動させることがあるので
+	];
+
+	// SquareからSquareWithWallへの変換テーブル
+	public static var sqww_table:Array<SquareWithWall> = [];// [SQ_NB_PLUS1];
+
+	// 型変換。下位8bit == Square
+	public static function sqww_to_sq(sqww:SquareWithWall):Int { return sqww & 0xff; }
+
+	// 型変換。Square型から。
+	public static function to_sqww(sq:Int):SquareWithWall { return sqww_table[sq]; }
+
+	// DirectからDirectionsへの逆変換
+	public static function to_directions(d:Direct):Directions  { return 1 << d; }
+
+	// 盤内か。壁(盤外)だとfalseになる。
+	public static function is_ok(sqww:SquareWithWall):Bool { return (sqww & SquareWithWall.SQWW_BORROW_MASK) == 0; }
+
+	// sqxsqx8dir
+	public static var direc_table:Array<Array<Directions>> = [//Directions [SQ_NB_PLUS1][SQ_NB_PLUS1];
+		[]
+	];
+
+	// DirectをSquareWithWall型の差分値で表現したもの。
+	public static var DirectToDeltaWW_:Array<SquareWithWall>  = [SquareWithWall.SQWW_RU,SquareWithWall.SQWW_R,SquareWithWall.SQWW_RD,
+		 SquareWithWall.SQWW_U,SquareWithWall.SQWW_D,SquareWithWall.SQWW_LU,SquareWithWall.SQWW_L,SquareWithWall.SQWW_LD];// [DIRECT_NB] =8
+	public static function DirectToDeltaWW(d:Direct):SquareWithWall  { /* ASSERT_LV3(is_ok(d)); */ return DirectToDeltaWW_[d]; }
+
+	// sq1にとってsq2がどのdirectionにあるか。
+	// "Direction"ではなく"Directions"を返したほうが、縦横十字方向や、斜め方向の位置関係にある場合、
+	// DIRECTIONS_CROSSやDIRECTIONS_DIAGのような定数が使えて便利。
+	// extern Directions direc_table[SQ_NB_PLUS1][SQ_NB_PLUS1];
+	public static function directions_of(sq1:Int, sq2:Int):Directions  {
+		return direc_table[sq1][sq2];
+	}
 
 	// 与えられた3升が縦横斜めの1直線上にあるか。駒を移動させたときに開き王手になるかどうかを判定するのに使う。
 	// 例) 王がsq1, pinされている駒がsq2にあるときに、pinされている駒をsq3に移動させたときにaligned(sq1,sq2,sq3)であれば、
@@ -175,19 +328,9 @@ class Types {
 	// ply手で詰まされるときのスコア
 	public static function mated_in(ply:Int) {  return (-VALUE_MATE + ply);}
 
-	public static function hasLongEffect(pt:PT):Bool {
-		switch (pt) {
-			case ROOK:
-				return true;
-			case BISHOP:
-				return true;
-			case DRAGON:
-				return true;
-			case HORSE:
-				return true;
-			default:
-				return false;
-		}
+	// pcが遠方駒であるかを判定する。LANCE,BISHOP(5)=0101,ROOK(6)=0110,HORSE(13)=1101,DRAGON(14)=1110
+	public static function has_long_effect(pc:PC):Bool {
+		return (type_of(pc) == LANCE) || (((pc+1) & 6)==6);// 0110
 	}
 
 	public static function OppColour(c:Int):Int {
@@ -195,19 +338,23 @@ class Types {
 	}
 
 	public static function Is_SqOK(s:Int):Bool {
-		return (s >= SQ_A1 && s <= SQ_HB);
+		return (s >= SQ_11 && s <= SQ_HB);
 	}
 
-	public static function File_Of(s:Int):Int {
-		return Std.int(s / RANK_NB);
+	// 与えられたSquareに対応する筋を返す。
+	// →　行数は長くなるが速度面においてテーブルを用いる。
+	public static function file_of(s:Int):Int {
+		// return Std.int(s / RANK_NB);
+		return SquareToFile[s];
 	}
 
-	public static function Rank_Of(s:Int):Int {
-		return s % FILE_NB;
+	public static function rank_of(s:Int):Int {
+		// return s % FILE_NB;
+		return SquareToRank[s];
 	}
 
 	public static function FileString_Of(s:Int):String {
-		return '${File_Of(s) + 1}';
+		return '${file_of(s) + 1}';
 	}
 
 	public static function File_To_Char(f:Int):String {
@@ -223,7 +370,7 @@ class Types {
 	}
 
 	public static function Square_To_String(s:Int):String {
-		return File_To_Char(File_Of(s)) + Rank_To_Char(Rank_Of(s));
+		return File_To_Char(file_of(s)) + Rank_To_Char(rank_of(s));
 	}
 
 	public static function Char_To_File(n:String):Int {
@@ -324,7 +471,12 @@ class Types {
 	}
 
 	public static function RankString_Of(s:Int):String {
-		return String.fromCharCode(97 + Rank_Of(s));
+		return String.fromCharCode(97 + rank_of(s));
+	}
+
+	// 後手の歩→先手の歩のように、後手という属性を取り払った駒種を返す
+	public static function type_of(pc:PC):PT {
+		return new PT(pc & 15);// 1111
 	}
 
 	public static function raw_type_of(p:Int):PR {
@@ -344,6 +496,10 @@ class Types {
 
 	public static function FlipSquare(sq:Int):Int {
 		return flipSquare[sq];
+	}
+
+	public static function color_of(pc:PC):Int {
+		return (pc & PIECE_WHITE) >> 4;
 	}
 
 	static public function getPieceColor(pc:PC):Int {

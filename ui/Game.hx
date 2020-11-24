@@ -84,7 +84,7 @@ class Game extends Position {
 	public function getMovableSq(sq:Int, pc:PC):Array<Int> {
 		var arr:Array<Int> = [];
 		var us = sideToMove;
-		var attack:Bitboard = AttacksFromPTypeSQ(sq, pc); // (Types.hasLongEffect(pt)) ? BB.AttacksBB(sq, occ, pt) : BB.stepAttacksBB[pt][sq];
+		var attack:Bitboard = AttacksFromPTypeSQ(sq, pc); // (Types.has_long_effect(pt)) ? BB.AttacksBB(sq, occ, pt) : BB.stepAttacksBB[pt][sq];
 		var target:Bitboard = byColorBB[us].newNOT();
 		var b = attack.newAND(target);
 		while (b.IsNonZero()) {

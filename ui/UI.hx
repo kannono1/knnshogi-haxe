@@ -51,10 +51,10 @@ class UI {
 		if (Std.int(pt) >= Std.int(Types.GOLD)) {
 			return false; // 金、王、成駒だったらFalse
 		}
-		if (Types.Rank_Of(sq) < 3) {
+		if (Types.rank_of(sq) < 3) {
 			return true;
 		}
-		if (Types.Rank_Of(selectedSq) < 3) {
+		if (Types.rank_of(selectedSq) < 3) {
 			return true;
 		}
 		else {
@@ -70,7 +70,7 @@ class UI {
 				this.updateUi(OPERATION_MODE.MOVE);
 			case MOVE:
 				this.toSq = sq;
-				var from_pc:PC = game.PieceOn(selectedSq);
+				var from_pc:PC = game.piece_on(selectedSq);
 				if (isPromotable(toSq, from_pc)) {
 					showDialog();
 				} else {
@@ -115,7 +115,7 @@ class UI {
 		switch (this.operationMode) {
 			case SELECT:
 				for (sq in 0...81) {
-					pc = game.PieceOn(sq);
+					pc = game.piece_on(sq);
 					if (isPlayerPiece(sq, pc)) {
 						var arr:Array<Int> = game.getMovableSq(sq, pc);
 						if (arr.length > 0) {
@@ -126,18 +126,18 @@ class UI {
 					} else {
 						linkable = false;
 					}
-					this.setCell(sq, game.PieceOn(sq), linkable);
+					this.setCell(sq, game.piece_on(sq), linkable);
 				}
 				for (i in 1...8) {
 					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], (game.hand[Types.BLACK][i] > 0));
 					setHand(Types.WHITE, i, game.hand[Types.WHITE][i], false);
 				}
 			case MOVE:
-				pc = game.PieceOn(this.selectedSq);
+				pc = game.piece_on(this.selectedSq);
 				var arr:Array<Int> = game.getMovableSq(selectedSq, pc);
 				for (sq in 0...81) {
 					linkable = (arr.indexOf(sq) > -1);
-					this.setCell(sq, game.PieceOn(sq), linkable);
+					this.setCell(sq, game.piece_on(sq), linkable);
 				}
 				for (i in 1...8) {
 					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], false);
@@ -147,7 +147,7 @@ class UI {
 				var arr:Array<Int> = game.getEmptySq();
 				for (sq in 0...81) {
 					linkable = (arr.indexOf(sq) > -1);
-					this.setCell(sq, game.PieceOn(sq), linkable);
+					this.setCell(sq, game.piece_on(sq), linkable);
 				}
 				for (i in 1...8) {
 					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], false);
@@ -155,7 +155,7 @@ class UI {
 				}
 			default:
 				for (sq in 0...81) {
-					this.setCell(sq, game.PieceOn(sq), false);
+					this.setCell(sq, game.piece_on(sq), false);
 				}
 				for (i in 1...8) {
 					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], false);
