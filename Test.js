@@ -753,18 +753,24 @@ class Evaluate {
 		sum.p[2][1] = 0;
 		let this1 = new Array(2);
 		let effects = this1;
-		let sq = 0;
-		effects[0] = pos.board_effect[0].effect(sq);
-		effects[1] = pos.board_effect[1].effect(sq);
 		let _g = 0;
 		while(_g < 81) {
 			let sq = _g++;
+			effects[0] = pos.board_effect[0].effect(sq);
+			effects[1] = pos.board_effect[1].effect(sq);
+			let king_sq = pos.king_square(0);
+			let d = Types.dist(sq,king_sq);
+			let s1 = effects[0] * Evaluate.our_effect_value[d] / 1024 | 0;
+			let s2 = effects[Types.OppColour(0)] * Evaluate.their_effect_value[d] / 1024 | 0;
+			let king_sq1 = pos.king_square(1);
+			let d1 = Types.dist(sq,king_sq1);
+			let s11 = effects[1] * Evaluate.our_effect_value[d1] / 1024 | 0;
+			let s21 = effects[Types.OppColour(1)] * Evaluate.their_effect_value[d1] / 1024 | 0;
 			let pc = pos.piece_on(sq);
 			if(pc == 0) {
 				continue;
 			}
 			let piece_value = Evaluate.pieceValue[pc];
-			score -= piece_value * 4 / 1024 | 0;
 		}
 		sum.p[2][0] += score * 32;
 		st.sum = sum;
@@ -2881,6 +2887,13 @@ class Types {
 	static rank_of(s) {
 		return Types.SquareToRank[s];
 	}
+	static dist(sq1,sq2) {
+		if(!Types.is_ok(sq1) || !Types.is_ok(sq2)) {
+			return 2147483647;
+		} else {
+			return util_MathUtil.max(util_MathUtil.abs(Types.file_of(sq1) - Types.file_of(sq2)),util_MathUtil.abs(Types.rank_of(sq1) - Types.rank_of(sq2)));
+		}
+	}
 	static FileString_Of(s) {
 		return "" + (Types.file_of(s) + 1);
 	}
@@ -3457,6 +3470,7 @@ Search.maxPly = 0;
 Search.pvSize = 1;
 Search.MAX_DEPTH = -9;
 Types.INT32_MAX = 2147483647;
+Types.INT_MAX = 2147483647;
 Types.VALUE_NOT_EVALUATED = 2147483647;
 Types.ONE_PLY = 1;
 Types.BLACK = 0;

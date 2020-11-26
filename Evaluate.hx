@@ -325,10 +325,19 @@ class Evaluate {
 		sum.p[2][1] = 0;
 		// この升の先手の利きの数、後手の利きの数
 		var effects:Vector<Int> = new Vector(2);
-		var sq = 0;// ittan
-		effects[0] = pos.board_effect[Types.BLACK].effect(sq);
-		effects[1] = pos.board_effect[Types.WHITE].effect(sq);
 		for (sq in  0...Types.SQ_NB) {
+			effects[0] = pos.board_effect[Types.BLACK].effect(sq);
+			effects[1] = pos.board_effect[Types.WHITE].effect(sq);
+			for(color in Types.BLACK...Types.COLOR_NB){
+				// color側の玉に対して
+				var king_sq = pos.king_square(color);
+				// 筋と段でたくさん離れているほうの数をその距離とする。
+				var d:Int = Types.dist(sq, king_sq);
+				var s1:Int = Std.int(effects[ color] * our_effect_value  [d] / 1024);
+				var s2:Int = Std.int(effects[Types.OppColour(color)] * their_effect_value[d] / 1024);
+				// scoreは先手から見たスコアなので、colorが先手の時は、(s1-s2) をscoreに加算。colorが後手の時は、(s2-s1) を加算。
+				// score += color == Types.BLACK ? (s1 - s2) : (s2 - s1);
+			}
 			var pc:PC = pos.piece_on(sq);
 			if (pc == Types.NO_PIECE)
 				continue;
@@ -337,7 +346,7 @@ class Evaluate {
 				1/10引けば良いのですが、CPUにとって割り算は非常に遅い演算なのでこれを避けるためにちょっと工夫しています。割り算は、足し算・引き算の100倍ぐらい遅く、掛け算は、足し算・引き算の3倍ぐらいの遅さです。なので、割り算は掛け算に変形したいわけです。そこで、上式では1024倍してあります。1024での除算は、1024が2の10乗なので(いまどきのC++のコンパイラであれば)ビットシフトで行うコードが生成されます。なので1024での割り算は、生成されるコードは割り算ではありません。
 				あと102 / 1024 ではなく 104 / 1024　となっているのは、104にしたほうが強かったからです。
 			**/
-			score -= Std.int(piece_value * 4 / 1024);//
+			// score -= Std.int(piece_value * 104 / 1024);//
 		}
 		sum.p[2][0] += score * FV_SCALE;
 		st.sum = sum;

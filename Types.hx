@@ -1,5 +1,7 @@
 package;
 
+import util.MathUtil;
+
 // --------------------
 //   壁つきの升表現
 // --------------------
@@ -112,6 +114,7 @@ abstract PC(Int) to Int {
 
 class Types {
 	static public inline var INT32_MAX:Int = 2147483647;
+	static public inline var INT_MAX:Int = 2147483647;
 	static public inline var VALUE_NOT_EVALUATED:Int = INT32_MAX;
 	static public inline var ONE_PLY:Int = 1;
 	static public inline var BLACK:Int = 0;
@@ -352,6 +355,10 @@ class Types {
 		// return s % FILE_NB;
 		return SquareToRank[s];
 	}
+
+	// ２つの升のfileの差、rankの差のうち大きいほうの距離を返す。sq1,sq2のどちらかが盤外ならINT_MAXが返る。
+	public static function dist(sq1:Int, sq2:Int):Int {
+		return (!is_ok(sq1) || !is_ok(sq2)) ? INT_MAX : MathUtil.max(MathUtil.abs(file_of(sq1) - file_of(sq2)), MathUtil.abs(rank_of(sq1) - rank_of(sq2))); }
 
 	public static function FileString_Of(s:Int):String {
 		return '${file_of(s) + 1}';
