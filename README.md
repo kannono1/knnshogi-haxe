@@ -1,6 +1,6 @@
 # knnshogi-haxe
 
-knnshogi-haxeは(やねうらおう)[https://github.com/yaneurao/YaneuraOu]と(StockfishAS3)[http://www.chessgym.net/res_sf.php]を参考にHaxeで実装されたブラウザ上で動作するハム将棋くらいの棋力を目指すプロジェクトです。
+knnshogi-haxeは[やねうらおう](https://github.com/yaneurao/YaneuraOu)と[StockfishAS3](http://www.chessgym.net/res_sf.php)を参考にHaxeで実装されたブラウザ上で動作するハム将棋くらいの棋力を目指すプロジェクトです。
 
 
 # 
