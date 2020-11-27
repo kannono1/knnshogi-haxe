@@ -37,6 +37,9 @@ class Position {
 	private var nodes:Int = 0; // count of domove
 
 	public function new() {
+		#if debug
+		DebugInfo.init();
+		#end
 		LongEffect.init(this);
 		InitBB();
 	}
@@ -188,6 +191,10 @@ class Position {
 		// 王手を遮断する駒の情報
 		si.blockersForKing[Types.WHITE] = slider_blockers(Types.BLACK, king_square(Types.WHITE), si.pinners[Types.WHITE]);
 		si.blockersForKing[Types.BLACK] = slider_blockers(Types.WHITE, king_square(Types.BLACK), si.pinners[Types.BLACK]);
+		#if debug
+		DebugInfo.blockersForKing[DebugInfo.depth][Types.WHITE] = si.blockersForKing[Types.WHITE].newCOPY();
+		DebugInfo.blockersForKing[DebugInfo.depth][Types.BLACK] = si.blockersForKing[Types.BLACK].newCOPY();
+		#end
 	}
 
 	// return: blockers(飛び駒と玉の間にある駒（敵味方両方）)を返す。ついでにpinnersも更新する。
@@ -242,40 +249,39 @@ class Position {
 			evalList.put_piece(piece_no, to, pc);
 			SubHand(us, pr);
 			materialDiff = 0; // 駒打ちなので駒割りの変動なし。
-			st.checkersBB = AttackersToSq(king_square(them)).newAND(PiecesColour(us)); // 相手玉への王手駒
 			// 駒打ちによる利きの更新処理
 			LongEffect.update_by_dropping_piece(this, to, pc);
-			changeSideToMove();
-			return;
-		}
-		var capturedPC:PC = piece_on(to);
-		var captured:PT = Types.TypeOf_Piece(capturedPC);
-		var capturedRaw:PR = Types.RawTypeOf(captured);
-		if (captured != 0) {
-			// 移動先で駒を捕獲するときの利きの更新
-			LongEffect.update_by_capturing_piece(this, from, to, pc, moved_after_pc, capturedPC);
-			var capsq:Int = to;
-			var piece_no:PieceNumber = piece_no_of(to);
-			evalList.put_piece_hand(piece_no, us, new PT(pr), HandCount(us, pr));
-			AddHand(us, capturedRaw);
-			RemovePiece(capsq, them, captured);
 		}
 		else{
-			// 移動先で駒を捕獲しないときの利きの更新
-			LongEffect.update_by_no_capturing_piece(this, from, to, pc, moved_after_pc);
+			var capturedPC:PC = piece_on(to);
+			var captured:PT = Types.TypeOf_Piece(capturedPC);
+			var capturedRaw:PR = Types.RawTypeOf(captured);
+			if (captured != 0) {
+				// 移動先で駒を捕獲するときの利きの更新
+				LongEffect.update_by_capturing_piece(this, from, to, pc, moved_after_pc, capturedPC);
+				var capsq:Int = to;
+				var piece_no:PieceNumber = piece_no_of(to);
+				evalList.put_piece_hand(piece_no, us, new PT(pr), HandCount(us, pr));
+				AddHand(us, capturedRaw);
+				RemovePiece(capsq, them, captured);
+			}
+			else{
+				// 移動先で駒を捕獲しないときの利きの更新
+				LongEffect.update_by_no_capturing_piece(this, from, to, pc, moved_after_pc);
+			}
+			var piece_no2:PieceNumber = piece_no_of(from);
+			RemovePiece(from, us, pt);
+			MovePiece(from, to, us, pt);
+			evalList.put_piece(piece_no2, to, pc);
+			if (Types.Move_Type(move) == Types.MOVE_PROMO) {
+				RemovePiece(to, us, pt);
+				PutPiece(to, us, new PT(pt + Types.PIECE_PROMOTE));
+				materialDiff = Evaluate.proDiffPieceValue[pt];
+			}
+			st.capturedType = captured;
+			materialDiff += Evaluate.capturePieceValue[captured];
+			st.materialValue = st.previous.materialValue + (us == Types.BLACK ? materialDiff : -materialDiff);
 		}
-		var piece_no2:PieceNumber = piece_no_of(from);
-		RemovePiece(from, us, pt);
-		MovePiece(from, to, us, pt);
-		evalList.put_piece(piece_no2, to, pc);
-		if (Types.Move_Type(move) == Types.MOVE_PROMO) {
-			RemovePiece(to, us, pt);
-			PutPiece(to, us, new PT(pt + Types.PIECE_PROMOTE));
-			materialDiff = Evaluate.proDiffPieceValue[pt];
-		}
-		st.capturedType = captured;
-		materialDiff += Evaluate.capturePieceValue[captured];
-		st.materialValue = st.previous.materialValue + (us == Types.BLACK ? materialDiff : -materialDiff);
 		st.checkersBB = AttackersToSq(king_square(them)).newAND(PiecesColour(us)); // 相手玉への王手駒
 		changeSideToMove();
 		set_check_info(st);

@@ -6,8 +6,8 @@ import haxe.ds.Vector;
 
 class StateInfo {
 	public var checkersBB:Bitboard = new Bitboard();//王手している駒
-	public var blockersForKing:Vector<Bitboard> = new Vector(2);
-	public var pinners:Vector<Bitboard> = new Vector(2);
+	public var blockersForKing:Vector<Bitboard> = new Vector<Bitboard>(2);
+	public var pinners:Vector<Bitboard> = new Vector<Bitboard>(2);
 	public var capturedType:PT = new PT(0);//取った駒
 	public var materialValue:Int = 0;//駒得
 	public var previous:StateInfo;//前の情報

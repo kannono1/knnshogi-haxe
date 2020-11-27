@@ -17,8 +17,8 @@ class Test {
 	}
 
 	static private function TestAll(){
-		// AssertFn('Depth5 err 先手玉の開き王手by角', 'lnsgk1snl/1r4g2/pppp1p1p1/9/4p3p/6Sb1/PPPPP3P/1B2GR3/LNSGK2NL w 3Pp 1'
-		// 	, (bm)-> bm != new Move(0));
+		AssertFn('Depth5 err 駒打ち後の先手玉の開き王手', 'lnsgk1snl/1r4g2/pppp1p1p1/9/4p3p/6Sb1/PPPPP3P/1B2GR3/LNSGK2NL w 3Pp 1'
+			, (bm)-> bm != new Move(0));
 		AssertFn('Depth5 err 先手玉の開き王手by飛車', 'lnsgk1snl/4r1gb1/pppp3p1/9/5pp1p/2PPP4/PP4S1P/1B2G2R1/LNSGK2NL w 3Pp 1'
 			, (bm)-> bm != new Move(0));
 		AssertFn('Depth4 err st.chekersが手番変更前として判定していた', 'ln1gk1snl/1sP4p1/pp1ppppg1/9/2L1s3p/2R6/PP1P1PP1+b/4G3b/L1SGK3+p w R2n3p 1'

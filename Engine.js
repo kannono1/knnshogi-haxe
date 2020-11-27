@@ -1806,40 +1806,36 @@ class Position {
 			this.evalList.put_piece(piece_no,to,pc);
 			this.SubHand(us,pr);
 			materialDiff = 0;
-			let tmp = this.AttackersToSq(this.king_square(them));
-			let tmp1 = this.PiecesColour(us);
-			this.st.checkersBB = tmp.newAND(tmp1);
 			LongEffect.update_by_dropping_piece(this,to,pc);
-			this.changeSideToMove();
-			return;
-		}
-		let capturedPC = this.piece_on(to);
-		let captured = Types.TypeOf_Piece(capturedPC);
-		let capturedRaw = Types.RawTypeOf(captured);
-		if(captured != 0) {
-			LongEffect.update_by_capturing_piece(this,from,to,pc,moved_after_pc,capturedPC);
-			let capsq = to;
-			let piece_no = this.piece_no_of(to);
-			let this1 = pr;
-			this.evalList.put_piece_hand(piece_no,us,this1,this.HandCount(us,pr));
-			this.AddHand(us,capturedRaw);
-			this.RemovePiece(capsq,them,captured);
 		} else {
-			LongEffect.update_by_no_capturing_piece(this,from,to,pc,moved_after_pc);
+			let capturedPC = this.piece_on(to);
+			let captured = Types.TypeOf_Piece(capturedPC);
+			let capturedRaw = Types.RawTypeOf(captured);
+			if(captured != 0) {
+				LongEffect.update_by_capturing_piece(this,from,to,pc,moved_after_pc,capturedPC);
+				let capsq = to;
+				let piece_no = this.piece_no_of(to);
+				let this1 = pr;
+				this.evalList.put_piece_hand(piece_no,us,this1,this.HandCount(us,pr));
+				this.AddHand(us,capturedRaw);
+				this.RemovePiece(capsq,them,captured);
+			} else {
+				LongEffect.update_by_no_capturing_piece(this,from,to,pc,moved_after_pc);
+			}
+			let piece_no2 = this.piece_no_of(from);
+			this.RemovePiece(from,us,pt);
+			this.MovePiece(from,to,us,pt);
+			this.evalList.put_piece(piece_no2,to,pc);
+			if(Types.Move_Type(move) == 32768) {
+				this.RemovePiece(to,us,pt);
+				let this1 = pt + 8;
+				this.PutPiece(to,us,this1);
+				materialDiff = Evaluate.proDiffPieceValue[pt];
+			}
+			this.st.capturedType = captured;
+			materialDiff += Evaluate.capturePieceValue[captured];
+			this.st.materialValue = this.st.previous.materialValue + (us == 0 ? materialDiff : -materialDiff);
 		}
-		let piece_no2 = this.piece_no_of(from);
-		this.RemovePiece(from,us,pt);
-		this.MovePiece(from,to,us,pt);
-		this.evalList.put_piece(piece_no2,to,pc);
-		if(Types.Move_Type(move) == 32768) {
-			this.RemovePiece(to,us,pt);
-			let this1 = pt + 8;
-			this.PutPiece(to,us,this1);
-			materialDiff = Evaluate.proDiffPieceValue[pt];
-		}
-		this.st.capturedType = captured;
-		materialDiff += Evaluate.capturePieceValue[captured];
-		this.st.materialValue = this.st.previous.materialValue + (us == 0 ? materialDiff : -materialDiff);
 		let tmp = this.AttackersToSq(this.king_square(them));
 		let tmp1 = this.PiecesColour(us);
 		this.st.checkersBB = tmp.newAND(tmp1);
@@ -2325,10 +2321,10 @@ class Position {
 			s += HxOverrides.substr("  " + this.board[sq],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 541, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 547, className : "Position", methodName : "printBoard"});
 	}
 	printHand() {
-		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 545, className : "Position", methodName : "printHand"});
+		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 551, className : "Position", methodName : "printHand"});
 	}
 	printPieceNo() {
 		this.evalList.printPieceNo();
