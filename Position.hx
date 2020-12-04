@@ -292,9 +292,9 @@ class Position {
 		var us:Int = sideToMove;
 		var them:Int = Types.OppColour(us);
 		var to:Int = Types.move_to(move);
-		var pc:PC = MovedPieceAfter(move);
+		var pc:PC = piece_on(to);//MovedPieceAfter(move);
 		var pr:PR = Types.RawTypeOf(pc);
-		var pt:PT = Types.TypeOf_Piece(piece_on(to));
+		var pt:PT = Types.TypeOf_Piece(pc);//Types.TypeOf_Piece(piece_on(to));
 		var moved_after_pc:PC = (Types.Move_Type(move) == Types.MOVE_PROMO)?new PC(pc+Types.PIECE_PROMOTE):pc;
 		if (Types.is_drop(move)) {
 			AddHand(us, pr);

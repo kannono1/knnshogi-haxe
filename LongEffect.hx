@@ -48,16 +48,28 @@ class WordBoard {
 
 // Directions先後用
 class LongEffect16 {
-    public var dirs:Vector<Directions> = new Vector<Directions>(Types.COLOR_NB); // 先後個別に扱いたいとき用
+    // public var dirs:Vector<Directions> = new Vector<Directions>(Types.COLOR_NB); // Int[2] 方角を表す。遠方駒の利きや、玉から見た方角を表すのに用いる。先後8bitづつ
     public var u16:Int;              // 直接整数として扱いたいとき用。long_effect_of()で取得可能
 
     public function new() {}
+
+    public function getDir(c:Int):Directions {
+        return (c == Types.BLACK) ? u16 & 0xFF : u16 >>> 8;
+    }
+
+    public function setDirXOR(c:Int, dir:Int) {
+        if(c == Types.BLACK){
+            u16 ^= dir;
+        } else {
+            u16 ^= dir << 8;
+        }
+    }
 }
 
 class LongEffect {
     // 各升のDirections(先後)
     // 先手のほうは下位8bit。後手のほうは上位8bit
-    private static var le16:Vector<LongEffect16> = new Vector<LongEffect16>(Types.SQ_NB_PLUS1);
+    // private static var le16:Vector<LongEffect16> = new Vector<LongEffect16>(Types.SQ_NB_PLUS1);
     // 先手の香と角と飛車の長い利きの方向
     private static var BISHOP_DIR:Directions = DIRECTIONS_LU | DIRECTIONS_LD | DIRECTIONS_RU | DIRECTIONS_RD;
     private static var ROOK_DIR:Directions = DIRECTIONS_R | DIRECTIONS_U | DIRECTIONS_D | DIRECTIONS_L;
@@ -114,10 +126,50 @@ class LongEffect {
                 while (eb.IsNonZero()) {
                     var to:Int = eb.PopLSB();
                     var dir:Directions = Types.directions_of(sq, to);
-                    long_effect.le16[to].dirs[c] ^= dir;// ビット単位の排他OR代入演算子
+                    long_effect.le16[to].setDirXOR(c ,dir);
                 }
             }
-		}
+        }
+        // デバッグ用に表示させて確認。
+    //std::cout << "BLACK board effect\n" << board_effect[BLACK] << "WHITE board effect\n" << board_effect[WHITE];
+    //std::cout << "long effect\n" << long_effect;
+        printBoardEffect(board_effect, Types.BLACK);
+        printBoardEffect(board_effect, Types.WHITE);
+        printLongEffect(long_effect);
+    }
+
+    public static function printBoardEffect(board_effect:Vector<ByteBoard>, c:Int) {
+        var out:String = '--- BoardEffect c:${c}';
+        for(r in 0...Types.RANK_NB) {
+			out += '\n';
+            var f:Int = Types.FILE_9;
+            while(f >= 0) {
+				var sq = Types.Square(f, r);
+                var e = board_effect[c].e[sq];
+                out += ' ${e}';
+                f--;
+            }
+        }
+        trace(out);
+    }
+
+    public static function printLongEffect(long_effect:WordBoard) {
+        var out:String = '--- LongEffect';
+        for(r in 0...Types.RANK_NB) {
+			out += '\n';
+            var f:Int = Types.FILE_9;
+            while(f >= 0) {
+				var sq = Types.Square(f, r);
+                var e:LongEffect16 = long_effect.le16[sq];
+                out += '[';
+                var e0 = e.getDir(0);
+                var e1 = e.getDir(1);
+                out += '${e0}:${e1}';
+                out += ']';
+                f--;
+            }
+        }
+        trace(out);
     }
 
     // ----------------------
@@ -149,26 +201,26 @@ class LongEffect {
 
     // ある升から8方向のrayに対する長い利きの更新処理。先後同時に更新が行えて、かつ、
     // 発生と消滅が一つのコードで出来る。
-    // dir_bw_usの方角のrayを更新するときはUs側の利きが+pされる。
-    // dir_bw_othersの方角のrayを更新するときはそのrayの手番側の利きが-pされる。
+    // dir_bw_usの方角のrayを更新するときはUs側の利きが+pされる。(飛び駒以外は0になる)
+    // dir_bw_othersの方角のrayを更新するときはそのrayの手番側の利きが-pされる。(fromの枡のLongEffect)
     // これは
     // 1) toの地点にUsの駒を移動させるなら、toの地点で発生する利き(dir_bw_us)以外は、遮断された利きであるから、このray上の利きは減るべき。
     // 2) toの地点からUsの駒を移動させるなら、toの地点から取り除かれる利き(dir_bw_us)以外は、遮断されていたものが回復する利きであるから、このray上の利きは増えるべき。
     // 1)の状態か2の状態かをpで選択する。1)ならp=+1 ,  2)なら p=-1。
     private static function UPDATE_LONG_EFFECT_FROM_(pos:Position, EFFECT_FUNC:Dynamic,to:Int,dir_bw_us:Int,dir_bw_others:Int,p:Int) {
         var Us = pos.sideToMove;
-        var sq;
+        var sq:Int = 0;
         var dir_bw:Int = dir_bw_us ^ dir_bw_others;  /* trick a) */
-        var toww:SquareWithWall = Types.to_sqww(to);
+        var toww:SquareWithWall = Types.to_sqww(to);// sqをsq(Wall版)に変換
         while (dir_bw > 0) {
             /* 更新していく方角*/
             var dir:Int = Bitboard.LeastSB(dir_bw) & 7; /* Effect8::Direct型*/
             /* 更新していく値。これは先後の分、同時に扱いたい。*/
-            var value:Int = ((1 << dir) | (1 << (dir + 8)));
+            var value:Int = ((1 << dir) | (1 << (dir + 8)));// 先後合わせた方向 (下位8bitで先手 上位8bit)
             /* valueに関する上記の2つのbitをdir_bwから取り出す */
-            value &= dir_bw;
+            value &= dir_bw;// 方向(下位8bitで先手 上位8bit)
             dir_bw &= ~value; /* dir_bwのうち、上記の2つのbitをクリア*/
-            var delta = Types.DirectToDeltaWW(dir);
+            var delta:SquareWithWall = Types.DirectToDeltaWW(dir);// 方向
             /* valueにUs側のrayを含むか */
             var the_same_color:Bool = (Us == Types.BLACK && (value & 0xff) != 0) || ((Us == Types.WHITE) && (value & 0xff00) != 0);
             var e1:Int = (dir_bw_us & value) != 0 ? p : (the_same_color ? -p : 0);
@@ -176,13 +228,13 @@ class LongEffect {
             var e2:Int = not_the_same ? -p : 0;
             var toww2:Int = toww;
             do {
-                toww2 += delta;
+                toww2 += delta;// 方向分SQ(Wall版)を加算
                 if (!Types.is_ok(toww2)) break; /* 壁に当たったのでこのrayは更新終了*/
-                sq = Types.sqww_to_sq(toww2);
+                sq = Types.sqww_to_sq(toww2);// sqに変換
                 /* trick b) xorで先後同時にこの方向の利きを更新*/
-                pos.long_effect.le16[sq].u16 ^= value;
-                EFFECT_FUNC(pos, Us, sq, e1, e2);
-            } while (pos.piece_on(sq) == Types.NO_PIECE);
+                pos.long_effect.le16[sq].u16 ^= value;// u16の更新 (下位8bitで先手 上位8bitで後手を同時に更新する)
+                EFFECT_FUNC(pos, Us, sq, e1, e2);// dirの更新
+            } while (pos.piece_on(sq) == Types.NO_PIECE);// 駒に当たるまで
         }
     }
 
@@ -272,18 +324,19 @@ class LongEffect {
             pos.ADD_BOARD_EFFECT(Us, sq , -1);
         }
         // -- fromの地点での長い利きの更新。(capturesのときと同様)
-        var dir = Types.directions_of(from, to);
-        var dir_mask;
+        var dir:Directions = Types.directions_of(from, to);// from to の方向 UP=8 (1000)
+        var dir_mask:Int = 0;// 
         if (dir != 0) {
             // 桂以外による移動
-            var dir_cont = (1 << (7 - Bitboard.LeastSB(dir)));
+            var lsb = Bitboard.LeastSB(dir);// 3(011)
+            var dir_cont = (1 << (7 - lsb));//16(10000) //7(0111) 4(0100)
             dir_mask = ~(dir_cont | (dir_cont << 8));
         } else {
             // 桂による移動(non mask)
             dir_mask = 0xffff;
         }
-        var dir_bw_us:Int = long_effect16_of(moved_pc) & dir_mask;
-        var dir_bw_others:Int = pos.long_effect.long_effect16(from) & dir_mask;
+        var dir_bw_us:Int = long_effect16_of(moved_pc) & dir_mask;// 移動した駒のLongEffectの方向.飛び駒以外は0になる
+        var dir_bw_others:Int = pos.long_effect.long_effect16(from) & dir_mask;// fromのLongEffectのu16
         UPDATE_LONG_EFFECT_FROM(pos, from, dir_bw_us, dir_bw_others, -1);
         // -- toの地点での長い利きの更新。
         // ここに移動させた駒からの長い利きと、これにより遮断された長い利きに関する更新
@@ -383,19 +436,19 @@ class LongEffect {
         var Us = pos.sideToMove;
         var board_effect = pos.board_effect;
         var long_effect = pos.long_effect;
-        var inc_target = short_effects_from(moved_pc, from).newCOPY();
-        var dec_target = short_effects_from(moved_after_pc, to).newCOPY();
-        var and_target = inc_target.newAND(dec_target);
-        inc_target.XOR(and_target);
-        dec_target.XOR(and_target);
+        var inc_target = short_effects_from(moved_pc, from).newCOPY();//効きを足す駒のBB
+        var dec_target = short_effects_from(moved_after_pc, to).newCOPY();//効きを引く駒のBB
+        var and_target = inc_target.newAND(dec_target);//効きがそのままのBB
+        inc_target.XOR(and_target);//追加される効きのみにする
+        dec_target.XOR(and_target);//削除される効きのみにする
         while (inc_target.IsNonZero()) { var sq = inc_target.PopLSB(); ADD_BOARD_EFFECT_REWIND(pos, Us, sq, 1); }
         while (dec_target.IsNonZero()) { var sq = dec_target.PopLSB(); ADD_BOARD_EFFECT_REWIND(pos, Us, sq, -1); }
-        // -- toの地点での長い利きの更新。
+        // -- toの地点での長い利きの更新。 // 例：角道を止めた時
         var dir_bw_us = long_effect16_of(moved_after_pc);
         var dir_bw_others = pos.long_effect.long_effect16(to);
         UPDATE_LONG_EFFECT_FROM_REWIND(pos, to, dir_bw_us, dir_bw_others, -1); // rewind時はこの符号が-1
-        // -- fromの地点での長い利きの更新。(capturesのときと同様)
-        var dir = Types.directions_of(from, to);
+        // -- fromの地点での長い利きの更新。(capturesのときと同様) //例：角道を開いた時
+        var dir:Directions = Types.directions_of(from, to);
         var dir_mask;
         if (dir != 0) {
             // 桂以外による移動

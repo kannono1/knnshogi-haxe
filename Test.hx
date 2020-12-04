@@ -17,6 +17,15 @@ class Test {
 	}
 
 	static private function TestAll(){
+		pos.setPosition('startpos');
+		var m:Move = Types.Make_Move(60, 59);//先手の角道を開ける
+		pos.do_move(m, new StateInfo());
+		pos.printBoard();
+        LongEffect.printBoardEffect(pos.board_effect, Types.BLACK);
+        LongEffect.printBoardEffect(pos.board_effect, Types.WHITE);
+		LongEffect.printLongEffect(pos.long_effect);
+		Assert('LongEffect::5eの地点の効きは1になる', pos.board_effect[Types.BLACK].e[40]==1);
+		//
 		AssertFn('Depth5 err 駒打ち後の先手玉の開き王手', 'lnsgk1snl/1r4g2/pppp1p1p1/9/4p3p/6Sb1/PPPPP3P/1B2GR3/LNSGK2NL w 3Pp 1'
 			, (bm)-> bm != new Move(0));
 		AssertFn('Depth5 err 先手玉の開き王手by飛車', 'lnsgk1snl/4r1gb1/pppp3p1/9/5pp1p/2PPP4/PP4S1P/1B2G2R1/LNSGK2NL w 3Pp 1'

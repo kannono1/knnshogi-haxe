@@ -851,7 +851,20 @@ class WordBoard {
 WordBoard.__name__ = true;
 class LongEffect16 {
 	constructor() {
-		this.dirs = new Array(2);
+	}
+	getDir(c) {
+		if(c == 0) {
+			return this.u16 & 255;
+		} else {
+			return this.u16 >>> 8;
+		}
+	}
+	setDirXOR(c,dir) {
+		if(c == 0) {
+			this.u16 ^= dir;
+		} else {
+			this.u16 ^= dir << 8;
+		}
 	}
 }
 LongEffect16.__name__ = true;
@@ -860,7 +873,7 @@ class LongEffect {
 		return LongEffect.long_effect16_table[pc];
 	}
 	static init(pos) {
-		haxe_Log.trace("Longeffect::init",{ fileName : "LongEffect.hx", lineNumber : 75, className : "LongEffect", methodName : "init"});
+		haxe_Log.trace("Longeffect::init",{ fileName : "LongEffect.hx", lineNumber : 87, className : "LongEffect", methodName : "init"});
 		pos.board_effect[0] = new ByteBoard();
 		pos.board_effect[1] = new ByteBoard();
 		pos.long_effect = new WordBoard();
@@ -891,10 +904,49 @@ class LongEffect {
 				while(eb.IsNonZero()) {
 					let to = eb.PopLSB();
 					let dir = Types.directions_of(sq,to);
-					long_effect.le16[to].dirs[c] ^= dir;
+					long_effect.le16[to].setDirXOR(c,dir);
 				}
 			}
 		}
+		LongEffect.printBoardEffect(board_effect,0);
+		LongEffect.printBoardEffect(board_effect,1);
+		LongEffect.printLongEffect(long_effect);
+	}
+	static printBoardEffect(board_effect,c) {
+		let out = "--- BoardEffect c:" + c;
+		let _g = 0;
+		while(_g < 9) {
+			let r = _g++;
+			out += "\n";
+			let f = 8;
+			while(f >= 0) {
+				let sq = Types.Square(f,r);
+				let e = board_effect[c].e[sq];
+				out += " " + e;
+				--f;
+			}
+		}
+		haxe_Log.trace(out,{ fileName : "LongEffect.hx", lineNumber : 153, className : "LongEffect", methodName : "printBoardEffect"});
+	}
+	static printLongEffect(long_effect) {
+		let out = "--- LongEffect";
+		let _g = 0;
+		while(_g < 9) {
+			let r = _g++;
+			out += "\n";
+			let f = 8;
+			while(f >= 0) {
+				let sq = Types.Square(f,r);
+				let e = long_effect.le16[sq];
+				out += "[";
+				let e0 = e.getDir(0);
+				let e1 = e.getDir(1);
+				out += "" + e0 + ":" + e1;
+				out += "]";
+				--f;
+			}
+		}
+		haxe_Log.trace(out,{ fileName : "LongEffect.hx", lineNumber : 172, className : "LongEffect", methodName : "printLongEffect"});
 	}
 	static short_effects_from(pc,sq) {
 		switch(pc) {
@@ -930,7 +982,7 @@ class LongEffect {
 	}
 	static UPDATE_LONG_EFFECT_FROM_(pos,EFFECT_FUNC,to,dir_bw_us,dir_bw_others,p) {
 		let Us = pos.sideToMove;
-		let sq;
+		let sq = 0;
 		let dir_bw = dir_bw_us ^ dir_bw_others;
 		let toww = Types.to_sqww(to);
 		while(dir_bw > 0) {
@@ -1019,9 +1071,10 @@ class LongEffect {
 			pos.ADD_BOARD_EFFECT(Us,sq,-1);
 		}
 		let dir = Types.directions_of(from,to);
-		let dir_mask;
+		let dir_mask = 0;
 		if(dir != 0) {
-			let dir_cont = 1 << 7 - Bitboard.LeastSB(dir);
+			let lsb = Bitboard.LeastSB(dir);
+			let dir_cont = 1 << 7 - lsb;
 			dir_mask = ~(dir_cont | dir_cont << 8);
 		} else {
 			dir_mask = 65535;
@@ -1479,9 +1532,9 @@ class Position {
 		let us = this.sideToMove;
 		let them = Types.OppColour(us);
 		let to = Types.move_to(move);
-		let pc = this.MovedPieceAfter(move);
+		let pc = this.piece_on(to);
 		let pr = Types.RawTypeOf(pc);
-		let pt = Types.TypeOf_Piece(this.piece_on(to));
+		let pt = Types.TypeOf_Piece(pc);
 		let moved_after_pc;
 		if(Types.Move_Type(move) == 32768) {
 			let this1 = pc + 8;
@@ -3085,12 +3138,6 @@ Evaluate.our_effect_value = (function($this) {
 Evaluate.their_effect_value = (function($this) {
 	var $r;
 	let this1 = new Array(9);
-	$r = this1;
-	return $r;
-}(this));
-LongEffect.le16 = (function($this) {
-	var $r;
-	let this1 = new Array(82);
 	$r = this1;
 	return $r;
 }(this));

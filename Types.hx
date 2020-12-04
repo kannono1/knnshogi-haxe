@@ -51,7 +51,7 @@ enum abstract PieceNumber(Int) from Int to Int {
 	var PIECE_NUMBER_NB = 40;	
 }
 
-// 方角を表す。遠方駒の利きや、玉から見た方角を表すのに用いる。
+// 方角を表す。遠方駒の利きや、玉から見た方角を表すのに用いる。 8bit
 // bit0..右上、bit1..右、bit2..右下、bit3..上、bit4..下、bit5..左上、bit6..左、bit7..左下
 // 同時に複数のbitが1であることがありうる。
 enum abstract Directions(Int) from Int to Int {

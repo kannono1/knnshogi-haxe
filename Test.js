@@ -851,7 +851,20 @@ class WordBoard {
 WordBoard.__name__ = true;
 class LongEffect16 {
 	constructor() {
-		this.dirs = new Array(2);
+	}
+	getDir(c) {
+		if(c == 0) {
+			return this.u16 & 255;
+		} else {
+			return this.u16 >>> 8;
+		}
+	}
+	setDirXOR(c,dir) {
+		if(c == 0) {
+			this.u16 ^= dir;
+		} else {
+			this.u16 ^= dir << 8;
+		}
 	}
 }
 LongEffect16.__name__ = true;
@@ -860,7 +873,7 @@ class LongEffect {
 		return LongEffect.long_effect16_table[pc];
 	}
 	static init(pos) {
-		haxe_Log.trace("Longeffect::init",{ fileName : "LongEffect.hx", lineNumber : 75, className : "LongEffect", methodName : "init"});
+		haxe_Log.trace("Longeffect::init",{ fileName : "LongEffect.hx", lineNumber : 87, className : "LongEffect", methodName : "init"});
 		pos.board_effect[0] = new ByteBoard();
 		pos.board_effect[1] = new ByteBoard();
 		pos.long_effect = new WordBoard();
@@ -891,10 +904,49 @@ class LongEffect {
 				while(eb.IsNonZero()) {
 					let to = eb.PopLSB();
 					let dir = Types.directions_of(sq,to);
-					long_effect.le16[to].dirs[c] ^= dir;
+					long_effect.le16[to].setDirXOR(c,dir);
 				}
 			}
 		}
+		LongEffect.printBoardEffect(board_effect,0);
+		LongEffect.printBoardEffect(board_effect,1);
+		LongEffect.printLongEffect(long_effect);
+	}
+	static printBoardEffect(board_effect,c) {
+		let out = "--- BoardEffect c:" + c;
+		let _g = 0;
+		while(_g < 9) {
+			let r = _g++;
+			out += "\n";
+			let f = 8;
+			while(f >= 0) {
+				let sq = Types.Square(f,r);
+				let e = board_effect[c].e[sq];
+				out += " " + e;
+				--f;
+			}
+		}
+		haxe_Log.trace(out,{ fileName : "LongEffect.hx", lineNumber : 153, className : "LongEffect", methodName : "printBoardEffect"});
+	}
+	static printLongEffect(long_effect) {
+		let out = "--- LongEffect";
+		let _g = 0;
+		while(_g < 9) {
+			let r = _g++;
+			out += "\n";
+			let f = 8;
+			while(f >= 0) {
+				let sq = Types.Square(f,r);
+				let e = long_effect.le16[sq];
+				out += "[";
+				let e0 = e.getDir(0);
+				let e1 = e.getDir(1);
+				out += "" + e0 + ":" + e1;
+				out += "]";
+				--f;
+			}
+		}
+		haxe_Log.trace(out,{ fileName : "LongEffect.hx", lineNumber : 172, className : "LongEffect", methodName : "printLongEffect"});
 	}
 	static short_effects_from(pc,sq) {
 		switch(pc) {
@@ -930,7 +982,7 @@ class LongEffect {
 	}
 	static UPDATE_LONG_EFFECT_FROM_(pos,EFFECT_FUNC,to,dir_bw_us,dir_bw_others,p) {
 		let Us = pos.sideToMove;
-		let sq;
+		let sq = 0;
 		let dir_bw = dir_bw_us ^ dir_bw_others;
 		let toww = Types.to_sqww(to);
 		while(dir_bw > 0) {
@@ -1019,9 +1071,10 @@ class LongEffect {
 			pos.ADD_BOARD_EFFECT(Us,sq,-1);
 		}
 		let dir = Types.directions_of(from,to);
-		let dir_mask;
+		let dir_mask = 0;
 		if(dir != 0) {
-			let dir_cont = 1 << 7 - Bitboard.LeastSB(dir);
+			let lsb = Bitboard.LeastSB(dir);
+			let dir_cont = 1 << 7 - lsb;
 			dir_mask = ~(dir_cont | dir_cont << 8);
 		} else {
 			dir_mask = 65535;
@@ -1809,9 +1862,9 @@ class Position {
 		let us = this.sideToMove;
 		let them = Types.OppColour(us);
 		let to = Types.move_to(move);
-		let pc = this.MovedPieceAfter(move);
+		let pc = this.piece_on(to);
 		let pr = Types.RawTypeOf(pc);
-		let pt = Types.TypeOf_Piece(this.piece_on(to));
+		let pt = Types.TypeOf_Piece(pc);
 		let moved_after_pc;
 		if(Types.Move_Type(move) == 32768) {
 			let this1 = pc + 8;
@@ -2748,7 +2801,15 @@ class Test {
 		Test.TestAll();
 	}
 	static TestAll() {
-		Test.AssertFn("Depth5 err 先手玉の開き王手by角","lnsgk1snl/1r4g2/pppp1p1p1/9/4p3p/6Sb1/PPPPP3P/1B2GR3/LNSGK2NL w 3Pp 1",function(bm) {
+		Test.pos.setPosition("startpos");
+		let m = Types.Make_Move(60,59);
+		Test.pos.do_move(m,new StateInfo());
+		Test.pos.printBoard();
+		LongEffect.printBoardEffect(Test.pos.board_effect,0);
+		LongEffect.printBoardEffect(Test.pos.board_effect,1);
+		LongEffect.printLongEffect(Test.pos.long_effect);
+		Test.Assert("LongEffect::5eの地点の効きは1になる",Test.pos.board_effect[0].e[40] == 1);
+		Test.AssertFn("Depth5 err 駒打ち後の先手玉の開き王手","lnsgk1snl/1r4g2/pppp1p1p1/9/4p3p/6Sb1/PPPPP3P/1B2GR3/LNSGK2NL w 3Pp 1",function(bm) {
 			let this1 = 0;
 			return bm != this1;
 		});
@@ -2783,32 +2844,32 @@ class Test {
 		Search.Init();
 	}
 	static doThink(sfen) {
-		haxe_Log.trace("doThink start: :" + sfen,{ fileName : "Test.hx", lineNumber : 43, className : "Test", methodName : "doThink"});
+		haxe_Log.trace("doThink start: :" + sfen,{ fileName : "Test.hx", lineNumber : 52, className : "Test", methodName : "doThink"});
 		Test.pos.setPosition(sfen);
 		Test.pos.printBoard();
-		haxe_Log.trace("doThink pos.c: " + Test.pos.SideToMove(),{ fileName : "Test.hx", lineNumber : 46, className : "Test", methodName : "doThink"});
+		haxe_Log.trace("doThink pos.c: " + Test.pos.SideToMove(),{ fileName : "Test.hx", lineNumber : 55, className : "Test", methodName : "doThink"});
 		Search.Reset(Test.pos);
 		Search.Think();
 		let moveResult = Search.rootMoves[0].pv[0];
-		haxe_Log.trace("bestmove " + Types.Move_To_String(moveResult),{ fileName : "Test.hx", lineNumber : 50, className : "Test", methodName : "doThink"});
+		haxe_Log.trace("bestmove " + Types.Move_To_String(moveResult),{ fileName : "Test.hx", lineNumber : 59, className : "Test", methodName : "doThink"});
 		return moveResult;
 	}
 	static Assert(msg,expected) {
-		haxe_Log.trace("Assert " + msg + " start",{ fileName : "Test.hx", lineNumber : 55, className : "Test", methodName : "Assert"});
+		haxe_Log.trace("Assert " + msg + " start",{ fileName : "Test.hx", lineNumber : 64, className : "Test", methodName : "Assert"});
 		if(!expected) {
 			throw haxe_Exception.thrown("AssertionError");
 		}
-		haxe_Log.trace("Assert " + msg + " OK !!",{ fileName : "Test.hx", lineNumber : 59, className : "Test", methodName : "Assert"});
+		haxe_Log.trace("Assert " + msg + " OK !!",{ fileName : "Test.hx", lineNumber : 68, className : "Test", methodName : "Assert"});
 	}
 	static AssertFn(msg,sfen,fn) {
-		haxe_Log.trace("AssertFn " + msg + " start",{ fileName : "Test.hx", lineNumber : 63, className : "Test", methodName : "AssertFn"});
+		haxe_Log.trace("AssertFn " + msg + " start",{ fileName : "Test.hx", lineNumber : 72, className : "Test", methodName : "AssertFn"});
 		let bm = Test.doThink(sfen);
 		let expected = fn(bm);
 		if(!expected) {
 			throw haxe_Exception.thrown("AssertionFnError " + msg + " " + sfen + " bm:" + bm);
 		}
-		haxe_Log.trace("Assert " + msg + " OK !!",{ fileName : "Test.hx", lineNumber : 69, className : "Test", methodName : "AssertFn"});
-		haxe_Log.trace("+++++++++++++++++++++++++++++++++++",{ fileName : "Test.hx", lineNumber : 70, className : "Test", methodName : "AssertFn"});
+		haxe_Log.trace("Assert " + msg + " OK !!",{ fileName : "Test.hx", lineNumber : 78, className : "Test", methodName : "AssertFn"});
+		haxe_Log.trace("+++++++++++++++++++++++++++++++++++",{ fileName : "Test.hx", lineNumber : 79, className : "Test", methodName : "AssertFn"});
 	}
 }
 Test.__name__ = true;
@@ -3418,12 +3479,6 @@ Evaluate.our_effect_value = (function($this) {
 Evaluate.their_effect_value = (function($this) {
 	var $r;
 	let this1 = new Array(9);
-	$r = this1;
-	return $r;
-}(this));
-LongEffect.le16 = (function($this) {
-	var $r;
-	let this1 = new Array(82);
 	$r = this1;
 	return $r;
 }(this));
