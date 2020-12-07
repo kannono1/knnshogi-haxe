@@ -1794,14 +1794,14 @@ class Position {
 	piece_no_of_hand(c,pt) {
 		return this.evalList.piece_no_of_hand(this.bona_piece_of(c,pt));
 	}
-	piece_no_of(sq) {
+	piece_no_of_sq(sq) {
 		return this.evalList.piece_no_of_board(sq);
 	}
 	PiecesTypes(pt1,pt2) {
 		return this.byTypeBB[pt1].newOR(this.byTypeBB[pt2]);
 	}
 	changeSideToMove() {
-		this.sideToMove = (this.sideToMove + 1) % 2;
+		this.sideToMove = Types.OppColour(this.sideToMove);
 	}
 	set_check_info(si) {
 		si.blockersForKing[1] = this.slider_blockers(0,this.king_square(1),si.pinners[1]);
@@ -1848,14 +1848,17 @@ class Position {
 			moved_after_pc = pc;
 		}
 		let materialDiff = 0;
+		let dp = this.st.dirtyPiece;
 		this.countNode();
 		newSt.Copy(this.st);
 		newSt.previous = this.st;
 		this.st = newSt;
 		if(Types.is_drop(move)) {
-			this.st.dirtyPiece.dirty_num = 1;
+			let this1 = pr;
+			let piece_no = this.piece_no_of_hand(us,this1);
+			dp.dirty_num = 1;
+			dp.pieceNo[0] = piece_no;
 			this.PutPiece(to,us,pt);
-			let piece_no = this.piece_no_of(pr);
 			this.evalList.put_piece(piece_no,to,pc);
 			this.SubHand(us,pr);
 			materialDiff = 0;
@@ -1867,15 +1870,19 @@ class Position {
 			if(captured != 0) {
 				LongEffect.update_by_capturing_piece(this,from,to,pc,moved_after_pc,capturedPC);
 				let capsq = to;
-				let piece_no = this.piece_no_of(to);
+				let piece_no = this.piece_no_of_sq(to);
+				dp.dirty_num = 2;
+				dp.pieceNo[1] = piece_no;
 				let this1 = pr;
 				this.evalList.put_piece_hand(piece_no,us,this1,this.HandCount(us,pr));
 				this.AddHand(us,capturedRaw);
 				this.RemovePiece(capsq,them,captured);
 			} else {
+				dp.dirty_num = 1;
 				LongEffect.update_by_no_capturing_piece(this,from,to,pc,moved_after_pc);
 			}
-			let piece_no2 = this.piece_no_of(from);
+			let piece_no2 = this.piece_no_of_sq(from);
+			dp.pieceNo[0] = piece_no2;
 			this.RemovePiece(from,us,pt);
 			this.MovePiece(from,to,us,pt);
 			this.evalList.put_piece(piece_no2,to,pc);
@@ -2374,10 +2381,10 @@ class Position {
 			s += HxOverrides.substr("  " + this.board[sq],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 547, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 553, className : "Position", methodName : "printBoard"});
 	}
 	printHand() {
-		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 551, className : "Position", methodName : "printHand"});
+		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 557, className : "Position", methodName : "printHand"});
 	}
 	printPieceNo() {
 		this.evalList.printPieceNo();
