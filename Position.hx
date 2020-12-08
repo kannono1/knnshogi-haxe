@@ -238,11 +238,11 @@ class Position {
 		var pt = Types.TypeOf_Piece(pc);
 		var moved_after_pc:PC = (Types.Move_Type(move) == Types.MOVE_PROMO)?new PC(pc+Types.PIECE_PROMOTE):pc;
 		var materialDiff:Int = 0;
-		var dp = st.dirtyPiece;
 		countNode();
 		newSt.Copy(st);
 		newSt.previous = st;
 		st = newSt;
+		var dp = st.dirtyPiece;
 		if (Types.is_drop(move)) {
 			var piece_no:PieceNumber = piece_no_of_hand(us, new PT(pr));
 			dp.dirty_num = 1;
@@ -265,7 +265,7 @@ class Position {
 				var piece_no:PieceNumber = piece_no_of_sq(to);
 				dp.dirty_num = 2;
 				dp.pieceNo[1] = piece_no;// 捕獲した駒
-				evalList.put_piece_hand(piece_no, us, new PT(pr), HandCount(us, pr));
+				evalList.put_piece_hand(piece_no, us, new PT(capturedRaw), hand_count(us, capturedRaw));
 				AddHand(us, capturedRaw);
 				RemovePiece(capsq, them, captured);
 			}
@@ -301,8 +301,11 @@ class Position {
 		var pc:PC = piece_on(to);//MovedPieceAfter(move);
 		var pr:PR = Types.RawTypeOf(pc);
 		var pt:PT = Types.TypeOf_Piece(pc);//Types.TypeOf_Piece(piece_on(to));
-		var moved_after_pc:PC = (Types.Move_Type(move) == Types.MOVE_PROMO)?new PC(pc+Types.PIECE_PROMOTE):pc;
+		var moved_after_pc:PC = pc;
+		var moved_pc:PC = (Types.Move_Type(move) == Types.MOVE_PROMO)? new PC(pc-Types.PIECE_PROMOTE):pc;
+		var piece_no:PieceNumber  = piece_no_of_sq(to); // 移動元のpiece_no == いまtoの場所にある駒のpiece_no
 		if (Types.is_drop(move)) {
+			evalList.put_piece_hand(piece_no, us, pt, hand_count(us, pr));// toの場所にある駒を手駒に戻す
 			AddHand(us, pr);
 			RemovePiece(to, us, pt);
 			// 駒打ちのundoによる利きの復元
@@ -323,12 +326,20 @@ class Position {
 			}
 			if (captured != 0) {
 				var capsq:Int = to;
+				var piece_no2:PieceNumber  = piece_no_of_hand(us, new PT(capturedRaw)); // 捕っていた駒(手駒にある)のpiece_no
+				evalList.put_piece(piece_no2, to, to_pc);// PieceNumberのBonaPieceを上書き（手駒から盤上へ）
 				SubHand(us, capturedRaw);
 				PutPiece(capsq, them, captured);
+				// 成りの指し手だったなら非成りの駒がfromの場所に戻る。さもなくばそのまま戻る。
+				// moved_pcが玉であることはあるが、いまkingSquareを更新してしまうと
+				// rewind_by_capturing_piece()でその位置を用いているのでまずい。(かも)
+				evalList.put_piece(piece_no, from , moved_pc);
 				// 移動先で駒を捕獲するときの利きの更新
 				LongEffect.rewind_by_capturing_piece(this, from, to, pc, moved_after_pc, to_pc);
 			}
 			else{
+				// 成りの指し手だったなら非成りの駒がfromの場所に戻る。さもなくばそのまま戻る。
+				evalList.put_piece(piece_no, from, moved_pc);
 				// 移動先で駒を捕獲しないときの利きの更新
 				LongEffect.rewind_by_no_capturing_piece(this, from, to, pc, moved_after_pc);
 			}
@@ -392,7 +403,7 @@ class Position {
 		hand[c][pr] -= n;
 	}
 
-	public function HandCount(c:Int, pr:PR):Int {
+	public function hand_count(c:Int, pr:PR):Int {
 		return hand[c][pr];
 	}
 

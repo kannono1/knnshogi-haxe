@@ -17,6 +17,8 @@ class Test {
 	}
 
 	static private function TestAll(){
+		AssertFn('Depth6 後手の角頭を金で守る', 'lnsgkgsnl/1r5b1/pppppp1pp/6p2/7P1/9/PPPPPPP1P/1B5R1/LNSGKGSNL w - 1'
+			, (bm)-> bm == Types.Make_Move(27, 19));
 		pos.setPosition('startpos');
 		var m:Move = Types.Make_Move(60, 59);//先手の角道を開ける
 		pos.do_move(m, new StateInfo());

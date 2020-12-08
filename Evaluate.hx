@@ -58,11 +58,12 @@ enum abstract BonaPiece(Int) from Int to Int {
 	// 王も一意な駒番号を付与。これは2駒関係をするときに王に一意な番号が必要なための拡張
 	var f_king = fe_end;
 	var e_king = f_king + Types.SQ_NB;
-	var fe_end2 = e_king + Types.SQ_NB; // 玉も含めた末尾の番号。
+	var fe_end2 = e_king + Types.SQ_NB; // 玉も含めた末尾の番号。// 1710
 	// 末尾は評価関数の性質によって異なるので、BONA_PIECE_NBを定義するわけにはいかない。
-
 }
 
+// BonaPieceを後手から見たとき(先手の39の歩を後手から見ると後手の71の歩)の番号とを
+// ペアにしたものをExtBonaPiece型と呼ぶことにする。
 class ExtBonaPiece{
 	public var fb:BonaPiece; // from black
 	public var fw:BonaPiece; // from white
@@ -73,6 +74,10 @@ class ExtBonaPiece{
 }
 
 class EvalList {
+	// KPPテーブルの盤上の駒pcとsqに対応するBonaPieceを求めるための配列。
+	// 例)
+	// BonaPiece fb = kpp_board_index[pc].fb + sq; // 先手から見たsqにあるpcに対応するBonaPiece
+	// BonaPiece fw = kpp_board_index[pc].fw + sq; // 後手から見たsqにあるpcに対応するBonaPiece
 	private var kpp_board_index = [
 	    new ExtBonaPiece(BONA_PIECE_ZERO, BONA_PIECE_ZERO),
 	    new ExtBonaPiece(f_pawn, e_pawn),
@@ -132,7 +137,7 @@ class EvalList {
 	    ],
 	  ];
 
-	private static inline var MAX_LENGTH:Int = 40; // 駒リストの長さ
+	public static inline var MAX_LENGTH:Int = 40; // 駒リストの長さ
 	private var pieceListFb = new Vector<BonaPiece>(MAX_LENGTH);
 	private var pieceListFw = new Vector<BonaPiece>(MAX_LENGTH);
 	// 盤上の駒に対して、その駒番号(PieceNumber)を保持している配列
@@ -149,8 +154,8 @@ class EvalList {
 	}
 
 	// 評価関数(FV38型)で用いる駒番号のリスト
-	public function piece_list_fb() { return pieceListFb; }
-	public function piece_list_fw() { return pieceListFw; }
+	public function piece_list_fb():Vector<BonaPiece> { return pieceListFb; }
+	public function piece_list_fw():Vector<BonaPiece> { return pieceListFw; }
 
 	public function length():Int {
 		return PIECE_NUMBER_KING; // 駒リストの長さ // 38固定
@@ -298,20 +303,28 @@ class Evaluate {
 	];
 	private static inline var FV_SCALE:Int = 32;
 	// 評価関数パラメーター
-	private static var kk:Vector<Vector<Vector<Int>>>;  //EvalValueKK.kk; //[[[]]];//[SQ_NB][SQ_NB][2];
-	private static var kkp:Vector<Vector<Vector<Vector<Int>>>>;//[SQ_NB][SQ_NB][fe_end][2];
-	// private static var kpp:Vector<Vector<Vector<Int>>>;//[SQ_NB][fe_end][fe_end];
+	private static var pp:Vector<Vector<Int>>;  //[fe_end2][fe_end2];
 	// 王様からの距離に応じたある升の利きの価値。
 	private static var our_effect_value:Vector<Int> = new Vector(9);
 	private static var their_effect_value:Vector<Int> = new Vector(9);
 
 	public static function Init() {
-		trace('Evaluate::Init ${fe_end}');
+		trace('Evaluate::Init fe_end:${fe_end} fe_end2:${fe_end2}');
 		for(i in 0...9) {
 			// 利きには、王様からの距離に反比例する価値がある。(と現段階では考えられる)
 			our_effect_value  [i] = Std.int(68 * 1024 / (i + 1));
 			their_effect_value[i] = Std.int(96 * 1024 / (i + 1));
 		}
+		pp = new Vector<Vector<Int>>(fe_end2);
+		for(i in 0...fe_end2) {
+			pp[i] = new Vector<Int>(fe_end2);
+			for(j in 0...fe_end2) {
+				pp[i][j] = 0;
+			}
+		}
+		pp[e_pawn +66][e_rook +64] = -1; // 後手飛車先を伸ばす
+		pp[e_pawn +21][e_bishop +10] = -1; // 後手角道を開ける
+		pp[e_gold +19][f_pawn +13] = -2; // 後手角頭を金で守る
 	}
 
 	// 評価関数。全計算。(駒割りは差分)
@@ -323,8 +336,19 @@ class Evaluate {
 		sum.p[0][0] = /*sum.p[0][1] =*/ sum.p[1][0] = /*sum.p[1][1] =*/ 0; // sum.p[0](BKPP)とsum.p[1](WKPP)をゼロクリア
 		sum.p[2][0] = 0;
 		sum.p[2][1] = 0;
-		// この升の先手の利きの数、後手の利きの数
-		var effects:Vector<Int> = new Vector(2);
+		var dp:DirtyPiece = st.dirtyPiece;
+		var k:Int = dp.dirty_num; // 移動させた駒は最大2つある。その数
+		var effects:Vector<Int> = new Vector(2); // この升の 0=先手の利きの数、1=後手の利きの数
+		var dirty:Int = dp.pieceNo[0];// 40の連番。dirty_numが0のときはundefined
+		if(k > 0) {
+			var elist:EvalList = pos.eval_list();
+			var list_fb:Vector<BonaPiece> = elist.piece_list_fb();
+			var list_fw:Vector<BonaPiece> = elist.piece_list_fw();
+			var bpb:BonaPiece = list_fb[dirty];
+			for(i in 0...EvalList.MAX_LENGTH) {
+				score += pp[bpb][list_fb[i]];
+			}
+		}
 		for (sq in  0...Types.SQ_NB) {
 			effects[0] = pos.board_effect[Types.BLACK].effect(sq);
 			effects[1] = pos.board_effect[Types.WHITE].effect(sq);
