@@ -516,14 +516,7 @@ class BB {
 					if(Types.Is_SqOK(to) == false) {
 						continue;
 					}
-					let tmp;
-					if(BB.SquareDistance(s,to) >= 3) {
-						let this1 = Types.RawTypeOf(pt);
-						tmp = this1 != 2;
-					} else {
-						tmp = false;
-					}
-					if(tmp) {
+					if(BB.SquareDistance(s,to) >= 3 && pt != 2) {
 						continue;
 					}
 					BB.stepAttacksBB[Types.Make_Piece(c,pt)][s].OR(BB.squareBB[to]);
@@ -550,14 +543,7 @@ class BB {
 					if(Types.Is_SqOK(to) == false) {
 						continue;
 					}
-					let tmp;
-					if(BB.SquareDistance(s,to) >= 3) {
-						let this1 = Types.RawTypeOf(pt);
-						tmp = this1 != 2;
-					} else {
-						tmp = false;
-					}
-					if(tmp) {
+					if(BB.SquareDistance(s,to) >= 3 && pt != 2) {
 						continue;
 					}
 					BB.stepAttacksBB[Types.Make_Piece(c1,pt)][s].OR(BB.squareBB[to]);

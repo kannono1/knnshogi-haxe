@@ -168,7 +168,7 @@ class BB {
 					if (Types.Is_SqOK(to) == false) {
 						continue;
 					}
-					if (SquareDistance(s, to) >= 3 && new PT(Types.RawTypeOf(pt)) != Types.LANCE) {
+					if (SquareDistance(s, to) >= 3 && pt != Types.LANCE) {
 						continue; // 3=駒の隣接チェック(香の時は行わない)
 					}
 					// trace('BB.Init, c:$c, pt:$pt, s:$s, pc:${Types.Make_Piece(c, pt) } ');
@@ -188,7 +188,7 @@ class BB {
 					if (Types.Is_SqOK(to) == false) {
 						continue;
 					}
-					if (SquareDistance(s, to) >= 3 && new PT(Types.RawTypeOf(pt)) != Types.LANCE) {
+					if (SquareDistance(s, to) >= 3 && pt != Types.LANCE) {
 						continue; // 3=駒の隣接チェック(香の時は行わない)
 					}
 					stepAttacksBB[Types.Make_Piece(c, pt)][s].OR(squareBB[to]);
