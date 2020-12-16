@@ -20,6 +20,20 @@ class Bitboard {
 		this.middle = m;
 		this.upper = u;
 	}
+	Init(u,m,l) {
+		if(l == null) {
+			l = 0;
+		}
+		if(m == null) {
+			m = 0;
+		}
+		if(u == null) {
+			u = 0;
+		}
+		this.lower = l;
+		this.middle = m;
+		this.upper = u;
+	}
 	Clear() {
 		this.lower = 0;
 		this.middle = 0;
@@ -67,6 +81,53 @@ class Bitboard {
 			return true;
 		}
 		return false;
+	}
+	PLUS(other) {
+		let overflow = (this.lower & 65535) + (other.lower & 65535) >> 16;
+		overflow += (this.lower >>> 16) + (other.lower >>> 16);
+		this.middle += other.middle;
+		this.lower += other.lower;
+		if((overflow & 65536) != 0) {
+			this.middle++;
+		}
+	}
+	newPLUS(other) {
+		let newBB = new Bitboard();
+		newBB.Copy(this);
+		newBB.PLUS(other);
+		return newBB;
+	}
+	MINUS(other) {
+		let notLower = ~other.lower + 1;
+		let notMiddle = ~other.middle;
+		let overflow = (this.lower & 65535) + (notLower & 65535) >>> 16;
+		overflow += (this.lower >>> 16) + (notLower >>> 16);
+		this.middle += notMiddle;
+		this.lower += notLower;
+		if((overflow & 65536) != 0) {
+			this.middle++;
+		}
+		this.needCount = true;
+	}
+	MULTI(times) {
+		let _g = 0;
+		let _g1 = times;
+		while(_g < _g1) {
+			let t = _g++;
+			this.PLUS(this.newCOPY());
+		}
+	}
+	newMULTI(times) {
+		let newBB = new Bitboard();
+		newBB.Copy(this);
+		newBB.MULTI(times);
+		return newBB;
+	}
+	newMINUS(other) {
+		let newBB = new Bitboard();
+		newBB.Copy(this);
+		newBB.MINUS(other);
+		return newBB;
 	}
 	LSB() {
 		if(this.lower != 0) {
@@ -264,6 +325,33 @@ class Bitboard {
 			theInt >>>= 2;
 		}
 		if((theInt & 1) == 0) {
+			++i;
+			theInt >>>= 1;
+		}
+		if((theInt & 1) != 0) {
+			++i;
+		}
+		return i;
+	}
+	static MostSB(theInt) {
+		let i = -1;
+		if((theInt & -65536) != 0) {
+			i += 16;
+			theInt >>>= 16;
+		}
+		if((theInt & 65280) != 0) {
+			i += 8;
+			theInt >>>= 8;
+		}
+		if((theInt & 240) != 0) {
+			i += 4;
+			theInt >>>= 4;
+		}
+		if((theInt & 12) != 0) {
+			i += 2;
+			theInt >>>= 2;
+		}
+		if((theInt & 3) != 0) {
 			++i;
 			theInt >>>= 1;
 		}
@@ -626,6 +714,455 @@ class BB {
 	}
 }
 BB.__name__ = true;
+class Bitboard64 {
+	constructor(l,u) {
+		if(u == null) {
+			u = 0;
+		}
+		if(l == null) {
+			l = 0;
+		}
+		this.needCount = false;
+		this.count = 0;
+		this.upper = 0;
+		this.lower = 0;
+		this.lower = l;
+		this.upper = u;
+	}
+	Clear() {
+		this.lower = 0;
+		this.upper = 0;
+		this.count = 0;
+		this.needCount = false;
+	}
+	Copy(other) {
+		this.lower = other.lower;
+		this.upper = other.upper;
+		this.count = other.count;
+		this.needCount = other.needCount;
+	}
+	newCOPY() {
+		let newBB = new Bitboard64();
+		newBB.Copy(this);
+		return newBB;
+	}
+	Equals(other) {
+		if(this.lower == other.lower && this.upper == other.upper) {
+			return true;
+		}
+		return false;
+	}
+	Init(u,l) {
+		if(l == null) {
+			l = 0;
+		}
+		if(u == null) {
+			u = 0;
+		}
+		this.lower = l;
+		this.upper = u;
+		this.needCount = true;
+	}
+	SetInt(theInt) {
+		this.upper = 0;
+		this.lower = theInt;
+		this.needCount = true;
+	}
+	AND(other) {
+		this.lower &= other.lower;
+		this.upper &= other.upper;
+		this.needCount = true;
+	}
+	newAND(other) {
+		let newBB = new Bitboard64();
+		newBB.Copy(this);
+		newBB.AND(other);
+		return newBB;
+	}
+	OR(other) {
+		this.lower |= other.lower;
+		this.upper |= other.upper;
+		this.needCount = true;
+	}
+	newOR(other) {
+		let newBB = new Bitboard64();
+		newBB.Copy(this);
+		newBB.OR(other);
+		return newBB;
+	}
+	XOR(other) {
+		this.lower ^= other.lower;
+		this.upper ^= other.upper;
+		this.needCount = true;
+	}
+	newXOR(other) {
+		let newBB = new Bitboard64();
+		newBB.Copy(this);
+		newBB.XOR(other);
+		return newBB;
+	}
+	NOT() {
+		this.lower = ~this.lower;
+		this.upper = ~this.upper;
+		this.count = 64 - this.count;
+	}
+	newNOT() {
+		let newBB = new Bitboard64();
+		newBB.Copy(this);
+		newBB.NOT();
+		return newBB;
+	}
+	PLUS(other) {
+		let overflow = (this.lower & 65535) + (other.lower & 65535) >> 16;
+		overflow += (this.lower >>> 16) + (other.lower >>> 16);
+		this.upper += other.upper;
+		this.lower += other.lower;
+		if((overflow & 65536) != 0) {
+			this.upper++;
+		}
+		this.needCount = true;
+	}
+	newPLUS(other) {
+		let newBB = new Bitboard64();
+		newBB.Copy(this);
+		newBB.PLUS(other);
+		return newBB;
+	}
+	MINUS(other) {
+		let notLower = ~other.lower + 1;
+		let notUpper = ~other.upper;
+		let overflow = (this.lower & 65535) + (notLower & 65535) >>> 16;
+		overflow += (this.lower >>> 16) + (notLower >>> 16);
+		this.upper += notUpper;
+		this.lower += notLower;
+		if((overflow & 65536) != 0) {
+			this.upper++;
+		}
+		this.needCount = true;
+	}
+	newMINUS(other) {
+		let newBB = new Bitboard64();
+		newBB.Copy(this);
+		newBB.MINUS(other);
+		return newBB;
+	}
+	PopLSB() {
+		let index = -1;
+		if(this.lower != 0) {
+			this.count--;
+			index = Bitboard64.LeastSB(this.lower);
+			this.lower &= this.lower - 1;
+			return index;
+		}
+		if(this.upper != 0) {
+			this.count--;
+			index = 32 + Bitboard64.LeastSB(this.upper);
+			this.upper &= this.upper - 1;
+			return index;
+		}
+		return -1;
+	}
+	LSB() {
+		if(this.lower != 0) {
+			return Bitboard64.LeastSB(this.lower);
+		}
+		if(this.upper != 0) {
+			return Bitboard64.LeastSB(this.upper) + 32;
+		}
+		return -1;
+	}
+	MSB() {
+		if(this.upper != 0) {
+			return Bitboard64.MostSB(this.upper) + 32;
+		}
+		if(this.lower != 0) {
+			return Bitboard64.MostSB(this.lower);
+		}
+		return -1;
+	}
+	ShiftL(theShift) {
+		if(theShift < 32) {
+			this.upper <<= theShift;
+			this.upper |= this.lower >>> 32 - theShift;
+			this.lower <<= theShift;
+		} else {
+			this.upper = this.lower << theShift - 32;
+			this.lower = 0;
+		}
+		this.needCount = true;
+	}
+	newShiftL(theShift) {
+		let newBB = new Bitboard64();
+		newBB.Copy(this);
+		newBB.ShiftL(theShift);
+		return newBB;
+	}
+	ShiftR(theShift) {
+		if(theShift < 32) {
+			this.lower >>>= theShift;
+			this.lower |= this.upper << 32 - theShift >>> 32 - theShift << 32 - theShift;
+			this.upper >>>= theShift;
+		} else {
+			this.lower = this.upper >>> theShift - 32;
+			this.upper = 0;
+		}
+		this.needCount = true;
+	}
+	newShiftR(theShift) {
+		let newBB = new Bitboard64();
+		newBB.Copy(this);
+		newBB.ShiftR(theShift);
+		return newBB;
+	}
+	SetBit(theIndex) {
+		if(theIndex < 32) {
+			this.lower |= 1 << theIndex;
+		} else {
+			this.upper |= 1 << theIndex - 32;
+		}
+		this.needCount = true;
+	}
+	ClrBit(theIndex) {
+		if(theIndex < 32) {
+			this.lower ^= 1 << theIndex;
+		} else {
+			this.upper ^= 1 << theIndex - 32;
+		}
+		this.needCount = true;
+	}
+	IsSet(theIndex) {
+		if(theIndex < 32) {
+			if((this.lower & 1 << theIndex) != 0) {
+				return true;
+			}
+		} else if((this.upper & 1 << theIndex - 32) != 0) {
+			return true;
+		}
+		return false;
+	}
+	IsZero() {
+		if(this.lower == 0 && this.upper == 0) {
+			return true;
+		}
+		return false;
+	}
+	IsNonZero() {
+		if(this.lower != 0 || this.upper != 0) {
+			return true;
+		}
+		return false;
+	}
+	MoreThanOne() {
+		if((this.lower & this.lower - 1) != 0 || (this.upper & this.upper - 1) != 0 || this.lower != 0 && this.upper != 0) {
+			return true;
+		}
+		return false;
+	}
+	Count() {
+		if(this.needCount) {
+			this.needCount = false;
+			this.count = Bitboard64.BitCount(this.upper) + Bitboard64.BitCount(this.lower);
+		}
+		return this.count;
+	}
+	MULTI(times) {
+		let _g = 0;
+		let _g1 = times;
+		while(_g < _g1) {
+			let t = _g++;
+			this.PLUS(this.newCOPY());
+		}
+	}
+	newMULTI(times) {
+		let newBB = new Bitboard64();
+		newBB.Copy(this);
+		newBB.MULTI(times);
+		return newBB;
+	}
+	ToString() {
+		let newString = "";
+		let _g = 0;
+		while(_g < 64) {
+			let i = _g++;
+			if(this.IsSet(63 - i)) {
+				newString += "1";
+			} else {
+				newString += "0";
+			}
+		}
+		return newString + " " + this.Count();
+	}
+	toStringBB() {
+		let string = "";
+		let _g = 0;
+		while(_g < 64) {
+			let i = _g++;
+			if(i > 0 && i % 8 == 0) {
+				string += "\n";
+			}
+			let file = i % 8;
+			let rank = 7 - (i >>> 3);
+			if(this.IsSet(file + (rank << 3))) {
+				string += "1";
+			} else {
+				string += "0";
+			}
+		}
+		return string;
+	}
+	static LeastSB(theInt) {
+		let i = -1;
+		if((theInt & 65535) == 0) {
+			i += 16;
+			theInt >>>= 16;
+		}
+		if((theInt & 255) == 0) {
+			i += 8;
+			theInt >>>= 8;
+		}
+		if((theInt & 15) == 0) {
+			i += 4;
+			theInt >>>= 4;
+		}
+		if((theInt & 3) == 0) {
+			i += 2;
+			theInt >>>= 2;
+		}
+		if((theInt & 1) == 0) {
+			++i;
+			theInt >>>= 1;
+		}
+		if((theInt & 1) != 0) {
+			++i;
+		}
+		return i;
+	}
+	static MostSB(theInt) {
+		let i = -1;
+		if((theInt & -65536) != 0) {
+			i += 16;
+			theInt >>>= 16;
+		}
+		if((theInt & 65280) != 0) {
+			i += 8;
+			theInt >>>= 8;
+		}
+		if((theInt & 240) != 0) {
+			i += 4;
+			theInt >>>= 4;
+		}
+		if((theInt & 12) != 0) {
+			i += 2;
+			theInt >>>= 2;
+		}
+		if((theInt & 3) != 0) {
+			++i;
+			theInt >>>= 1;
+		}
+		if((theInt & 1) != 0) {
+			++i;
+		}
+		return i;
+	}
+	static BitCount(theInt) {
+		let total = 0;
+		while(theInt != 0) {
+			theInt &= theInt - 1;
+			++total;
+		}
+		return total;
+	}
+	static ToStringBB2(b1,b2) {
+		let string = "";
+		let file = 0;
+		let rank = 0;
+		let _g = 0;
+		while(_g < 8) {
+			let j = _g++;
+			let _g1 = 0;
+			while(_g1 < 8) {
+				let i = _g1++;
+				file = i;
+				rank = 7 - j;
+				if(b1.IsSet(file + (rank << 3))) {
+					string += "1";
+				} else {
+					string += "0";
+				}
+				if(file == 7) {
+					string += " ";
+				}
+			}
+			let _g2 = 0;
+			while(_g2 < 8) {
+				let i = _g2++;
+				file = i;
+				rank = 7 - j;
+				if(b2.IsSet(file + (rank << 3))) {
+					string += "1";
+				} else {
+					string += "0";
+				}
+				if(file == 7) {
+					string += "\n";
+				}
+			}
+		}
+		return string;
+	}
+	static ToStringBB8(b1,b2,b3,b4,b5,b6,b7,b8) {
+		let string = "";
+		let _g = 0;
+		while(_g < 8) {
+			let j = _g++;
+			let _g1 = 0;
+			while(_g1 < 8) {
+				let k = _g1++;
+				let bb = b1;
+				if(k == 1) {
+					bb = b2;
+				}
+				if(k == 2) {
+					bb = b3;
+				}
+				if(k == 3) {
+					bb = b4;
+				}
+				if(k == 4) {
+					bb = b5;
+				}
+				if(k == 5) {
+					bb = b6;
+				}
+				if(k == 6) {
+					bb = b7;
+				}
+				if(k == 7) {
+					bb = b8;
+				}
+				let _g = 0;
+				while(_g < 8) {
+					let i = _g++;
+					let file = i;
+					let rank = 7 - j;
+					if(bb.IsSet(file + (rank << 3))) {
+						string += "1";
+					} else {
+						string += "0";
+					}
+					if(file == 7 && k < 7) {
+						string += " ";
+					}
+					if(file == 7 && k == 7) {
+						string += "\n";
+					}
+				}
+			}
+		}
+		return string;
+	}
+}
+Bitboard64.__name__ = true;
 class EReg {
 	constructor(r,opt) {
 		this.r = new RegExp(r,opt.split("u").join(""));
@@ -735,75 +1272,244 @@ class DirtyPiece {
 }
 DirtyPiece.__name__ = true;
 class Evaluate {
+	static load_eval() {
+		Evaluate.load_eval_impl();
+	}
+	static load_eval_impl() {
+		Evaluate.load_eval_kk();
+		Evaluate.load_eval_kkp();
+		Evaluate.load_eval_kpp();
+	}
+	static load_eval_kk() {
+		let filename = "bin/KK_synthesized.bin";
+		let request = new XMLHttpRequest();
+		request.open("GET",filename,true);
+		request.responseType = "arraybuffer";
+		request.onload = function(e) {
+			haxe_Log.trace("kk read start",{ fileName : "Evaluate.hx", lineNumber : 330, className : "Evaluate", methodName : "load_eval_kk"});
+			let arrayBuffer = request.response;
+			if(arrayBuffer == null) {
+				haxe_Log.trace("buffer is null",{ fileName : "Evaluate.hx", lineNumber : 333, className : "Evaluate", methodName : "load_eval_kk"});
+				return;
+			}
+			let dataview = new DataView(arrayBuffer);
+			let bytesData = new ArrayBuffer(dataview.byteLength);
+			let byteSize = 4;
+			let p = 0;
+			haxe_Log.trace("bytesData:" + Std.string(bytesData) + " arrayBuffer:" + arrayBuffer.byteLength,{ fileName : "Evaluate.hx", lineNumber : 341, className : "Evaluate", methodName : "load_eval_kk"});
+			let _g = 0;
+			while(_g < 81) {
+				let i = _g++;
+				let _g1 = 0;
+				while(_g1 < 81) {
+					let j = _g1++;
+					Evaluate.kk[i][j][0] = dataview.getInt32(p * byteSize,true);
+					++p;
+					Evaluate.kk[i][j][1] = dataview.getInt32(p * byteSize,true);
+					++p;
+				}
+			}
+			haxe_Log.trace("kk read end",{ fileName : "Evaluate.hx", lineNumber : 353, className : "Evaluate", methodName : "load_eval_kk"});
+		};
+		request.send(null);
+	}
+	static load_eval_kkp() {
+		let filename = "bin/KKP_synthesized.bin";
+		haxe_Log.trace("kkp filename " + filename,{ fileName : "Evaluate.hx", lineNumber : 360, className : "Evaluate", methodName : "load_eval_kkp"});
+		let request = new XMLHttpRequest();
+		request.open("GET",filename,true);
+		request.responseType = "arraybuffer";
+		request.onload = function(e) {
+			haxe_Log.trace("kkp read start",{ fileName : "Evaluate.hx", lineNumber : 365, className : "Evaluate", methodName : "load_eval_kkp"});
+			let arrayBuffer = request.response;
+			if(arrayBuffer == null) {
+				haxe_Log.trace("buffer is null",{ fileName : "Evaluate.hx", lineNumber : 368, className : "Evaluate", methodName : "load_eval_kkp"});
+				return;
+			}
+			let dataview = new DataView(arrayBuffer);
+			let bytesData = new ArrayBuffer(dataview.byteLength);
+			let byteSize = 4;
+			let p = 0;
+			let _g = 0;
+			while(_g < 81) {
+				let i = _g++;
+				let _g1 = 0;
+				while(_g1 < 81) {
+					let j = _g1++;
+					let _g = 0;
+					let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
+					while(_g < _g2) {
+						let m = _g++;
+						Evaluate.kkp[i][j][m][0] = dataview.getInt32(p * byteSize,true);
+						++p;
+						Evaluate.kkp[i][j][m][1] = dataview.getInt32(p * byteSize,true);
+						++p;
+					}
+				}
+			}
+			haxe_Log.trace("kkp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 389, className : "Evaluate", methodName : "load_eval_kkp"});
+			haxe_Log.trace("f_pawn " + 90,{ fileName : "Evaluate.hx", lineNumber : 390, className : "Evaluate", methodName : "load_eval_kkp"});
+			haxe_Log.trace("kkp[44][36][90+59][0] = " + Evaluate.kkp[44][36][149][0],{ fileName : "Evaluate.hx", lineNumber : 391, className : "Evaluate", methodName : "load_eval_kkp"});
+			haxe_Log.trace("kkp[44][36][90+59][1] = " + Evaluate.kkp[44][36][149][1],{ fileName : "Evaluate.hx", lineNumber : 392, className : "Evaluate", methodName : "load_eval_kkp"});
+		};
+		request.send(null);
+	}
+	static load_eval_kpp() {
+		let filename = "bin/KPP_synthesized.bin";
+		let request = new XMLHttpRequest();
+		request.open("GET",filename,true);
+		request.responseType = "arraybuffer";
+		request.onload = function(e) {
+			haxe_Log.trace("kpp read start",{ fileName : "Evaluate.hx", lineNumber : 403, className : "Evaluate", methodName : "load_eval_kpp"});
+			let arrayBuffer = request.response;
+			if(arrayBuffer == null || arrayBuffer.byteLength < 1000) {
+				haxe_Log.trace("kpp buffer is null",{ fileName : "Evaluate.hx", lineNumber : 406, className : "Evaluate", methodName : "load_eval_kpp"});
+				return;
+			}
+			let dataview = new DataView(arrayBuffer);
+			let bytesData = new ArrayBuffer(dataview.byteLength);
+			let byteSize = 2;
+			let p = 0;
+			let _g = 0;
+			while(_g < 81) {
+				let i = _g++;
+				let _g1 = 0;
+				let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
+				while(_g1 < _g2) {
+					let j = _g1++;
+					let _g = 0;
+					let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
+					while(_g < _g2) {
+						let k = _g++;
+						Evaluate.kpp[i][j][k] = dataview.getInt16(p * byteSize,true);
+						++p;
+					}
+				}
+			}
+			haxe_Log.trace("kpp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 421, className : "Evaluate", methodName : "load_eval_kpp"});
+		};
+		request.send(null);
+	}
 	static Init() {
-		haxe_Log.trace("Evaluate::Init fe_end:" + (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81) + " fe_end2:" + (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),{ fileName : "Evaluate.hx", lineNumber : 312, className : "Evaluate", methodName : "Init"});
+		haxe_Log.trace("Evaluate::Init fe_end:" + (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81) + " fe_end2:" + (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),{ fileName : "Evaluate.hx", lineNumber : 427, className : "Evaluate", methodName : "Init"});
+		let this1 = new Array(81);
+		Evaluate.kk = this1;
 		let _g = 0;
-		while(_g < 9) {
+		while(_g < 81) {
 			let i = _g++;
+			let this1 = Evaluate.kk;
+			let this2 = new Array(81);
+			this1[i] = this2;
+			let _g1 = 0;
+			while(_g1 < 81) {
+				let j = _g1++;
+				let this1 = Evaluate.kk[i];
+				let this2 = new Array(2);
+				this1[j] = this2;
+				Evaluate.kk[i][j][0] = 0;
+				Evaluate.kk[i][j][1] = 0;
+			}
+		}
+		let this2 = new Array(81);
+		Evaluate.kkp = this2;
+		let _g1 = 0;
+		while(_g1 < 81) {
+			let i = _g1++;
+			let this1 = Evaluate.kkp;
+			let this2 = new Array(81);
+			this1[i] = this2;
+			let _g = 0;
+			while(_g < 81) {
+				let j = _g++;
+				let this1 = Evaluate.kkp[i];
+				let this2 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
+				this1[j] = this2;
+				let _g1 = 0;
+				let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
+				while(_g1 < _g2) {
+					let m = _g1++;
+					let this1 = Evaluate.kkp[i][j];
+					let this2 = new Array(2);
+					this1[m] = this2;
+					Evaluate.kkp[i][j][m][0] = 0;
+					Evaluate.kkp[i][j][m][1] = 0;
+				}
+			}
+		}
+		let this3 = new Array(81);
+		Evaluate.kpp = this3;
+		let _g2 = 0;
+		while(_g2 < 81) {
+			let i = _g2++;
+			let this1 = Evaluate.kpp;
+			let this2 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
+			this1[i] = this2;
+			let _g = 0;
+			let _g1 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
+			while(_g < _g1) {
+				let j = _g++;
+				let this1 = Evaluate.kpp[i];
+				let this2 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
+				this1[j] = this2;
+				let _g1 = 0;
+				let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
+				while(_g1 < _g2) {
+					let k = _g1++;
+					Evaluate.kpp[i][j][k] = 0;
+				}
+			}
+		}
+		Evaluate.load_eval();
+		let _g3 = 0;
+		while(_g3 < 9) {
+			let i = _g3++;
 			Evaluate.our_effect_value[i] = 69632 / (i + 1) | 0;
 			Evaluate.their_effect_value[i] = 98304 / (i + 1) | 0;
 		}
-		let this1 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
-		Evaluate.pp = this1;
-		let _g1 = 0;
-		let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
-		while(_g1 < _g2) {
-			let i = _g1++;
-			let this1 = Evaluate.pp;
-			let this2 = new Array(90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81);
-			this1[i] = this2;
-			let _g = 0;
-			let _g2 = 90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81;
-			while(_g < _g2) {
-				let j = _g++;
-				Evaluate.pp[i][j] = 0;
-			}
-		}
-		Evaluate.pp[90 + 81 + 66][90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 64] = -1;
-		Evaluate.pp[90 + 81 + 21][90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 10] = -1;
-		Evaluate.pp[90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 19][90 + 13] = -2;
 	}
 	static compute_eval_impl(pos) {
+		let sq_bk = pos.king_square(0);
+		let sq_wk = pos.king_square(1);
+		let ppkppb = Evaluate.kpp[sq_bk];
+		let ppkppw = Evaluate.kpp[Types.Inv(sq_wk)];
+		let pos_ = pos;
+		let length = pos_.eval_list().length();
+		let list_fb = pos_.eval_list().piece_list_fb();
+		let list_fw = pos_.eval_list().piece_list_fw();
+		let k0;
+		let k1;
+		let l0;
+		let l1;
 		let sum = new EvalSum();
 		let st = pos.state();
 		let score = st.materialValue;
 		sum.p[0][0] = sum.p[1][0] = 0;
-		sum.p[2][0] = 0;
-		sum.p[2][1] = 0;
+		sum.p[2][0] = Evaluate.kk[sq_bk][sq_wk][0];
+		sum.p[2][1] = Evaluate.kk[sq_bk][sq_wk][1];
 		let dp = st.dirtyPiece;
 		let k = dp.dirty_num;
 		let this1 = new Array(2);
 		let effects = this1;
 		let dirty = dp.pieceNo[0];
-		if(k > 0) {
-			let elist = pos.eval_list();
-			let list_fb = elist.piece_list_fb();
-			let list_fw = elist.piece_list_fw();
-			let bpb = list_fb[dirty];
-			let _g = 0;
-			while(_g < 40) {
-				let i = _g++;
-				score += Evaluate.pp[bpb][list_fb[i]];
-			}
-		}
 		let _g = 0;
-		while(_g < 81) {
-			let sq = _g++;
-			effects[0] = pos.board_effect[0].effect(sq);
-			effects[1] = pos.board_effect[1].effect(sq);
-			let king_sq = pos.king_square(0);
-			let d = Types.dist(sq,king_sq);
-			let s1 = effects[0] * Evaluate.our_effect_value[d] / 1024 | 0;
-			let s2 = effects[Types.OppColour(0)] * Evaluate.their_effect_value[d] / 1024 | 0;
-			let king_sq1 = pos.king_square(1);
-			let d1 = Types.dist(sq,king_sq1);
-			let s11 = effects[1] * Evaluate.our_effect_value[d1] / 1024 | 0;
-			let s21 = effects[Types.OppColour(1)] * Evaluate.their_effect_value[d1] / 1024 | 0;
-			let pc = pos.piece_on(sq);
-			if(pc == 0) {
-				continue;
+		let _g1 = length;
+		while(_g < _g1) {
+			let i = _g++;
+			k0 = list_fb[i];
+			k1 = list_fw[i];
+			let pkppb = ppkppb[k0];
+			let pkppw = ppkppw[k1];
+			let _g1 = 0;
+			let _g2 = i;
+			while(_g1 < _g2) {
+				let j = _g1++;
+				l0 = list_fb[j];
+				l1 = list_fw[j];
+				sum.p[0][0] += pkppb[l0];
+				sum.p[1][0] += pkppw[l1];
 			}
-			let piece_value = Evaluate.pieceValue[pc];
+			sum.p[2][0] += Evaluate.kkp[sq_bk][sq_wk][k0][0];
+			sum.p[2][1] += Evaluate.kkp[sq_bk][sq_wk][k1][1];
 		}
 		sum.p[2][0] += score * 32;
 		st.sum = sum;
@@ -1308,9 +2014,13 @@ class Position {
 		this.board = [];
 		LongEffect.init(this);
 		this.InitBB();
+		Zobrist.Init();
 	}
 	eval_list() {
 		return this.evalList;
+	}
+	GetKey() {
+		return this.st.key();
 	}
 	ADD_BOARD_EFFECT(c,to,e1) {
 		this.board_effect[c].e[to] += e1;
@@ -1494,6 +2204,9 @@ class Position {
 	countNode() {
 		this.nodes++;
 	}
+	resetNode() {
+		this.nodes = 0;
+	}
 	do_move(move,newSt) {
 		this.doMoveFull(move,newSt);
 	}
@@ -1517,8 +2230,15 @@ class Position {
 		newSt.Copy(this.st);
 		newSt.previous = this.st;
 		this.st = newSt;
+		let k = this.st.board_key_.newXOR(Zobrist.side);
+		let h = this.st.hand_key_;
 		let dp = this.st.dirtyPiece;
+		this.st.lastMove = move;
 		if(Types.is_drop(move)) {
+			pc = Types.Make_Piece(us,pt);
+			h.MINUS(Zobrist.hand[us][pr]);
+			k.PLUS(Zobrist.psq[to][pc]);
+			let key = k.newPLUS(h);
 			let this1 = pr;
 			let piece_no = this.piece_no_of_hand(us,this1);
 			dp.dirty_num = 1;
@@ -1542,6 +2262,8 @@ class Position {
 				this.evalList.put_piece_hand(piece_no,us,this1,this.hand_count(us,capturedRaw));
 				this.AddHand(us,capturedRaw);
 				this.RemovePiece(capsq,them,captured);
+				k.MINUS(Zobrist.psq[to][capturedPC]);
+				h.PLUS(Zobrist.hand[us][capturedRaw]);
 			} else {
 				dp.dirty_num = 1;
 				LongEffect.update_by_no_capturing_piece(this,from,to,pc,moved_after_pc);
@@ -1550,11 +2272,15 @@ class Position {
 			dp.pieceNo[0] = piece_no2;
 			this.RemovePiece(from,us,pt);
 			this.MovePiece(from,to,us,pt);
+			k.MINUS(Zobrist.psq[from][pc]);
+			k.PLUS(Zobrist.psq[to][pc]);
 			this.evalList.put_piece(piece_no2,to,pc);
 			if(Types.Move_Type(move) == 32768) {
 				this.RemovePiece(to,us,pt);
 				let this1 = pt + 8;
 				this.PutPiece(to,us,this1);
+				k.MINUS(Zobrist.psq[to][pc]);
+				k.PLUS(Zobrist.psq[to][pc + 8]);
 				materialDiff = Evaluate.proDiffPieceValue[pt];
 			}
 			this.st.capturedType = captured;
@@ -1565,6 +2291,8 @@ class Position {
 		let tmp1 = this.PiecesColour(us);
 		this.st.checkersBB = tmp.newAND(tmp1);
 		this.changeSideToMove();
+		this.st.board_key_ = k;
+		this.st.hand_key_ = h;
 		this.set_check_info(this.st);
 	}
 	undo_move(move) {
@@ -1880,10 +2608,36 @@ class Position {
 			let i = _g33++;
 			this.do_move(moves[i],new StateInfo());
 		}
+		this.set_state(this.st);
+		LongEffect.calc_effect(this);
+	}
+	set_state(si) {
 		let tmp = this.AttackersToSq(this.king_square(this.sideToMove));
 		let tmp1 = this.PiecesColour(Types.OppColour(this.sideToMove));
 		this.st.checkersBB = tmp.newAND(tmp1);
-		LongEffect.calc_effect(this);
+		this.set_check_info(si);
+		si.board_key_ = this.sideToMove == 0 ? Zobrist.zero : Zobrist.side;
+		si.hand_key_ = Zobrist.zero;
+		let b = this.pieces().newCOPY();
+		while(b.IsNonZero()) {
+			let sq = b.PopLSB();
+			let pc = this.piece_on(sq);
+			si.board_key_.PLUS(Zobrist.psq[sq][pc]);
+		}
+		let _g = 1;
+		let _g1 = 8;
+		while(_g < _g1) {
+			let pr = _g++;
+			let this1 = pr;
+			si.hand_key_.PLUS(Zobrist.hand[0][pr].newMULTI(this.hand_count(0,this1)));
+		}
+		let _g2 = 1;
+		let _g3 = 8;
+		while(_g2 < _g3) {
+			let pr = _g2++;
+			let this1 = pr;
+			si.hand_key_.PLUS(Zobrist.hand[1][pr].newMULTI(this.hand_count(1,this1)));
+		}
 	}
 	side_to_move() {
 		return this.sideToMove;
@@ -2054,10 +2808,10 @@ class Position {
 			s += HxOverrides.substr("  " + this.board[sq],-3,null);
 			--f8;
 		}
-		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 564, className : "Position", methodName : "printBoard"});
+		haxe_Log.trace(s,{ fileName : "Position.hx", lineNumber : 614, className : "Position", methodName : "printBoard"});
 	}
 	printHand() {
-		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 568, className : "Position", methodName : "printHand"});
+		haxe_Log.trace(this.hand,{ fileName : "Position.hx", lineNumber : 618, className : "Position", methodName : "printHand"});
 	}
 	printPieceNo() {
 		this.evalList.printPieceNo();
@@ -2186,6 +2940,8 @@ class SFEN {
 SFEN.__name__ = true;
 class StateInfo {
 	constructor() {
+		this.hand_key_ = new Bitboard64();
+		this.board_key_ = new Bitboard64();
 		this.sum = new EvalSum();
 		this.dirtyPiece = new DirtyPiece();
 		this.materialValue = 0;
@@ -2197,6 +2953,15 @@ class StateInfo {
 		this.pinners[0] = new Bitboard();
 		this.blockersForKing[1] = new Bitboard();
 		this.pinners[1] = new Bitboard();
+	}
+	key() {
+		return this.long_key();
+	}
+	long_key() {
+		return this.board_key_.newPLUS(this.hand_key_);
+	}
+	printKey() {
+		haxe_Log.trace("KEY:" + this.key().toStringBB(),{ fileName : "StateInfo.hx", lineNumber : 38, className : "StateInfo", methodName : "printKey"});
 	}
 	Clear() {
 		this.checkersBB.Clear();
@@ -2221,6 +2986,9 @@ class StateInfo {
 		this.pinners[0].Copy(other.pinners[0]);
 		this.blockersForKing[1].Copy(other.blockersForKing[1]);
 		this.pinners[1].Copy(other.pinners[1]);
+		this.board_key_ = other.board_key_.newCOPY();
+		this.hand_key_ = other.hand_key_.newCOPY();
+		this.lastMove = other.lastMove;
 	}
 }
 StateInfo.__name__ = true;
@@ -2650,6 +3418,57 @@ class Types {
 	}
 }
 Types.__name__ = true;
+class Zobrist {
+	constructor() {
+	}
+	static Init() {
+		haxe_Log.trace("Zobrist::Init",{ fileName : "Zobrist.hx", lineNumber : 14, className : "Zobrist", methodName : "Init"});
+		let rk = new util_RKiss();
+		let _g = 0;
+		while(_g < 81) {
+			let sq = _g++;
+			let this1 = Zobrist.psq;
+			let this2 = new Array(31);
+			this1[sq] = this2;
+			Zobrist.psq[sq][0] = new Bitboard64(0,0);
+			let _g1 = 1;
+			let _g2 = 31;
+			while(_g1 < _g2) {
+				let pc = _g1++;
+				Zobrist.psq[sq][pc] = rk.Rand64();
+			}
+		}
+		let this1 = Zobrist.hand;
+		let this2 = new Array(8);
+		this1[0] = this2;
+		Zobrist.hand[0][0] = new Bitboard64(0,0);
+		Zobrist.hand[0][1] = rk.Rand64();
+		Zobrist.hand[0][2] = rk.Rand64();
+		Zobrist.hand[0][3] = rk.Rand64();
+		Zobrist.hand[0][4] = rk.Rand64();
+		Zobrist.hand[0][5] = rk.Rand64();
+		Zobrist.hand[0][6] = rk.Rand64();
+		Zobrist.hand[0][7] = rk.Rand64();
+		let this3 = Zobrist.hand;
+		let this4 = new Array(8);
+		this3[1] = this4;
+		Zobrist.hand[1][0] = new Bitboard64(0,0);
+		Zobrist.hand[1][1] = rk.Rand64();
+		Zobrist.hand[1][2] = rk.Rand64();
+		Zobrist.hand[1][3] = rk.Rand64();
+		Zobrist.hand[1][4] = rk.Rand64();
+		Zobrist.hand[1][5] = rk.Rand64();
+		Zobrist.hand[1][6] = rk.Rand64();
+		Zobrist.hand[1][7] = rk.Rand64();
+		Zobrist.depth[0] = rk.Rand64();
+		Zobrist.depth[1] = rk.Rand64();
+		Zobrist.depth[2] = rk.Rand64();
+		Zobrist.depth[3] = rk.Rand64();
+		Zobrist.depth[4] = rk.Rand64();
+		Zobrist.depth[5] = rk.Rand64();
+	}
+}
+Zobrist.__name__ = true;
 class haxe_Log {
 	static formatOutput(v,infos) {
 		let str = Std.string(v);
@@ -3106,6 +3925,41 @@ class ui_UI {
 	}
 }
 ui_UI.__name__ = true;
+class util_RKiss {
+	constructor() {
+		this.d = new Bitboard64();
+		this.c = new Bitboard64();
+		this.b = new Bitboard64();
+		this.a = new Bitboard64();
+	}
+	Rand64() {
+		let e = this.a.newMINUS(util_RKiss.Rotate(this.b,7));
+		this.a = this.b.newXOR(util_RKiss.Rotate(this.c,13));
+		this.b = this.c.newPLUS(util_RKiss.Rotate(this.d,37));
+		this.c = this.d.newPLUS(e);
+		this.d = e.newPLUS(this.a);
+		return this.d;
+	}
+	SF_RKiss() {
+		let seed = 73;
+		this.a.Init(61930,24301);
+		this.b.Init(54497,11383);
+		this.c.Init(54497,11383);
+		this.d.Init(54497,11383);
+		let _g = 0;
+		let _g1 = seed;
+		while(_g < _g1) {
+			let i = _g++;
+			this.Rand64();
+		}
+	}
+	static Rotate(x,k) {
+		let tmpBB = x.newShiftL(k);
+		tmpBB.OR(x.newShiftR(64 - k));
+		return tmpBB;
+	}
+}
+util_RKiss.__name__ = true;
 class util_MathUtil {
 	static abs(a) {
 		if(a >= 0) {
@@ -3127,6 +3981,10 @@ class util_MathUtil {
 		} else {
 			return b;
 		}
+	}
+	static zeroPadding(v) {
+		let ereg_r = new RegExp("\\B(?=(\\d\\d\\d)+(?!\\d))","g".split("u").join(""));
+		return ("" + v).replace(ereg_r,",");
 	}
 }
 util_MathUtil.__name__ = true;
@@ -3197,6 +4055,7 @@ Position._hx_skip_constructor = false;
 Position.psq = [];
 Position.pieceValue = [0,90,315,405,495,855,990,540,15000,540,540,540,540,945,1395];
 SFEN.startpos = "lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1";
+Types.TIME_LIMIT = 10;
 Types.INT32_MAX = 2147483647;
 Types.INT_MAX = 2147483647;
 Types.VALUE_NOT_EVALUATED = 2147483647;
@@ -3208,6 +4067,7 @@ Types.ALL_PIECES = 0;
 Types.PIECE_TYPE_NB = 15;
 Types.PIECE_PROMOTE = 8;
 Types.PIECE_WHITE = 16;
+Types.PIECE_ZERO = 0;
 Types.PIECE_HAND_NB = 8;
 Types.NO_PIECE_TYPE = 0;
 Types.PAWN = 1;
@@ -3304,6 +4164,8 @@ Types.VALUE_DRAW = 0;
 Types.VALUE_KNOWN_WIN = 15000;
 Types.VALUE_MATE = 30000;
 Types.VALUE_INFINITE = 30001;
+Types.VALUE_MATE_IN_MAX_PLY = 29994;
+Types.VALUE_MATED_IN_MAX_PLY = -29994;
 Types.VALUE_NONE = 30002;
 Types.PawnValue = 90;
 Types.LanceValue = 315;
@@ -3326,5 +4188,25 @@ Types.SquareToRank = [0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,2,3,4,5,6,7,8,0,1,
 Types.sqww_table = [];
 Types.direc_table = [[]];
 Types.DirectToDeltaWW_ = [17284598,16776695,16268792,507903,-507903,-16268792,-16776695,-17284598];
+Zobrist.zero = new Bitboard64(0,0);
+Zobrist.side = new Bitboard64(1,0);
+Zobrist.psq = (function($this) {
+	var $r;
+	let this1 = new Array(81);
+	$r = this1;
+	return $r;
+}(this));
+Zobrist.hand = (function($this) {
+	var $r;
+	let this1 = new Array(2);
+	$r = this1;
+	return $r;
+}(this));
+Zobrist.depth = (function($this) {
+	var $r;
+	let this1 = new Array(6);
+	$r = this1;
+	return $r;
+}(this));
 Main.main();
 })(typeof exports != "undefined" ? exports : typeof window != "undefined" ? window : typeof self != "undefined" ? self : this, typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);

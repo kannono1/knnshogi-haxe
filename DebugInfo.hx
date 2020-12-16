@@ -19,6 +19,7 @@ class DebugInfo{
     public static var startDepth:Int = 0;
     public static var lastMove:Move;
     public static var lastQMove:Move;
+    public static var traceNode:Bool;
 
     public function new(){ }
 

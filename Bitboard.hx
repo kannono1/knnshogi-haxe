@@ -16,6 +16,13 @@ class Bitboard {
 		upper = u;
 	}
 
+	// for StockFish コンストラクタと逆
+	public function Init(u:Int = 0, m:Int = 0, l:Int = 0) {
+		lower = l;
+		middle = m;
+		upper = u;
+	}
+
 	public function Clear() {
 		lower = 0;
 		middle = 0;
@@ -57,16 +64,64 @@ class Bitboard {
 	}
 
 	public function more_than_one():Bool {
-		if( (lower  & (lower  - 1)) != 0 || // 2進数の桁上りを利用して求める
-			(middle & (middle - 1)) != 0 ||
-			(upper 	& (upper  - 1)) != 0 ||
-		    (lower != 0 && upper != 0)   ||
-		    (lower != 0 && middle != 0)  ||
-		    (middle != 0 && upper != 0) )
-		{
+		if ((lower & (lower - 1)) != 0 || // 2進数の桁上りを利用して求める
+			(middle & (middle - 1)) != 0
+				|| (upper & (upper - 1)) != 0 || (lower != 0 && upper != 0) || (lower != 0 && middle != 0) || (middle != 0 && upper != 0)) {
 			return true;
-		}				
+		}
 		return false;
+	}
+
+	// いったん64bitまでで
+	public function PLUS(other:Bitboard):Void {
+		var overflow:Int = ((lower & 0xFFFF) + (other.lower & 0xFFFF)) >> 16;//下位16Bitの桁上り（下位16Bitを足して16Bit右シフト
+		overflow += (lower >>> 16) + (other.lower >>> 16);//↑に上位16Bitを足す
+		middle += other.middle;
+		lower += other.lower;
+		if ((overflow & 0x10000) != 0) {// overflowの17bitが立っていたら1を足す
+			middle++;
+		}
+	}
+
+	public function newPLUS(other:Bitboard):Bitboard {
+		var newBB:Bitboard = new Bitboard();
+		newBB.Copy(this);
+		newBB.PLUS(other);
+		return newBB;
+	}
+
+	public function MINUS(other:Bitboard):Void {
+		var notLower:Int = ~other.lower + 1;//ビット反転してから+1。== ２の補数(補数とは、「その数字に足した時に、桁上がりが起きる数のうち最も小さい数」です。)
+		var notMiddle:Int = ~other.middle;
+		var overflow:Int = ((lower & 0xFFFF) + (notLower & 0xFFFF)) >>> 16;//下位16bitの桁上り
+		overflow += (lower >>> 16) + (notLower >>> 16);//上位16Bitを足す
+		middle += notMiddle;//反転したものを足す＝＝引き算
+		lower += notLower;
+		if ((overflow & 0x10000) != 0) {
+			middle++;
+		}
+		needCount = true;
+	}
+
+	// Todo:あとで直す
+	public function MULTI(times:Int):Void {
+		for(t in 0...times) {
+			this.PLUS(this.newCOPY());
+		}
+	}
+
+	public function newMULTI(times:Int):Bitboard {
+		var newBB:Bitboard = new Bitboard();
+		newBB.Copy(this);
+		newBB.MULTI(times);
+		return newBB;
+	}
+
+	public function newMINUS(other:Bitboard):Bitboard {
+		var newBB:Bitboard = new Bitboard();
+		newBB.Copy(this);
+		newBB.MINUS(other);
+		return newBB;
 	}
 
 	public function LSB():Int {
@@ -101,6 +156,34 @@ class Bitboard {
 			theInt >>>= 2;
 		} // 00000000000000000000000000001100
 		if ((theInt & 0x00000001) == 0) {
+			i += 1;
+			theInt >>>= 1;
+		} // 00000000000000000000000000000010
+		if ((theInt & 0x00000001) != 0) {
+			i += 1;
+		}
+		return i;
+	}
+
+	public static function MostSB(theInt:Int):Int {
+		var i:Int = -1;
+		if ((theInt & 0xffff0000) != 0) {
+			i += 16;
+			theInt >>>= 16;
+		} // 11111111111111110000000000000000
+		if ((theInt & 0x0000ff00) != 0) {
+			i += 8;
+			theInt >>>= 8;
+		} // 00000000000000001111111100000000
+		if ((theInt & 0x000000f0) != 0) {
+			i += 4;
+			theInt >>>= 4;
+		} // 00000000000000000000000011110000
+		if ((theInt & 0x0000000c) != 0) {
+			i += 2;
+			theInt >>>= 2;
+		} // 00000000000000000000000000001100
+		if ((theInt & 0x00000003) != 0) {
 			i += 1;
 			theInt >>>= 1;
 		} // 00000000000000000000000000000010

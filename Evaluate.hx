@@ -3,7 +3,7 @@ package;
 import haxe.io.BytesData;
 import js.lib.ArrayBuffer;
 import js.lib.DataView;
-// import js.html.XMLHttpRequest;
+import js.html.XMLHttpRequest;
 import haxe.ds.Vector;
 import Types.PC;
 import Types.PieceNumber;
@@ -33,8 +33,8 @@ enum abstract BonaPiece(Int) from Int to Int {
 	var e_hand_rook = 88;//f_hand_rook + 3,//87+1
 	var fe_hand_end = 90;//e_hand_rook + 3,//90
 	// --- 盤上の駒
-	var f_pawn = fe_hand_end;
-	var e_pawn = f_pawn + 81;
+	var f_pawn = fe_hand_end;// 90
+	var e_pawn = f_pawn + 81;// 171
 	var f_lance = e_pawn + 81;
 	var e_lance = f_lance + 81;
 	var f_knight = e_lance + 81;
@@ -44,7 +44,7 @@ enum abstract BonaPiece(Int) from Int to Int {
 	var f_gold = e_silver + 81;
 	var e_gold = f_gold + 81;
 	var f_bishop = e_gold + 81;
-	var e_bishop = f_bishop + 81;
+	var e_bishop = f_bishop + 81;// 981
 	var f_horse = e_bishop + 81;
 	var e_horse = f_horse + 81;
 	var f_rook = e_horse + 81;
@@ -303,75 +303,265 @@ class Evaluate {
 	];
 	private static inline var FV_SCALE:Int = 32;
 	// 評価関数パラメーター
-	private static var pp:Vector<Vector<Int>>;  //[fe_end2][fe_end2];
+	// private static var pp:Vector<Vector<Int>>;  //[fe_end2][fe_end2];
+	private static var kk:Vector<Vector<Vector<Int>>>;
+	private static var kkp:Vector<Vector<Vector<Vector<Int>>>>;//[SQ_NB][SQ_NB][fe_end][2];
+	private static var kpp:Vector<Vector<Vector<Int>>>;//[K_SQ_NB=0][P_fe_end][P_fe_end];
 	// 王様からの距離に応じたある升の利きの価値。
 	private static var our_effect_value:Vector<Int> = new Vector(9);
 	private static var their_effect_value:Vector<Int> = new Vector(9);
 
+	private static function load_eval(){
+		load_eval_impl();
+	}
+
+	private static function load_eval_impl(){
+		load_eval_kk();
+		load_eval_kkp();
+		load_eval_kpp();
+	}
+
+	private static function load_eval_kk(){
+		var filename = 'bin/KK_synthesized.bin';// 81*81*4(32bitx2) = 52,488 Byte
+		var request = new XMLHttpRequest();
+		request.open('GET', filename, true);
+		request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER; //'arraybuffer';
+		request.onload = function (e) {
+			trace('kk read start');
+			var arrayBuffer:ArrayBuffer = request.response; 	
+			if (arrayBuffer == null) {
+				trace('buffer is null');
+				return;
+			}
+			var dataview:DataView = new DataView(arrayBuffer);
+			var bytesData = new BytesData(dataview.byteLength);
+			final byteSize = 4;
+			var p:Int = 0;
+			// kk = new Vector(Types.SQ_NB);
+			trace('bytesData:${bytesData} arrayBuffer:${arrayBuffer.byteLength}');
+			for (i in 0...Types.SQ_NB){
+				// kk[i] = new Vector(Types.SQ_NB);
+				for (j in 0...Types.SQ_NB){
+					// kk[i][j] = new Vector(2);
+					for(k in 0...2){
+						kk[i][j][k] = dataview.getInt32(p*byteSize, true);// 4byte, littleEdian
+						// trace('p:${p}, v:${kk[i][j][k]}');
+						p++;
+					}
+				}
+			} 
+			trace('kk read end');
+		};		
+		request.send(null);
+	}
+
+	private static function load_eval_kkp(){
+		var filename = 'bin/KKP_synthesized.bin';//81*81*1548*4(16bitx2) = 4,151,800 8Byte
+		trace('kkp filename ${filename}');
+		var request:XMLHttpRequest = new XMLHttpRequest();
+		request.open('GET', filename, true);
+		request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER; //'arraybuffer';
+		request.onload = function (e) {
+			trace('kkp read start');
+			var arrayBuffer:ArrayBuffer = request.response; 	
+			if (arrayBuffer == null) {
+				trace('buffer is null');
+				return;
+			}
+			var dataview:DataView = new DataView(arrayBuffer);
+			var bytesData = new BytesData(dataview.byteLength);
+			final byteSize = 4;
+			var p:Int = 0;
+			// kkp = new Vector(Types.SQ_NB);
+			for (i in 0...Types.SQ_NB){
+				// kkp[i] = new Vector(Types.SQ_NB);
+				for (j in 0...Types.SQ_NB){
+					// kkp[i][j] = new Vector(fe_end);
+					for (m in 0...fe_end){
+						// kkp[i][j][m] = new Vector(2);
+						for(k in 0...2){
+							kkp[i][j][m][k] = dataview.getInt32(p*byteSize, true);// 4byte, littleEdian
+							p++;
+						}
+					}
+				}
+			} 
+			trace('kkp read end p = ${p}');//20M
+			trace('f_pawn ${BonaPiece.f_pawn}');
+			trace('kkp[44][36][90+59][0] = ${kkp[44][36][90+59][0]}');
+			trace('kkp[44][36][90+59][1] = ${kkp[44][36][90+59][1]}');
+		};		
+		request.send(null);
+	}
+
+	private static function load_eval_kpp(){
+		var filename = 'bin/KPP_synthesized.bin';
+		var request:XMLHttpRequest = new XMLHttpRequest();
+		request.open('GET', filename, true);
+		request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER;
+		request.onload = function (e) {
+			trace('kpp read start');
+			var arrayBuffer:ArrayBuffer = request.response; 	
+			if (arrayBuffer == null || arrayBuffer.byteLength < 1000) {
+				trace('kpp buffer is null');
+				return;
+			}
+			var dataview:DataView = new DataView(arrayBuffer);
+			var bytesData = new BytesData(dataview.byteLength);
+			final byteSize = 2;
+			var p:Int = 0;
+			for (i in 0...Types.SQ_NB){
+				for (j in 0...fe_end){
+					for(k in 0...fe_end){
+						kpp[i][j][k] = dataview.getInt16(p*byteSize, true);// 2byte, littleEdian
+						p++;
+					}
+				}
+			} 
+			trace('kpp read end p = ${p}');//
+		};		
+		request.send(null);
+	}
+
 	public static function Init() {
 		trace('Evaluate::Init fe_end:${fe_end} fe_end2:${fe_end2}');
+		kk = new Vector(Types.SQ_NB);
+		for (i in 0...Types.SQ_NB){
+			kk[i] = new Vector(Types.SQ_NB);
+			for (j in 0...Types.SQ_NB){
+				kk[i][j] = new Vector(2);
+				kk[i][j][0] = 0;
+				kk[i][j][1] = 0;
+			}
+		} 
+		kkp = new Vector(Types.SQ_NB);
+		for (i in 0...Types.SQ_NB){
+			kkp[i] = new Vector(Types.SQ_NB);
+			for (j in 0...Types.SQ_NB){
+				kkp[i][j] = new Vector(fe_end);
+				for (m in 0...fe_end){
+					kkp[i][j][m] = new Vector(2);
+					kkp[i][j][m][0] = 0;
+					kkp[i][j][m][1] = 0;
+				}
+			}
+		} 
+		kpp = new Vector(Types.SQ_NB);// Types.SQ_NB
+		for (i in 0...Types.SQ_NB){
+			kpp[i] = new Vector(fe_end);
+			for (j in 0...fe_end){
+				kpp[i][j] = new Vector(fe_end);
+				for (k in 0...fe_end){
+					kpp[i][j][k] = 0;
+				}
+			}
+		} 
+		load_eval();
 		for(i in 0...9) {
 			// 利きには、王様からの距離に反比例する価値がある。(と現段階では考えられる)
 			our_effect_value  [i] = Std.int(68 * 1024 / (i + 1));
 			their_effect_value[i] = Std.int(96 * 1024 / (i + 1));
 		}
-		pp = new Vector<Vector<Int>>(fe_end2);
-		for(i in 0...fe_end2) {
-			pp[i] = new Vector<Int>(fe_end2);
-			for(j in 0...fe_end2) {
-				pp[i][j] = 0;
-			}
-		}
-		pp[e_pawn +66][e_rook +64] = -1; // 後手飛車先を伸ばす
-		pp[e_pawn +21][e_bishop +10] = -1; // 後手角道を開ける
-		pp[e_gold +19][f_pawn +13] = -2; // 後手角頭を金で守る
+		// pp = new Vector<Vector<Int>>(fe_end2);
+		// for(i in 0...fe_end2) {
+		// 	pp[i] = new Vector<Int>(fe_end2);
+		// 	for(j in 0...fe_end2) {
+		// 		pp[i][j] = 0;
+		// 	}
+		// }
+		// pp[e_rook +64][e_pawn +66] = -1; // 後手飛車先を伸ばす
+		// pp[e_rook +64][e_pawn +67] = -1; // 後手飛車先を伸ばす
+		// pp[e_rook +64][e_pawn +68] = -1; // 後手飛車先を伸ばす
+		// trace('e_pawn:${e_pawn} e_bishop:${e_bishop}');
+		// pp[e_bishop +10][e_pawn +21] = -2; // 後手角道を開ける
+		// pp[e_gold +19][f_pawn +13] = -2; // 後手角頭を金で守る
+		// pp[f_rook +12][e_pawn +11] = -200; // 後手角頭を金で守る 171+11=182 
+		// pp[e_bishop +10][e_pawn +11] = -200; // 後手角頭を金で守る 171+11=182 
+		// pp[e_bishop +10][e_pawn +22] = 200; // 後手３５の歩にペナルティ
+		// pp[e_bishop +10][e_pawn +4] = 200; // 後手1５の歩にペナルティ
 	}
 
 	// 評価関数。全計算。(駒割りは差分)
 	// 返し値は持たず、計算結果としてpos.state()->sumに値を代入する。
 	private static function compute_eval_impl(pos:Position) {
+		var sq_bk:Int = pos.king_square(Types.BLACK);
+		var sq_wk:Int = pos.king_square(Types.WHITE);
+		var ppkppb:Vector<Vector<Int>> = kpp[sq_bk];// bkの位置のKPP配列
+		var ppkppw:Vector<Vector<Int>> = kpp[Types.Inv(sq_wk)];// wkの位置のKPP配列
+		var pos_ = pos;
+		var length:Int = pos_.eval_list().length();//// 駒リストの長さ // 38固定
+		var list_fb = pos_.eval_list().piece_list_fb();// 先手のBonaPiece配列
+		var list_fw = pos_.eval_list().piece_list_fw();// 後手のBonaPiece配列
+		var k0:BonaPiece, k1:BonaPiece, l0:BonaPiece, l1:BonaPiece;
 		var sum:EvalSum = new EvalSum(); // 評価値を管理するクラス
 		var st = pos.state();
 		var score:Int = st.materialValue;
 		sum.p[0][0] = /*sum.p[0][1] =*/ sum.p[1][0] = /*sum.p[1][1] =*/ 0; // sum.p[0](BKPP)とsum.p[1](WKPP)をゼロクリア
-		sum.p[2][0] = 0;
-		sum.p[2][1] = 0;
+		// sum.p[2][0] = 0;
+		// sum.p[2][1] = 0;
+		sum.p[2][0] = kk[sq_bk][sq_wk][0];
+		sum.p[2][1] = kk[sq_bk][sq_wk][1];
 		var dp:DirtyPiece = st.dirtyPiece;
 		var k:Int = dp.dirty_num; // 移動させた駒は最大2つある。その数
 		var effects:Vector<Int> = new Vector(2); // この升の 0=先手の利きの数、1=後手の利きの数
 		var dirty:Int = dp.pieceNo[0];// 40の連番。dirty_numが0のときはundefined
-		if(k > 0) {
-			var elist:EvalList = pos.eval_list();
-			var list_fb:Vector<BonaPiece> = elist.piece_list_fb();
-			var list_fw:Vector<BonaPiece> = elist.piece_list_fw();
-			var bpb:BonaPiece = list_fb[dirty];
-			for(i in 0...EvalList.MAX_LENGTH) {
-				score += pp[bpb][list_fb[i]];
+		for (i in  0...length) {
+			k0 = list_fb[i];// 先手のBonaPieceを取得
+			k1 = list_fw[i];// 後手のBonaPieceを取得
+			var pkppb:Vector<Int> = ppkppb[k0];// 先手のBPの位置のKPP配列
+			var pkppw:Vector<Int> = ppkppw[k1];// 後手のBPの位置のKPP配列
+			for (j in 0...i) {
+				l0 = list_fb[j];
+				l1 = list_fw[j];
+				// KPP
+				sum.p[0][0] += pkppb[l0];
+				sum.p[1][0] += pkppw[l1];
 			}
+			// KKP T
+			sum.p[2][0] += kkp[sq_bk][sq_wk][k0][0];
+			sum.p[2][1] += kkp[sq_bk][sq_wk][k1][1];// sum.p[2] += kkp[sq_bk][sq_wk][k0];
 		}
-		for (sq in  0...Types.SQ_NB) {
-			effects[0] = pos.board_effect[Types.BLACK].effect(sq);
-			effects[1] = pos.board_effect[Types.WHITE].effect(sq);
-			for(color in Types.BLACK...Types.COLOR_NB){
-				// color側の玉に対して
-				var king_sq = pos.king_square(color);
-				// 筋と段でたくさん離れているほうの数をその距離とする。
-				var d:Int = Types.dist(sq, king_sq);
-				var s1:Int = Std.int(effects[ color] * our_effect_value  [d] / 1024);
-				var s2:Int = Std.int(effects[Types.OppColour(color)] * their_effect_value[d] / 1024);
-				// scoreは先手から見たスコアなので、colorが先手の時は、(s1-s2) をscoreに加算。colorが後手の時は、(s2-s1) を加算。
-				// score += color == Types.BLACK ? (s1 - s2) : (s2 - s1);
-			}
-			var pc:PC = pos.piece_on(sq);
-			if (pc == Types.NO_PIECE)
-				continue;
-			var piece_value:Int = pieceValue[pc];
-			/**
-				1/10引けば良いのですが、CPUにとって割り算は非常に遅い演算なのでこれを避けるためにちょっと工夫しています。割り算は、足し算・引き算の100倍ぐらい遅く、掛け算は、足し算・引き算の3倍ぐらいの遅さです。なので、割り算は掛け算に変形したいわけです。そこで、上式では1024倍してあります。1024での除算は、1024が2の10乗なので(いまどきのC++のコンパイラであれば)ビットシフトで行うコードが生成されます。なので1024での割り算は、生成されるコードは割り算ではありません。
-				あと102 / 1024 ではなく 104 / 1024　となっているのは、104にしたほうが強かったからです。
-			**/
-			// score -= Std.int(piece_value * 104 / 1024);//
-		}
+		// if(k > 0) {
+		// 	var elist:EvalList = pos.eval_list();
+		// 	var list_fb:Vector<BonaPiece> = elist.piece_list_fb();
+		// 	var list_fw:Vector<BonaPiece> = elist.piece_list_fw();
+		// 	var bpb:BonaPiece = list_fb[dirty];
+		// 	var p1:Int = 0;
+		// 	var p2:Int = 0;
+		// 	for(i in 0...EvalList.MAX_LENGTH) {
+		// 		for (j in 0...i) {
+		// 			p1 = list_fb[i];
+		// 			p2 = list_fb[j];
+		// 			var v = pp[p1][p2];
+		// 			if(v != 0) {
+		// 				score += v;
+		// 			}
+		// 		}
+		// 	}
+		// }
+		// for (sq in  0...Types.SQ_NB) {
+		// 	effects[0] = pos.board_effect[Types.BLACK].effect(sq);
+		// 	effects[1] = pos.board_effect[Types.WHITE].effect(sq);
+		// 	for(color in Types.BLACK...Types.COLOR_NB){
+		// 		// color側の玉に対して
+		// 		var king_sq = pos.king_square(color);
+		// 		// 筋と段でたくさん離れているほうの数をその距離とする。
+		// 		var d:Int = Types.dist(sq, king_sq);
+		// 		var s1:Int = Std.int(effects[ color] * our_effect_value  [d] / 1024);
+		// 		var s2:Int = Std.int(effects[Types.OppColour(color)] * their_effect_value[d] / 1024);
+		// 		// scoreは先手から見たスコアなので、colorが先手の時は、(s1-s2) をscoreに加算。colorが後手の時は、(s2-s1) を加算。
+		// 		// score += color == Types.BLACK ? (s1 - s2) : (s2 - s1);
+		// 	}
+		// 	var pc:PC = pos.piece_on(sq);
+		// 	if (pc == Types.NO_PIECE)
+		// 		continue;
+		// 	var piece_value:Int = pieceValue[pc];
+		// 	/**
+		// 		1/10引けば良いのですが、CPUにとって割り算は非常に遅い演算なのでこれを避けるためにちょっと工夫しています。割り算は、足し算・引き算の100倍ぐらい遅く、掛け算は、足し算・引き算の3倍ぐらいの遅さです。なので、割り算は掛け算に変形したいわけです。そこで、上式では1024倍してあります。1024での除算は、1024が2の10乗なので(いまどきのC++のコンパイラであれば)ビットシフトで行うコードが生成されます。なので1024での割り算は、生成されるコードは割り算ではありません。
+		// 		あと102 / 1024 ではなく 104 / 1024　となっているのは、104にしたほうが強かったからです。
+		// 	**/
+		// 	// score -= Std.int(piece_value * 104 / 1024);//
+		// }
 		sum.p[2][0] += score * FV_SCALE;
 		st.sum = sum;
 	}

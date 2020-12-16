@@ -30,7 +30,10 @@ class MovePicker {
 
 	private var generated:Bool = false;
 
-	public function new() {
+	public function new() { }
+
+	public function moveCount():Int {
+		return moves.moveCount;
 	}
 
 	public function InitA(p:Position) {// Searchから呼ばれる
@@ -45,6 +48,7 @@ class MovePicker {
 		}
 		GenerateNext(); // ittan
 	}
+
 	public function InitB(p:Position) {// QSearchから呼ばれる駒を取る手だけを生成する
 		pos = p;
 		moves.Reset();
@@ -52,11 +56,9 @@ class MovePicker {
 		end = 0;
 		stage = EVASION;
 		var us = pos.SideToMove();
-		var them = Types.OppColour(us);
-		var ksq = pos.king_square(them);
-		var target:Bitboard = pos.PiecesColour(them).newCOPY();
-		target.SetBit(ksq);
-		target.ClrBit(ksq);
+		var target:Bitboard = new Bitboard();
+		var lastMove:Move = pos.state().lastMove;
+		target.SetBit(Types.move_to(lastMove));
 		if (p.in_check()) {
 			GenerateNext(); // ittan
 		} else {

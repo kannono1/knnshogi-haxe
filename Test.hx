@@ -1,6 +1,7 @@
 package;
 
 import Types.Move;
+import Types.PR;
 
 class Test {
 	static private var pos:Position;
@@ -17,12 +18,26 @@ class Test {
 	}
 
 	static private function TestAll(){
+		// pos.setPosition('startpos');
+		// var m:Move = Types.Make_Move(60, 59);//先手の角道を開ける
+		// trace('try1');
+		// pos.do_move(m, new StateInfo());
+		// Search.Reset(pos);
+		// Search.Think();
+		// pos.undo_move(m);
+		// pos.do_move(m, new StateInfo());
+		// trace('try2');
+		// Search.Reset(pos);
+		// Search.Think();
+		// pos.printBoard();
+		// return;
+		AssertFn('Depth6 後手角頭を歩で守る', 'lnsgk1snl/1r4gb1/pppppp2p/6pR1/9/9/PPPPPPP1P/1B7/LNSGKGSNL w Pp 1'
+			, (bm)-> bm == Types.Make_Move_Drop(new PR(Types.PAWN), 11));
 		AssertFn('Depth6 後手の角頭を金で守る', 'lnsgkgsnl/1r5b1/pppppp1pp/6p2/7P1/9/PPPPPPP1P/1B5R1/LNSGKGSNL w - 1'
 			, (bm)-> bm == Types.Make_Move(27, 19));
 		pos.setPosition('startpos');
 		var m:Move = Types.Make_Move(60, 59);//先手の角道を開ける
 		pos.do_move(m, new StateInfo());
-		pos.printBoard();
         LongEffect.printBoardEffect(pos.board_effect, Types.BLACK);
         LongEffect.printBoardEffect(pos.board_effect, Types.WHITE);
 		LongEffect.printLongEffect(pos.long_effect);

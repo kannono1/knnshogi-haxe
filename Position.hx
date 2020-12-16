@@ -22,7 +22,7 @@ class Position {
 
 	public var board:Array<Int> = [];
 	public var sideToMove:Int = Types.BLACK;
-	public var hand:Array<Array<Int>> = []; // [color][count]
+	public var hand:Array<Array<Int>> = []; // [color][pr] = count
 	public var byTypeBB:Array<Bitboard> = []; // 駒種類ごとのBB
 	public var byColorBB:Array<Bitboard> = []; // 先後のBB
 	public var index:Array<Int> = []; // [sq]=pieceCount[c][pt]
@@ -42,12 +42,16 @@ class Position {
 		#end
 		LongEffect.init(this);
 		InitBB();
+		Zobrist.Init();
 	}
 
 	public function eval_list():EvalList {
 		return evalList;
 	}
 
+	public function GetKey():Bitboard64 {
+		return st.key();
+	}
 	
 	public function ADD_BOARD_EFFECT(c, to, e1) {
 		board_effect[c].e[to] += e1;
@@ -224,6 +228,10 @@ class Position {
 		nodes++;
 	}
 
+	public function resetNode() {
+		nodes = 0;
+	}
+
 	public function do_move(move:Move, newSt:StateInfo) {
 		doMoveFull(move, newSt);
 	}
@@ -242,8 +250,20 @@ class Position {
 		newSt.Copy(st);
 		newSt.previous = st;
 		st = newSt;
+		// 現在の局面のhash keyはこれで、これを更新していき、次の局面のhash keyを求めてStateInfo::key_に格納。
+		var k = st.board_key_.newXOR(Zobrist.side);// 盤面用のキー
+		var h = st.hand_key_;// 手駒用のキー
 		var dp = st.dirtyPiece;
+		st.lastMove = move;
 		if (Types.is_drop(move)) {
+			pc = Types.Make_Piece(us, pt);
+			// Zobrist keyの更新
+			h.MINUS(Zobrist.hand[us][pr]);
+			k.PLUS(Zobrist.psq[to][pc]);
+			// なるべく早い段階でのTTに対するprefetch
+			// 駒打ちのときはこの時点でTT entryのアドレスが確定できる
+			var key = k.newPLUS(h);
+			// prefetch(TT.first_entry(key));
 			var piece_no:PieceNumber = piece_no_of_hand(us, new PT(pr));
 			dp.dirty_num = 1;
 			dp.pieceNo[0] = piece_no;
@@ -268,6 +288,9 @@ class Position {
 				evalList.put_piece_hand(piece_no, us, new PT(capturedRaw), hand_count(us, capturedRaw));
 				AddHand(us, capturedRaw);
 				RemovePiece(capsq, them, captured);
+				// 捕獲された駒が盤上から消えるので局面のhash keyを更新する
+				k.MINUS(Zobrist.psq[to][capturedPC]);
+				h.PLUS(Zobrist.hand[us][capturedRaw]);
 			}
 			else{
 				dp.dirty_num = 1;
@@ -278,10 +301,14 @@ class Position {
 			dp.pieceNo[0] = piece_no2;
 			RemovePiece(from, us, pt);
 			MovePiece(from, to, us, pt);
+			k.MINUS(Zobrist.psq[from][pc]);
+			k.PLUS(Zobrist.psq[to][pc]);
 			evalList.put_piece(piece_no2, to, pc);
 			if (Types.Move_Type(move) == Types.MOVE_PROMO) {
 				RemovePiece(to, us, pt);
 				PutPiece(to, us, new PT(pt + Types.PIECE_PROMOTE));
+				k.MINUS(Zobrist.psq[to][pc]);
+				k.PLUS(Zobrist.psq[to][pc + Types.PIECE_PROMOTE]);
 				materialDiff = Evaluate.proDiffPieceValue[pt];
 			}
 			st.capturedType = captured;
@@ -290,6 +317,9 @@ class Position {
 		}
 		st.checkersBB = AttackersToSq(king_square(them)).newAND(PiecesColour(us)); // 相手玉への王手駒
 		changeSideToMove();
+		// 更新されたhash keyをStateInfoに書き戻す。
+		st.board_key_ = k;
+		st.hand_key_ = h;
 		set_check_info(st);
 	}
 
@@ -494,8 +524,28 @@ class Position {
 		for (i in 0...moves.length) {
 			do_move(moves[i], new StateInfo());
 		}
-		st.checkersBB = AttackersToSq(king_square(sideToMove)).newAND(PiecesColour(Types.OppColour(sideToMove)));
+		set_state(st);
 		LongEffect.calc_effect(this);
+	}
+
+	private function set_state(si:StateInfo):Void {
+		st.checkersBB = AttackersToSq(king_square(sideToMove)).newAND(PiecesColour(Types.OppColour(sideToMove)));
+		set_check_info(si);
+		// --- hash keyの計算
+		si.board_key_ = sideToMove == Types.BLACK ? Zobrist.zero : Zobrist.side;
+		si.hand_key_ = Zobrist.zero;
+		var b:Bitboard = pieces().newCOPY();
+		while (b.IsNonZero()) {
+			var sq:Int = b.PopLSB();
+			var pc = piece_on(sq);
+			si.board_key_.PLUS(Zobrist.psq[sq][pc]);
+		}
+		for (c in Types.BLACK...Types.COLOR_NB){
+			for (pr in Types.PAWN...Types.PIECE_HAND_NB){
+				si.hand_key_.PLUS(Zobrist.hand[c][pr].newMULTI(hand_count(c, new PR(pr)))); // 手駒はaddにする(差分計算が楽になるため)
+			}
+		}
+
 	}
 
 	public function side_to_move():Int {

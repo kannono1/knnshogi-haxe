@@ -2,6 +2,33 @@ package;
 
 import util.MathUtil;
 
+// 探索深さを表現する型
+enum abstract Depth(Int) from Int to Int {
+	// 静止探索で王手がかかっているときにこれより少ない残り探索深さでの探索した結果が置換表にあってもそれは信用しない
+	var DEPTH_QS_CHECKS = 0;
+	// 静止探索で王手がかかっていないとき。
+	var DEPTH_QS_NO_CHECKS = -1;
+	// 静止探索でこれより深い(残り探索深さが少ない)ところではRECAPTURESしか生成しない。
+	var DEPTH_QS_RECAPTURES = -5;
+	// DEPTH_NONEは探索せずに値を求めたという意味に使う。
+	var DEPTH_NONE = -6;
+	// TTの下駄履き用
+	var DEPTH_OFFSET = DEPTH_NONE;
+}
+
+// --------------------
+//     評価値の性質
+// --------------------
+// searchで探索窓を設定するので、この窓の範囲外の値が返ってきた場合、
+// high fail時はこの値は上界(真の値はこれより小さい)、low fail時はこの値は下界(真の値はこれより大きい)
+// である。
+enum abstract Bound(Int) from Int to Int {
+	var BOUND_NONE;  // 探索していない(DEPTH_NONE)ときに、最善手か、静的評価スコアだけを置換表に格納したいときに用いる。
+	var BOUND_UPPER; // 上界(真の評価値はこれより小さい) = 詰みのスコアや、nonPVで評価値があまり信用ならない状態であることを表現する。
+	var BOUND_LOWER; // 下界(真の評価値はこれより大きい)
+	var BOUND_EXACT = BOUND_UPPER | BOUND_LOWER; // 真の評価値と一致している。PV nodeでかつ詰みのスコアでないことを表現する。
+}
+
 // --------------------
 //   壁つきの升表現
 // --------------------
@@ -113,6 +140,7 @@ abstract PC(Int) to Int {
 }
 
 class Types {
+	static public inline var TIME_LIMIT:Int = 10;
 	static public inline var INT32_MAX:Int = 2147483647;
 	static public inline var INT_MAX:Int = 2147483647;
 	static public inline var VALUE_NOT_EVALUATED:Int = INT32_MAX;
@@ -124,6 +152,7 @@ class Types {
 	public static inline var PIECE_TYPE_NB:Int = 15;
 	public static inline var PIECE_PROMOTE:Int = 8;// 1000
 	public static inline var PIECE_WHITE:Int = 16;  // これを先手の駒に加算すると後手の駒になる。
+	public static inline var PIECE_ZERO:Int = 0;
 	public static inline var PIECE_HAND_NB:Int = 8;
 	public static inline var NO_PIECE_TYPE:PT = new PT(0);
 	public static inline var PAWN:PT = new PT(1);
@@ -222,6 +251,8 @@ class Types {
 	public static inline var VALUE_KNOWN_WIN:Int = 15000;
 	public static inline var VALUE_MATE:Int = 30000;
 	public static inline var VALUE_INFINITE:Int = 30001;
+	public static inline var VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - MAX_PLY; // MAX_PLYでの詰みのときのスコア。
+	public static inline var VALUE_MATED_IN_MAX_PLY = -VALUE_MATE_IN_MAX_PLY; // MAX_PLYで詰まされるときのスコア。
 	public static inline var VALUE_NONE:Int = 30002;
 	public static inline var PawnValue:Int = 90;
 	public static inline var LanceValue:Int = 315;
