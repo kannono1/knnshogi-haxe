@@ -310,6 +310,7 @@ class Evaluate {
 	// 王様からの距離に応じたある升の利きの価値。
 	private static var our_effect_value:Vector<Int> = new Vector(9);
 	private static var their_effect_value:Vector<Int> = new Vector(9);
+	private static var storage_path = 'https://storage.googleapis.com/knnshogi-haxe/';
 
 	private static function load_eval(){
 		load_eval_impl();
@@ -322,7 +323,7 @@ class Evaluate {
 	}
 
 	private static function load_eval_kk(){
-		var filename = 'bin/KK_synthesized.bin';// 81*81*4(32bitx2) = 52,488 Byte
+		var filename = '${storage_path}bin/KK_synthesized.bin';// 81*81*4(32bitx2) = 52,488 Byte
 		var request = new XMLHttpRequest();
 		request.open('GET', filename, true);
 		request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER; //'arraybuffer';
@@ -356,7 +357,7 @@ class Evaluate {
 	}
 
 	private static function load_eval_kkp(){
-		var filename = 'bin/KKP_synthesized.bin';//81*81*1548*4(16bitx2) = 4,151,800 8Byte
+		var filename = '${storage_path}bin/KKP_synthesized.bin';//81*81*1548*4(16bitx2) = 4,151,800 8Byte
 		trace('kkp filename ${filename}');
 		var request:XMLHttpRequest = new XMLHttpRequest();
 		request.open('GET', filename, true);
@@ -395,7 +396,7 @@ class Evaluate {
 	}
 
 	private static function load_eval_kpp(){
-		var filename = 'bin/KPP_synthesized.bin';
+		var filename = '${storage_path}bin/KPP_synthesized.bin';
 		var request:XMLHttpRequest = new XMLHttpRequest();
 		request.open('GET', filename, true);
 		request.responseType = js.html.XMLHttpRequestResponseType.ARRAYBUFFER;
