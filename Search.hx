@@ -94,7 +94,7 @@ class Search {
 		}
 		var elapsed = Timer.stamp() - Signals.startTime;
 		var nps:Int = Std.int(pos.Nodes() / elapsed);
-		trace('depth:${rootDepth} nps:${MathUtil.zeroPadding(nps)} nodes :${MathUtil.zeroPadding(pos.Nodes())} elapsed:${elapsed}');
+		trace('depth:${rootDepth} nps:${MathUtil.zeroPadding(nps)} nodes :${MathUtil.zeroPadding(pos.Nodes())} elapsed:${elapsed} rootMoves${0} ${Types.Move_To_StringLong(rootMoves[0].pv[0])}  score:${rootMoves[0].score}');
 	}
 
 	private static function StableSort(moves:Array<SearchRootMove>, begin:Int, end:Int) {

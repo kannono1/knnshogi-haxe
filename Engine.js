@@ -3377,7 +3377,7 @@ class Search {
 		haxe_Log.trace("rootMoves" + 19 + " " + Types.Move_To_StringLong(Search.rootMoves[19].pv[0]) + "  score:" + Search.rootMoves[19].score,{ fileName : "Search.hx", lineNumber : 93, className : "Search", methodName : "IDLoop"});
 		let elapsed = HxOverrides.now() / 1000 - Signals.startTime;
 		let nps = pos.Nodes() / elapsed | 0;
-		haxe_Log.trace("depth:" + Search.rootDepth + " nps:" + util_MathUtil.zeroPadding(nps) + " nodes :" + util_MathUtil.zeroPadding(pos.Nodes()) + " elapsed:" + elapsed,{ fileName : "Search.hx", lineNumber : 97, className : "Search", methodName : "IDLoop"});
+		haxe_Log.trace("depth:" + Search.rootDepth + " nps:" + util_MathUtil.zeroPadding(nps) + " nodes :" + util_MathUtil.zeroPadding(pos.Nodes()) + " elapsed:" + elapsed + " rootMoves" + 0 + " " + Types.Move_To_StringLong(Search.rootMoves[0].pv[0]) + "  score:" + Search.rootMoves[0].score,{ fileName : "Search.hx", lineNumber : 97, className : "Search", methodName : "IDLoop"});
 	}
 	static StableSort(moves,begin,end) {
 		if(begin == end) {
