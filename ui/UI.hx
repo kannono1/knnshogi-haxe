@@ -100,7 +100,7 @@ class UI {
 	}
 
 	public function onEndGame(winner:Int) {
-		Browser.alert('${winner}の勝ちです');
+		Browser.alert('${(winner==Types.BLACK)?'先手':'後手'}の勝ちです');
 	}
 
 	private function isPlayerPiece(sq:Int, pc:PC):Bool {

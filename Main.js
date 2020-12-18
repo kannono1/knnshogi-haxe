@@ -3668,7 +3668,7 @@ class ui_Game extends Position {
 	}
 	endGame() {
 		haxe_Log.trace("Game::End",{ fileName : "ui/Game.hx", lineNumber : 133, className : "ui.Game", methodName : "endGame"});
-		this.ui.onEndGame(this.sideToMove);
+		this.ui.onEndGame(Types.OppColour(this.sideToMove));
 	}
 	setPosition(sfen) {
 		super.setPosition(sfen);
@@ -3762,7 +3762,7 @@ class ui_UI {
 		this.updateUi(0);
 	}
 	onEndGame(winner) {
-		window.alert(Std.string("" + winner + "の勝ちです"));
+		window.alert(Std.string("" + (winner == 0 ? "先手" : "後手") + "の勝ちです"));
 	}
 	isPlayerPiece(sq,pc) {
 		let c = Types.getPieceColor(pc);
