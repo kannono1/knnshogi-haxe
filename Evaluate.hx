@@ -310,7 +310,11 @@ class Evaluate {
 	// 王様からの距離に応じたある升の利きの価値。
 	private static var our_effect_value:Vector<Int> = new Vector(9);
 	private static var their_effect_value:Vector<Int> = new Vector(9);
+	#if debug
+	private static var storage_path = '';
+	#else
 	private static var storage_path = 'https://storage.googleapis.com/knnshogi-haxe/';
+	#end
 
 	private static function load_eval(){
 		load_eval_impl();

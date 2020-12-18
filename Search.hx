@@ -237,7 +237,7 @@ class Search {
 			DebugInfo.lastMove = move;
 			DebugInfo.inChecks[depth] = pos.in_check();
 			DebugInfo.depth = depth;
-			if(rootNode && move == 34108 ) {
+			if(rootNode && move == -1 ) {
 				DebugInfo.traceNode = true;
 			}
 			if(DebugInfo.traceNode) {

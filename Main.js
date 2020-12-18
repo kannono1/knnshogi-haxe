@@ -1272,17 +1272,17 @@ class Evaluate {
 		request.open("GET",filename,true);
 		request.responseType = "arraybuffer";
 		request.onload = function(e) {
-			haxe_Log.trace("kk read start",{ fileName : "Evaluate.hx", lineNumber : 331, className : "Evaluate", methodName : "load_eval_kk"});
+			haxe_Log.trace("kk read start",{ fileName : "Evaluate.hx", lineNumber : 335, className : "Evaluate", methodName : "load_eval_kk"});
 			let arrayBuffer = request.response;
 			if(arrayBuffer == null) {
-				haxe_Log.trace("buffer is null",{ fileName : "Evaluate.hx", lineNumber : 334, className : "Evaluate", methodName : "load_eval_kk"});
+				haxe_Log.trace("buffer is null",{ fileName : "Evaluate.hx", lineNumber : 338, className : "Evaluate", methodName : "load_eval_kk"});
 				return;
 			}
 			let dataview = new DataView(arrayBuffer);
 			let bytesData = new ArrayBuffer(dataview.byteLength);
 			let byteSize = 4;
 			let p = 0;
-			haxe_Log.trace("bytesData:" + Std.string(bytesData) + " arrayBuffer:" + arrayBuffer.byteLength,{ fileName : "Evaluate.hx", lineNumber : 342, className : "Evaluate", methodName : "load_eval_kk"});
+			haxe_Log.trace("bytesData:" + Std.string(bytesData) + " arrayBuffer:" + arrayBuffer.byteLength,{ fileName : "Evaluate.hx", lineNumber : 346, className : "Evaluate", methodName : "load_eval_kk"});
 			let _g = 0;
 			while(_g < 81) {
 				let i = _g++;
@@ -1295,21 +1295,21 @@ class Evaluate {
 					++p;
 				}
 			}
-			haxe_Log.trace("kk read end",{ fileName : "Evaluate.hx", lineNumber : 354, className : "Evaluate", methodName : "load_eval_kk"});
+			haxe_Log.trace("kk read end",{ fileName : "Evaluate.hx", lineNumber : 358, className : "Evaluate", methodName : "load_eval_kk"});
 		};
 		request.send(null);
 	}
 	static load_eval_kkp() {
 		let filename = "" + Evaluate.storage_path + "bin/KKP_synthesized.bin";
-		haxe_Log.trace("kkp filename " + filename,{ fileName : "Evaluate.hx", lineNumber : 361, className : "Evaluate", methodName : "load_eval_kkp"});
+		haxe_Log.trace("kkp filename " + filename,{ fileName : "Evaluate.hx", lineNumber : 365, className : "Evaluate", methodName : "load_eval_kkp"});
 		let request = new XMLHttpRequest();
 		request.open("GET",filename,true);
 		request.responseType = "arraybuffer";
 		request.onload = function(e) {
-			haxe_Log.trace("kkp read start",{ fileName : "Evaluate.hx", lineNumber : 366, className : "Evaluate", methodName : "load_eval_kkp"});
+			haxe_Log.trace("kkp read start",{ fileName : "Evaluate.hx", lineNumber : 370, className : "Evaluate", methodName : "load_eval_kkp"});
 			let arrayBuffer = request.response;
 			if(arrayBuffer == null) {
-				haxe_Log.trace("buffer is null",{ fileName : "Evaluate.hx", lineNumber : 369, className : "Evaluate", methodName : "load_eval_kkp"});
+				haxe_Log.trace("buffer is null",{ fileName : "Evaluate.hx", lineNumber : 373, className : "Evaluate", methodName : "load_eval_kkp"});
 				return;
 			}
 			let dataview = new DataView(arrayBuffer);
@@ -1333,10 +1333,10 @@ class Evaluate {
 					}
 				}
 			}
-			haxe_Log.trace("kkp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 390, className : "Evaluate", methodName : "load_eval_kkp"});
-			haxe_Log.trace("f_pawn " + 90,{ fileName : "Evaluate.hx", lineNumber : 391, className : "Evaluate", methodName : "load_eval_kkp"});
-			haxe_Log.trace("kkp[44][36][90+59][0] = " + Evaluate.kkp[44][36][149][0],{ fileName : "Evaluate.hx", lineNumber : 392, className : "Evaluate", methodName : "load_eval_kkp"});
-			haxe_Log.trace("kkp[44][36][90+59][1] = " + Evaluate.kkp[44][36][149][1],{ fileName : "Evaluate.hx", lineNumber : 393, className : "Evaluate", methodName : "load_eval_kkp"});
+			haxe_Log.trace("kkp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 394, className : "Evaluate", methodName : "load_eval_kkp"});
+			haxe_Log.trace("f_pawn " + 90,{ fileName : "Evaluate.hx", lineNumber : 395, className : "Evaluate", methodName : "load_eval_kkp"});
+			haxe_Log.trace("kkp[44][36][90+59][0] = " + Evaluate.kkp[44][36][149][0],{ fileName : "Evaluate.hx", lineNumber : 396, className : "Evaluate", methodName : "load_eval_kkp"});
+			haxe_Log.trace("kkp[44][36][90+59][1] = " + Evaluate.kkp[44][36][149][1],{ fileName : "Evaluate.hx", lineNumber : 397, className : "Evaluate", methodName : "load_eval_kkp"});
 		};
 		request.send(null);
 	}
@@ -1346,10 +1346,10 @@ class Evaluate {
 		request.open("GET",filename,true);
 		request.responseType = "arraybuffer";
 		request.onload = function(e) {
-			haxe_Log.trace("kpp read start",{ fileName : "Evaluate.hx", lineNumber : 404, className : "Evaluate", methodName : "load_eval_kpp"});
+			haxe_Log.trace("kpp read start",{ fileName : "Evaluate.hx", lineNumber : 408, className : "Evaluate", methodName : "load_eval_kpp"});
 			let arrayBuffer = request.response;
 			if(arrayBuffer == null || arrayBuffer.byteLength < 1000) {
-				haxe_Log.trace("kpp buffer is null",{ fileName : "Evaluate.hx", lineNumber : 407, className : "Evaluate", methodName : "load_eval_kpp"});
+				haxe_Log.trace("kpp buffer is null",{ fileName : "Evaluate.hx", lineNumber : 411, className : "Evaluate", methodName : "load_eval_kpp"});
 				return;
 			}
 			let dataview = new DataView(arrayBuffer);
@@ -1372,12 +1372,12 @@ class Evaluate {
 					}
 				}
 			}
-			haxe_Log.trace("kpp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 422, className : "Evaluate", methodName : "load_eval_kpp"});
+			haxe_Log.trace("kpp read end p = " + p,{ fileName : "Evaluate.hx", lineNumber : 426, className : "Evaluate", methodName : "load_eval_kpp"});
 		};
 		request.send(null);
 	}
 	static Init() {
-		haxe_Log.trace("Evaluate::Init fe_end:" + (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81) + " fe_end2:" + (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),{ fileName : "Evaluate.hx", lineNumber : 428, className : "Evaluate", methodName : "Init"});
+		haxe_Log.trace("Evaluate::Init fe_end:" + (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81) + " fe_end2:" + (90 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81 + 81),{ fileName : "Evaluate.hx", lineNumber : 432, className : "Evaluate", methodName : "Init"});
 		let this1 = new Array(81);
 		Evaluate.kk = this1;
 		let _g = 0;
@@ -3572,7 +3572,7 @@ class ui_Game extends Position {
 		this.moves = [];
 		this._sfen = "startpos";
 		this.playerColor = 0;
-		haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 22, className : "ui.Game", methodName : "new"});
+		haxe_Log.trace("Game::new",{ fileName : "ui/Game.hx", lineNumber : 23, className : "ui.Game", methodName : "new"});
 		super._hx_constructor();
 		this.ui = ui_;
 		this.createWorker();
@@ -3586,7 +3586,7 @@ class ui_Game extends Position {
 		}
 	}
 	createWorker() {
-		haxe_Log.trace("Game::createWorker",{ fileName : "ui/Game.hx", lineNumber : 37, className : "ui.Game", methodName : "createWorker"});
+		haxe_Log.trace("Game::createWorker",{ fileName : "ui/Game.hx", lineNumber : 38, className : "ui.Game", methodName : "createWorker"});
 		this.worker = new Worker("Engine.js");
 		this.worker.onmessage = $bind(this,this.onMessage);
 	}
@@ -3598,12 +3598,12 @@ class ui_Game extends Position {
 		}
 	}
 	doPlayerPut(pr,to) {
-		haxe_Log.trace("Game::doPlayerPut pr: " + pr + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 51, className : "ui.Game", methodName : "doPlayerPut"});
+		haxe_Log.trace("Game::doPlayerPut pr: " + pr + " to: " + to,{ fileName : "ui/Game.hx", lineNumber : 52, className : "ui.Game", methodName : "doPlayerPut"});
 		let move = Types.Make_Move_Drop(pr,to);
 		this.do_move(move,new StateInfo());
 	}
 	do_move(move,newSt) {
-		haxe_Log.trace("Game::do_move " + Types.Move_To_String(move),{ fileName : "ui/Game.hx", lineNumber : 57, className : "ui.Game", methodName : "do_move"});
+		haxe_Log.trace("Game::do_move " + Types.Move_To_String(move),{ fileName : "ui/Game.hx", lineNumber : 58, className : "ui.Game", methodName : "do_move"});
 		this.moves.push(move);
 		super.do_move(move,newSt);
 		if(this.isEnemyTurn()) {
@@ -3636,9 +3636,14 @@ class ui_Game extends Position {
 		while(b.IsNonZero()) arr.push(b.PopLSB());
 		return arr;
 	}
-	getEmptySq() {
+	getEmptySq(pr) {
+		let us = this.sideToMove;
 		let b = this.PiecesAll().newNOT().NORM27();
-		haxe_Log.trace(b.toStringBB(),{ fileName : "ui/Game.hx", lineNumber : 98, className : "ui.Game", methodName : "getEmptySq"});
+		let this1 = pr;
+		if(this1 == 1) {
+			b.AND(BB.pawnLineBB[us].newNOT());
+		}
+		haxe_Log.trace(b.toStringBB(),{ fileName : "ui/Game.hx", lineNumber : 103, className : "ui.Game", methodName : "getEmptySq"});
 		let arr = [];
 		while(b.IsNonZero()) arr.push(b.PopLSB());
 		return arr;
@@ -3647,7 +3652,7 @@ class ui_Game extends Position {
 		return this.sideToMove != this.playerColor;
 	}
 	onMessage(s) {
-		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 111, className : "ui.Game", methodName : "onMessage"});
+		haxe_Log.trace("Game::onThink " + Std.string(s.data),{ fileName : "ui/Game.hx", lineNumber : 116, className : "ui.Game", methodName : "onMessage"});
 		let tokens = s.data.split(" ");
 		let move = Types.generateMoveFromString(tokens[1]);
 		if(move == 0) {
@@ -3658,11 +3663,11 @@ class ui_Game extends Position {
 		}
 	}
 	start() {
-		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 123, className : "ui.Game", methodName : "start"});
+		haxe_Log.trace("Game::start",{ fileName : "ui/Game.hx", lineNumber : 128, className : "ui.Game", methodName : "start"});
 		this.setPosition(this._sfen);
 	}
 	endGame() {
-		haxe_Log.trace("Game::End",{ fileName : "ui/Game.hx", lineNumber : 128, className : "ui.Game", methodName : "endGame"});
+		haxe_Log.trace("Game::End",{ fileName : "ui/Game.hx", lineNumber : 133, className : "ui.Game", methodName : "endGame"});
 		this.ui.onEndGame(this.sideToMove);
 	}
 	setPosition(sfen) {
@@ -3822,7 +3827,7 @@ class ui_UI {
 			this.setHand(1,7,this.game.hand[1][7],false);
 			break;
 		case 2:
-			let arr1 = this.game.getEmptySq();
+			let arr1 = this.game.getEmptySq(this.selectedHand);
 			let _g3 = 0;
 			while(_g3 < 81) {
 				let sq = _g3++;

@@ -144,7 +144,7 @@ class UI {
 					setHand(Types.WHITE, i, game.hand[Types.WHITE][i], false);
 				}
 			case PUT:
-				var arr:Array<Int> = game.getEmptySq();
+				var arr:Array<Int> = game.getEmptySq(this.selectedHand);
 				for (sq in 0...81) {
 					linkable = (arr.indexOf(sq) > -1);
 					this.setCell(sq, game.piece_on(sq), linkable);

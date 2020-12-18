@@ -5,8 +5,9 @@ import js.html.Worker;
 import util.StringUtil;
 import ui.Mode.OPERATION_MODE;
 import Types.Move;
-import Types.PR;
 import Types.PC;
+import Types.PR;
+import Types.PT;
 
 class Game extends Position {
 	public var playerColor:Int = Types.BLACK;
@@ -93,8 +94,12 @@ class Game extends Position {
 		return arr;
 	}
 
-	public function getEmptySq():Array<Int> {
+	public function getEmptySq(pr:PR):Array<Int> {
+		var us = sideToMove;
 		var b:Bitboard = PiecesAll().newNOT().NORM27();
+		if(new PT(pr) == Types.PAWN) {
+			b.AND(BB.pawnLineBB[us].newNOT());
+		}
 		trace(b.toStringBB());
 		var arr:Array<Int> = [];
 		while (b.IsNonZero()) {
