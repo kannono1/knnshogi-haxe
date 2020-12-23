@@ -70,16 +70,29 @@ class UI {
 				this.updateUi(OPERATION_MODE.MOVE);
 			case MOVE:
 				this.toSq = sq;
-				var from_pc:PC = game.piece_on(selectedSq);
-				if (isPromotable(toSq, from_pc)) {
+				var selectedPc:PC = game.piece_on(sq);
+				var fromPc:PC = game.piece_on(selectedSq);
+				if (Std.int(selectedPc) > 0 && Types.color_of(selectedPc) == game.sideToMove) {// 駒再選択時
+					this.selectedSq = sq;
+					this.updateUi(OPERATION_MODE.MOVE);
+				}
+				else if (isPromotable(toSq, fromPc)) {
 					showDialog();
 				} else {
 					game.doPlayerMove(this.selectedSq, toSq, false);
 					this.updateUi(OPERATION_MODE.WAIT);
 				}
 			case PUT:
-				game.doPlayerPut(this.selectedHand, sq);
-				this.updateUi(OPERATION_MODE.WAIT);
+				var selectedPc:PC = game.piece_on(sq);
+				var fromPc:PC = game.piece_on(selectedSq);
+				if (Std.int(selectedPc) > 0 && Types.color_of(selectedPc) == game.sideToMove) {// 駒再選択時
+					this.selectedSq = sq;
+					this.updateUi(OPERATION_MODE.MOVE);
+				}
+				else {
+					game.doPlayerPut(this.selectedHand, sq);
+					this.updateUi(OPERATION_MODE.WAIT);
+				}
 			default:
 		}
 	}
@@ -87,7 +100,7 @@ class UI {
 	public function onClickHand(pr:PR) {
 		trace('on clickHand:', pr);
 		switch (this.operationMode) {
-			case SELECT:
+			case SELECT | MOVE | PUT:
 				this.selectedHand = pr;
 				this.updateUi(OPERATION_MODE.PUT);
 			default:
@@ -133,24 +146,46 @@ class UI {
 					setHand(Types.WHITE, i, game.hand[Types.WHITE][i], false);
 				}
 			case MOVE:
-				pc = game.piece_on(this.selectedSq);
-				var arr:Array<Int> = game.getMovableSq(selectedSq, pc);
+				var selectedPc:PC = game.piece_on(this.selectedSq);
+				var arr:Array<Int> = game.getMovableSq(selectedSq, selectedPc);
 				for (sq in 0...81) {
-					linkable = (arr.indexOf(sq) > -1);
+					pc = game.piece_on(sq);
+					var c:Int = Types.color_of(pc);
+					linkable = false;
+					if(arr.indexOf(sq) > -1){
+						linkable = true;// 移動可能な枡
+					}
+					else if(Std.int(pc) > 0 && c == game.sideToMove){
+						var moves:Array<Int> = game.getMovableSq(sq, pc);
+						if (moves.length > 0) {// 移動可能駒
+							linkable = true;// 再選択用
+						}
+					}
 					this.setCell(sq, game.piece_on(sq), linkable);
 				}
 				for (i in 1...8) {
-					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], false);
+					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], (game.hand[Types.BLACK][i] > 0));
 					setHand(Types.WHITE, i, game.hand[Types.WHITE][i], false);
 				}
 			case PUT:
 				var arr:Array<Int> = game.getEmptySq(this.selectedHand);
 				for (sq in 0...81) {
-					linkable = (arr.indexOf(sq) > -1);
+					pc = game.piece_on(sq);
+					var c:Int = Types.color_of(pc);
+					linkable = false;
+					if(arr.indexOf(sq) > -1) {
+						linkable = true;
+					}
+					else if(Std.int(pc) > 0 && c == game.sideToMove){
+						var moves:Array<Int> = game.getMovableSq(sq, pc);
+						if (moves.length > 0) {// 移動可能駒
+							linkable = true;// 再選択用
+						}
+					}
 					this.setCell(sq, game.piece_on(sq), linkable);
 				}
 				for (i in 1...8) {
-					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], false);
+					setHand(Types.BLACK, i, game.hand[Types.BLACK][i], (game.hand[Types.BLACK][i] > 0));
 					setHand(Types.WHITE, i, game.hand[Types.WHITE][i], false);
 				}
 			default:

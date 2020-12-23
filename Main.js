@@ -3735,8 +3735,12 @@ class ui_UI {
 			break;
 		case 1:
 			this.toSq = sq;
-			let from_pc = this.game.piece_on(this.selectedSq);
-			if(this.isPromotable(this.toSq,from_pc)) {
+			let selectedPc = this.game.piece_on(sq);
+			let fromPc = this.game.piece_on(this.selectedSq);
+			if((selectedPc | 0) > 0 && Types.color_of(selectedPc) == this.game.sideToMove) {
+				this.selectedSq = sq;
+				this.updateUi(1);
+			} else if(this.isPromotable(this.toSq,fromPc)) {
 				this.showDialog();
 			} else {
 				this.game.doPlayerMove(this.selectedSq,this.toSq,false);
@@ -3744,21 +3748,31 @@ class ui_UI {
 			}
 			break;
 		case 2:
-			this.game.doPlayerPut(this.selectedHand,sq);
-			this.updateUi(3);
+			let selectedPc1 = this.game.piece_on(sq);
+			let fromPc1 = this.game.piece_on(this.selectedSq);
+			if((selectedPc1 | 0) > 0 && Types.color_of(selectedPc1) == this.game.sideToMove) {
+				this.selectedSq = sq;
+				this.updateUi(1);
+			} else {
+				this.game.doPlayerPut(this.selectedHand,sq);
+				this.updateUi(3);
+			}
 			break;
 		default:
 		}
 	}
 	onClickHand(pr) {
-		haxe_Log.trace("on clickHand:",{ fileName : "ui/UI.hx", lineNumber : 88, className : "ui.UI", methodName : "onClickHand", customParams : [pr]});
-		if(this.operationMode == 0) {
+		haxe_Log.trace("on clickHand:",{ fileName : "ui/UI.hx", lineNumber : 101, className : "ui.UI", methodName : "onClickHand", customParams : [pr]});
+		switch(this.operationMode) {
+		case 0:case 1:case 2:
 			this.selectedHand = pr;
 			this.updateUi(2);
+			break;
+		default:
 		}
 	}
 	onEnemyMoved() {
-		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 98, className : "ui.UI", methodName : "onEnemyMoved"});
+		haxe_Log.trace("UI::onEnemyMoved",{ fileName : "ui/UI.hx", lineNumber : 111, className : "ui.UI", methodName : "onEnemyMoved"});
 		this.updateUi(0);
 	}
 	onEndGame(winner) {
@@ -3803,56 +3817,60 @@ class ui_UI {
 			}
 			break;
 		case 1:
-			pc = this.game.piece_on(this.selectedSq);
-			let arr = this.game.getMovableSq(this.selectedSq,pc);
+			let selectedPc = this.game.piece_on(this.selectedSq);
+			let arr = this.game.getMovableSq(this.selectedSq,selectedPc);
 			let _g2 = 0;
 			while(_g2 < 81) {
 				let sq = _g2++;
-				linkable = arr.indexOf(sq) > -1;
+				pc = this.game.piece_on(sq);
+				let c = Types.color_of(pc);
+				linkable = false;
+				if(arr.indexOf(sq) > -1) {
+					linkable = true;
+				} else if((pc | 0) > 0 && c == this.game.sideToMove) {
+					let moves = this.game.getMovableSq(sq,pc);
+					if(moves.length > 0) {
+						linkable = true;
+					}
+				}
 				this.setCell(sq,this.game.piece_on(sq),linkable);
 			}
-			this.setHand(0,1,this.game.hand[0][1],false);
-			this.setHand(1,1,this.game.hand[1][1],false);
-			this.setHand(0,2,this.game.hand[0][2],false);
-			this.setHand(1,2,this.game.hand[1][2],false);
-			this.setHand(0,3,this.game.hand[0][3],false);
-			this.setHand(1,3,this.game.hand[1][3],false);
-			this.setHand(0,4,this.game.hand[0][4],false);
-			this.setHand(1,4,this.game.hand[1][4],false);
-			this.setHand(0,5,this.game.hand[0][5],false);
-			this.setHand(1,5,this.game.hand[1][5],false);
-			this.setHand(0,6,this.game.hand[0][6],false);
-			this.setHand(1,6,this.game.hand[1][6],false);
-			this.setHand(0,7,this.game.hand[0][7],false);
-			this.setHand(1,7,this.game.hand[1][7],false);
+			let _g3 = 1;
+			while(_g3 < 8) {
+				let i = _g3++;
+				this.setHand(0,i,this.game.hand[0][i],this.game.hand[0][i] > 0);
+				this.setHand(1,i,this.game.hand[1][i],false);
+			}
 			break;
 		case 2:
 			let arr1 = this.game.getEmptySq(this.selectedHand);
-			let _g3 = 0;
-			while(_g3 < 81) {
-				let sq = _g3++;
-				linkable = arr1.indexOf(sq) > -1;
-				this.setCell(sq,this.game.piece_on(sq),linkable);
-			}
-			this.setHand(0,1,this.game.hand[0][1],false);
-			this.setHand(1,1,this.game.hand[1][1],false);
-			this.setHand(0,2,this.game.hand[0][2],false);
-			this.setHand(1,2,this.game.hand[1][2],false);
-			this.setHand(0,3,this.game.hand[0][3],false);
-			this.setHand(1,3,this.game.hand[1][3],false);
-			this.setHand(0,4,this.game.hand[0][4],false);
-			this.setHand(1,4,this.game.hand[1][4],false);
-			this.setHand(0,5,this.game.hand[0][5],false);
-			this.setHand(1,5,this.game.hand[1][5],false);
-			this.setHand(0,6,this.game.hand[0][6],false);
-			this.setHand(1,6,this.game.hand[1][6],false);
-			this.setHand(0,7,this.game.hand[0][7],false);
-			this.setHand(1,7,this.game.hand[1][7],false);
-			break;
-		default:
 			let _g4 = 0;
 			while(_g4 < 81) {
 				let sq = _g4++;
+				pc = this.game.piece_on(sq);
+				let c = Types.color_of(pc);
+				linkable = false;
+				if(arr1.indexOf(sq) > -1) {
+					linkable = true;
+				} else if((pc | 0) > 0 && c == this.game.sideToMove) {
+					let moves = this.game.getMovableSq(sq,pc);
+					if(moves.length > 0) {
+						linkable = true;
+					}
+				}
+				this.setCell(sq,this.game.piece_on(sq),linkable);
+			}
+			let _g5 = 1;
+			while(_g5 < 8) {
+				let i = _g5++;
+				this.setHand(0,i,this.game.hand[0][i],this.game.hand[0][i] > 0);
+				this.setHand(1,i,this.game.hand[1][i],false);
+			}
+			break;
+		default:
+			let _g6 = 0;
+			while(_g6 < 81) {
+				let sq = _g6++;
 				this.setCell(sq,this.game.piece_on(sq),false);
 			}
 			this.setHand(0,1,this.game.hand[0][1],false);
